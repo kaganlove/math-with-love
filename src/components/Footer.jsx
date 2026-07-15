@@ -43,9 +43,9 @@ export default function Footer() {
           &copy; {new Date().getFullYear()} Math with Love. All rights reserved.
         </p>
         <div className="footer-legal-links">
-          <a href="#" className="footer-legal-link">Privacy Policy</a>
-          <a href="#" className="footer-legal-link">Terms of Service</a>
-          <a href="#" className="footer-legal-link">Refund Policy</a>
+          <Link to="/privacy" className="footer-legal-link">Privacy Policy</Link>
+          <Link to="/terms" className="footer-legal-link">Terms of Service</Link>
+          <Link to="/refunds" className="footer-legal-link">Refund Policy</Link>
         </div>
       </div>
     </footer>
