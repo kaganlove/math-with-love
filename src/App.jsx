@@ -12,6 +12,7 @@ import Contact from "./pages/Contact";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";
+import ScrollToTop from "./components/ScrollToTop";
 
 function AppContent() {
   const location = useLocation();
@@ -21,6 +22,7 @@ function AppContent() {
 
   return (
     <div className={isSessionRoom ? "session-shell" : "app-shell"}>
+      <ScrollToTop />
       {!isSessionRoom && <Navigation />}
       <main className={isSessionRoom ? "session-main" : "main-content"}>
         <Routes>
