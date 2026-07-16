@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Download, FileText, X, Check, Eye } from "lucide-react";
 
 export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWidth }) {
@@ -6,9 +6,26 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
   const [problemCount, setProblemCount] = useState(10);
   const [includeAnswers, setIncludeAnswers] = useState(true);
   const [customTitle, setCustomTitle] = useState(`${lessonTitle} Practice`);
-  const [customInstructions, setCustomInstructions] = useState(
-    "Solve each equation step-by-step. Show all work and circle your final answer."
-  );
+  const [customInstructions, setCustomInstructions] = useState("");
+
+  useEffect(() => {
+    setCustomTitle(`${lessonTitle} Practice`);
+    if (lessonId === "hsa-sse-1a") {
+      setCustomInstructions("Identify the specified algebraic parts of each expression (coefficients, factors, variables, terms, or constants).");
+    } else if (lessonId === "hsa-sse-1b") {
+      setCustomInstructions("Treat compound terms as single entities to rewrite the expressions.");
+    } else if (lessonId === "hsa-sse-2") {
+      setCustomInstructions("Factor or rewrite the algebraic expressions using their underlying structure.");
+    } else if (lessonId === "hsa-sse-3b") {
+      setCustomInstructions("Complete the square to rewrite the quadratic expressions in vertex form.");
+    } else if (lessonId === "hsa-sse-3c") {
+      setCustomInstructions("Use properties of exponents to rewrite and interpret exponential growth or decay expressions.");
+    } else if (lessonId === "hsa-sse-4") {
+      setCustomInstructions("Use the sum formula for a finite geometric series to compute the sum or derive expressions.");
+    } else {
+      setCustomInstructions("Solve each equation step-by-step. Show all work and circle your final answer.");
+    }
+  }, [lessonId, lessonTitle]);
 
   // Helper to generate randomized equations with integer solutions
   const generateProblems = (count) => {
@@ -495,12 +512,26 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             `}
 
             <div class="problems-grid">
-              ${chunk.map(p => `
-                <div class="problem-card">
-                  <div class="problem-num">${p.num})</div>
-                  <div class="problem-eq">${p.question.split("\n")[1]}</div>
-                </div>
-              `).join("")}
+              ${chunk.map(p => {
+                const questionLines = p.question.split("\n");
+                const hasMultipleLines = questionLines.length > 1;
+                return `
+                  <div class="problem-card">
+                    <div class="problem-num">${p.num})</div>
+                    ${hasMultipleLines ? `
+                      <div class="problem-question-container" style="font-size: 13px; margin-top: 4px; font-family: monospace;">
+                        <div style="margin-bottom: 6px;">${questionLines[0]}</div>
+                        <div class="problem-eq" style="font-size: 16px; font-weight: bold; background-color: #f8fafc; padding: 8px 12px; border: 1px solid #000000; display: inline-block; margin-bottom: 6px;">
+                          ${questionLines[1]}
+                        </div>
+                        <div style="margin-top: 4px; font-weight: bold; color: #1e293b;">${questionLines[2] || ""}</div>
+                      </div>
+                    ` : `
+                      <div class="problem-eq">${p.question}</div>
+                    `}
+                  </div>
+                `;
+              }).join("")}
             </div>
 
             <div class="page-footer">

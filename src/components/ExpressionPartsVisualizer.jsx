@@ -67,7 +67,7 @@ export default function ExpressionPartsVisualizer() {
       </div>
 
       {/* Main Interactive Expression Row - Extra Large for Better Legibility */}
-      <div className="flex justify-center items-center gap-1 py-12 px-6 bg-slate-950/60 rounded-xl border border-slate-800/80 mb-8 font-mono text-3xl md:text-5xl select-none">
+      <div className="flex justify-center items-center gap-1 py-12 px-6 bg-slate-950/60 rounded-xl border border-slate-800/80 mt-8 mb-8 font-mono text-3xl md:text-5xl select-none">
         {parts.map((part, idx) => {
           const isActive = idx === activeIndex;
           let colorStyle = {};
@@ -112,35 +112,31 @@ export default function ExpressionPartsVisualizer() {
         })}
       </div>
 
-      {/* Stepper Navigation - Centered, Spaced Out, and Blue */}
+      {/* Stepper Navigation - Centered, Spaced Out, and matching tab button styles */}
       <div className="flex flex-col items-center gap-4 mt-8 mb-8">
-        <div className="flex justify-center items-center gap-6">
+        <div className="flex flex-wrap justify-center items-center gap-6">
           <button
             onClick={handlePrev}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white shadow-lg hover:scale-105 transition-all active:scale-95"
+            className="btn-primary flex items-center justify-center gap-2"
             style={{
-              backgroundColor: "var(--primary, #1e40af)",
-              border: "none",
               minWidth: "150px"
             }}
           >
-            <ArrowLeft size={18} /> Prev Part
+            <ArrowLeft size={16} /> Prev Part
           </button>
           
-          <span className="text-sm font-semibold text-slate-300 font-mono px-4 py-2 bg-slate-950/80 rounded-full border border-slate-800">
+          <span className="text-sm font-bold text-slate-300 font-mono px-4 py-2 bg-slate-950/80 rounded-lg border border-slate-800">
             Part {activeIndex + 1} of {parts.length}
           </span>
 
           <button
             onClick={handleNext}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white shadow-lg hover:scale-105 transition-all active:scale-95"
+            className="btn-primary flex items-center justify-center gap-2"
             style={{
-              backgroundColor: "var(--primary, #1e40af)",
-              border: "none",
               minWidth: "150px"
             }}
           >
-            Next Part <ArrowRight size={18} />
+            Next Part <ArrowRight size={16} />
           </button>
         </div>
       </div>
