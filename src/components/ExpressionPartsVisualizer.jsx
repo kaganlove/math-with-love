@@ -114,29 +114,29 @@ export default function ExpressionPartsVisualizer() {
 
       {/* Stepper Navigation - Centered, Spaced Out, and matching tab button styles */}
       <div className="flex flex-col items-center gap-4 mt-8 mb-8">
-        <div className="flex flex-wrap justify-center items-center gap-6">
+        <div className="flex flex-wrap justify-center items-center gap-10">
           <button
             onClick={handlePrev}
-            className="btn-primary flex items-center justify-center gap-2"
+            className="btn-primary btn-small flex items-center justify-center gap-2"
             style={{
-              minWidth: "150px"
+              minWidth: "120px"
             }}
           >
-            <ArrowLeft size={16} /> Prev Part
+            <ArrowLeft size={14} /> Prev Part
           </button>
           
-          <span className="text-sm font-bold text-slate-300 font-mono px-4 py-2 bg-slate-950/80 rounded-lg border border-slate-800">
+          <span className="text-sm font-bold text-slate-300 font-mono px-4 py-1.5 bg-slate-950/80 rounded-lg border border-slate-800">
             Part {activeIndex + 1} of {parts.length}
           </span>
 
           <button
             onClick={handleNext}
-            className="btn-primary flex items-center justify-center gap-2"
+            className="btn-primary btn-small flex items-center justify-center gap-2"
             style={{
-              minWidth: "150px"
+              minWidth: "120px"
             }}
           >
-            Next Part <ArrowRight size={16} />
+            Next Part <ArrowRight size={14} />
           </button>
         </div>
       </div>
