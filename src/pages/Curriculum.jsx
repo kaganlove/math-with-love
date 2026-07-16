@@ -354,9 +354,15 @@ export default function Curriculum() {
             {/* Back to list */}
             <button
               onClick={() => handleLessonSelect(null)}
-              className="btn-back"
+              className="btn-secondary btn-small"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginBottom: "1.5rem"
+              }}
             >
-              <ArrowLeft size={16} /> Back to Directory
+              <ArrowLeft size={16} /> <span>Back to Directory</span>
             </button>
 
             {activeLesson ? (
