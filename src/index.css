@@ -3,9 +3,9 @@
 
 :root {
   /* Colors - Clean High-Contrast Light Theme */
-  --bg-primary: #f1f5f9;       /* Light Silver-Gray Canvas */
+  --bg-primary: #e2e8f0;       /* Solid Silver-Gray Canvas */
   --bg-secondary: #ffffff;     /* Pure White Card Background */
-  --bg-tertiary: #e2e8f0;      /* Light Silver Accent */
+  --bg-tertiary: #cbd5e1;      /* Light Silver Accent */
   
   --text-primary: #090d16;     /* Solid Pitch Black (Max Contrast) */
   --text-secondary: #1e293b;   /* Deep Slate Black (Crisp & Readable) */
