@@ -562,153 +562,211 @@ export const curriculumLevels = [
   },
   {
     id: "hs-alg",
-    title: "HS Algebra 1",
-    subtitle: "High School Algebra 1",
-    description: "Expressions, equations, systems, inequalities, quadratic equations and factoring.",
+    title: "High School: Algebra",
+    subtitle: "Algebra 1 & 2 Foundations",
+    description: "Seeing structure in expressions, arithmetic with polynomials, creating equations, and reasoning with equations/inequalities.",
     topics: [
       {
         id: "hsa-sse",
         title: "Seeing Structure in Expressions",
         lessons: [
-          { id: "hsa-sse-1", title: "Interpret Parts of an Expression", ccss: "HSA-SSE.A.1", duration: "25 mins", hasContent: true },
-          { id: "factoring-quadratics", title: "Factoring Quadratic Trinomials (x² + bx + c)", ccss: "HSA-SSE.A.2", duration: "40 mins", hasContent: true },
-          { id: "completing-the-square", title: "Completing the Square", ccss: "HSA-SSE.B.3.b", duration: "35 mins" }
+          {
+            id: "hsa-sse-1-parent",
+            title: "Interpret expressions that represent a quantity in terms of its context",
+            ccss: "HSA-SSE.A.1",
+            subLessons: [
+              { id: "hsa-sse-1a", title: "Interpret parts of an expression, such as terms, factors, and coefficients", ccss: "HSA-SSE.A.1.a", duration: "25 mins", hasContent: true },
+              { id: "hsa-sse-1b", title: "Interpret complicated expressions by viewing one or more of their parts as a single entity", ccss: "HSA-SSE.A.1.b", duration: "25 mins" }
+            ]
+          },
+          { id: "hsa-sse-2", title: "Use structure to rewrite expressions (Difference of Squares, Grouping)", ccss: "HSA-SSE.A.2", duration: "40 mins" },
+          {
+            id: "hsa-sse-3-parent",
+            title: "Choose and produce an equivalent form of an expression to reveal properties",
+            ccss: "HSA-SSE.B.3",
+            subLessons: [
+              { id: "hsa-sse-3a", title: "Factor a quadratic expression to reveal the zeros of the function", ccss: "HSA-SSE.B.3.a", duration: "40 mins", hasContent: true },
+              { id: "hsa-sse-3b", title: "Complete the square to reveal maximum or minimum values", ccss: "HSA-SSE.B.3.b", duration: "35 mins" },
+              { id: "hsa-sse-3c", title: "Use properties of exponents to transform expressions for exponential functions", ccss: "HSA-SSE.B.3.c", duration: "30 mins" }
+            ]
+          },
+          { id: "hsa-sse-4", title: "Derive the formula for the sum of a finite geometric series", ccss: "HSA-SSE.B.4", duration: "45 mins" }
         ]
       },
       {
         id: "hsa-apr",
         title: "Arithmetic with Polynomials & Rational Expressions",
         lessons: [
-          { id: "polynomial-operations", title: "Operations on Polynomials (Add, Subtract, Multiply)", ccss: "HSA-APR.A.1", duration: "30 mins" },
-          { id: "zeros-polynomials", title: "Finding Zeros of Polynomial Functions", ccss: "HSA-APR.B.3", duration: "35 mins" }
+          { id: "hsa-apr-1", title: "Operations on Polynomials (Add, Subtract, Multiply)", ccss: "HSA-APR.A.1", duration: "30 mins" },
+          { id: "hsa-apr-2", title: "Remainder Theorem & Polynomial Factors", ccss: "HSA-APR.B.2", duration: "35 mins" },
+          { id: "hsa-apr-3", title: "Finding Zeros of Polynomial Functions to Graph", ccss: "HSA-APR.B.3", duration: "35 mins" },
+          { id: "hsa-apr-4", title: "Prove Polynomial Identities & Algebraic Proofs", ccss: "HSA-APR.C.4", duration: "40 mins" },
+          { id: "hsa-apr-6", title: "Rewriting Rational Expressions (Polynomial Long Division)", ccss: "HSA-APR.D.6", duration: "40 mins" }
         ]
       },
       {
         id: "hsa-ced",
         title: "Creating Equations",
         lessons: [
-          { id: "create-equations", title: "Creating Linear Equations from Word Problems", ccss: "HSA-CED.A.1", duration: "30 mins" },
-          { id: "graphing-linear", title: "Graphing Linear Equations in Two Variables", ccss: "HSA-CED.A.2", duration: "35 mins" }
+          { id: "hsa-ced-1", title: "Create One-Variable Equations and Inequalities from Word Problems", ccss: "HSA-CED.A.1", duration: "30 mins" },
+          { id: "hsa-ced-2", title: "Create Two-Variable Equations & Graphing Coordinate Axes", ccss: "HSA-CED.A.2", duration: "35 mins" },
+          { id: "hsa-ced-3", title: "Represent Constraints by Equations, Inequalities, or Systems", ccss: "HSA-CED.A.3", duration: "35 mins" },
+          { id: "hsa-ced-4", title: "Rearranging Formulas to Highlight a Variable (Literal Equations)", ccss: "HSA-CED.A.4", duration: "30 mins" }
         ]
       },
       {
         id: "hsa-rei",
         title: "Reasoning with Equations & Inequalities",
         lessons: [
-          { id: "linear-equations", title: "Solving Multi-Step Linear Equations", ccss: "HSA-REI.B.3", duration: "30 mins", hasContent: true },
-          { id: "quadratic-formula", title: "Solving Quadratic Equations: Quadratic Formula", ccss: "HSA-REI.B.4.b", duration: "40 mins" },
-          { id: "systems-substitution", title: "Systems of Equations: Substitution Method", ccss: "HSA-REI.C.6", duration: "35 mins", hasContent: true },
-          { id: "systems-elimination", title: "Systems of Equations: Elimination Method", ccss: "HSA-REI.C.5", duration: "35 mins" },
-          { id: "graphing-inequalities", title: "Graphing Systems of Linear Inequalities", ccss: "HSA-REI.D.12", duration: "40 mins" }
+          { id: "hsa-rei-1", title: "Explain Each Step in Solving Equations (Logical Flow)", ccss: "HSA-REI.A.1", duration: "30 mins" },
+          { id: "hsa-rei-2", title: "Solve Rational and Radical Equations in One Variable", ccss: "HSA-REI.A.2", duration: "35 mins" },
+          { id: "hsa-rei-3", title: "Solve Linear Equations and Inequalities in One Variable", ccss: "HSA-REI.B.3", duration: "30 mins", hasContent: true },
+          {
+            id: "hsa-rei-4-parent",
+            title: "Solve quadratic equations in one variable",
+            ccss: "HSA-REI.B.4",
+            subLessons: [
+              { id: "hsa-rei-4a", title: "Solve quadratics by completing the square", ccss: "HSA-REI.B.4.a", duration: "35 mins" },
+              { id: "hsa-rei-4b", title: "Solve quadratics via quadratic formula & factoring", ccss: "HSA-REI.B.4.b", duration: "40 mins" }
+            ]
+          },
+          { id: "hsa-rei-5", title: "System Elimination Proof (Adding Multiples)", ccss: "HSA-REI.C.5", duration: "35 mins" },
+          { id: "hsa-rei-6", title: "Systems of Equations: Substitution Method", ccss: "HSA-REI.C.6", duration: "35 mins", hasContent: true },
+          { id: "hsa-rei-7", title: "Solve Linear-Quadratic Systems of Equations", ccss: "HSA-REI.C.7", duration: "40 mins" },
+          { id: "hsa-rei-8", title: "Representing Systems of Equations as Matrix Equations", ccss: "HSA-REI.C.8", duration: "40 mins" },
+          { id: "hsa-rei-9", title: "Using Inverse Matrices to Solve Systems of Equations", ccss: "HSA-REI.C.9", duration: "45 mins" },
+          { id: "hsa-rei-10", title: "Understand Graph of Equation as Solution Set", ccss: "HSA-REI.D.10", duration: "35 mins" },
+          { id: "hsa-rei-11", title: "Solve Equations by Graph Intersection f(x) = g(x)", ccss: "HSA-REI.D.11", duration: "40 mins" },
+          { id: "hsa-rei-12", title: "Graph Systems of Linear Inequalities in Two Variables", ccss: "HSA-REI.D.12", duration: "40 mins" }
         ]
       }
     ]
   },
   {
     id: "hs-geo",
-    title: "HS Geometry",
-    subtitle: "High School Geometry",
-    description: "Congruence, proofs, similarity, right triangle trigonometry, circles.",
+    title: "High School: Geometry",
+    subtitle: "Geometric Figures & Proofs",
+    description: "Rigid motions, triangle congruence, similarity, right triangle trigonometry, coordinate equations, and measurement.",
     topics: [
       {
         id: "hsg-co",
         title: "Congruence",
         lessons: [
-          { id: "triangle-congruence", title: "Triangle Congruence Postulates (SSS, SAS, ASA)", ccss: "HSG-CO.B.8", duration: "30 mins" }
+          { id: "hsg-co-1", title: "Know Precise Definitions of Angles, Circles, Lines", ccss: "HSG-CO.A.1", duration: "30 mins" },
+          { id: "hsg-co-8", title: "Explain Criteria for Triangle Congruence (ASA, SAS, SSS)", ccss: "HSG-CO.B.8", duration: "30 mins" }
         ]
       },
       {
         id: "hsg-srt",
-        title: "Similarity, Right Triangles, & Trig",
+        title: "Similarity, Right Triangles, & Trigonometry",
         lessons: [
-          { id: "trig-ratios", title: "Right Triangle Trig: SOH CAH TOA", ccss: "HSG-SRT.C.8", duration: "35 mins" }
-        ]
-      }
-    ]
-  },
-  {
-    id: "hs-alg2",
-    title: "HS Algebra 2",
-    subtitle: "High School Algebra 2",
-    description: "Quadratic formulas, polynomials, radical expressions, exponentials, and logarithms.",
-    topics: [
-      {
-        id: "hsa-rei2",
-        title: "Reasoning with Equations",
-        lessons: [
-          { id: "quadratic-formula", title: "The Quadratic Formula Demystified", ccss: "HSA-REI.B.4", duration: "35 mins" }
+          { id: "hsg-srt-8", title: "Trig Ratios & Pythagorean Theorem in Right Triangles", ccss: "HSG-SRT.C.8", duration: "35 mins" }
         ]
       },
       {
-        id: "hsn-rn",
-        title: "The Real Number System",
+        id: "hsg-c",
+        title: "Circles",
         lessons: [
-          { id: "laws-of-exponents", title: "Mastering Laws of Exponents & Radicals", ccss: "HSN-RN.A.2", duration: "30 mins" }
+          { id: "hsg-c-2", title: "Identify Relationships of Inscribed Angles, Radii, Chords", ccss: "HSG-C.A.2", duration: "35 mins" }
         ]
       },
       {
-        id: "hsf-le",
-        title: "Linear, Quadratic, & Exponential Models",
+        id: "hsg-gpe",
+        title: "Expressing Geometric Properties with Equations",
         lessons: [
-          { id: "logarithms-intro", title: "Intro to Logarithms: Undoing Exponents", ccss: "HSF-LE.A.4", duration: "35 mins" }
+          { id: "hsg-gpe-5", title: "Prove Slope Criteria for Parallel and Perpendicular Lines", ccss: "HSG-GPE.B.5", duration: "40 mins" }
+        ]
+      },
+      {
+        id: "hsg-gmd",
+        title: "Geometric Measurement & Dimension",
+        lessons: [
+          { id: "hsg-gmd-3", title: "Use Volume Formulas for Cylinders, Pyramids, Cones, Spheres", ccss: "HSG-GMD.A.3", duration: "35 mins" }
         ]
       }
     ]
   },
   {
     id: "hs-precalc",
-    title: "HS Pre-Calculus",
-    subtitle: "High School Pre-Calculus",
-    description: "Trigonometric functions, the unit circle, proving trig identities.",
+    title: "Pre-Calculus",
+    subtitle: "Advanced Functions",
+    description: "Unit circle trig functions, vectors, matrices, polar equations, and complex numbers.",
     topics: [
       {
         id: "hsf-tf",
         title: "Trigonometric Functions",
         lessons: [
-          { id: "unit-circle-understanding", title: "Understanding the Unit Circle", ccss: "HSF-TF.A.2", duration: "40 mins" },
-          { id: "trig-identities", title: "Proving Trigonometric Identities", ccss: "HSF-TF.C.8", duration: "45 mins" }
+          { id: "hsf-tf-2", title: "Explain Unit Circle Extensions of Trig Functions", ccss: "HSF-TF.A.2", duration: "40 mins" },
+          { id: "hsf-tf-8", title: "Prove and Apply Pythagorean Identities", ccss: "HSF-TF.C.8", duration: "45 mins" }
+        ]
+      },
+      {
+        id: "hsn-cn",
+        title: "Complex Numbers & Polar Coordinates",
+        lessons: [
+          { id: "hsn-cn-4", title: "Rectangular and Polar Forms of Complex Numbers", ccss: "HSN-CN.B.4", duration: "40 mins" }
+        ]
+      },
+      {
+        id: "hsn-vm",
+        title: "Vectors & Matrices",
+        lessons: [
+          { id: "hsn-vm-1", title: "Recognize Vector Quantities (Magnitude & Direction)", ccss: "HSN-VM.A.1", duration: "35 mins" }
         ]
       }
     ]
   },
   {
-    id: "college",
-    title: "Early College Math",
-    subtitle: "Undergraduate Level",
-    description: "Advanced math for STEM and college core requirements. Covers Calculus, Linear Algebra, and Statistics.",
+    id: "hs-stats",
+    title: "Statistics",
+    subtitle: "Statistics & Probability",
+    description: "Normal distributions, randomized experiments, conditional probability, and using probability to make decisions.",
     topics: [
       {
-        id: "calculus-1",
+        id: "hss-id",
+        title: "Interpreting Categorical & Quantitative Data",
+        lessons: [
+          { id: "hss-id-4", title: "Fit Data Sets to Normal Distributions (Mean, Standard Deviation)", ccss: "HSS-ID.A.4", duration: "35 mins" }
+        ]
+      },
+      {
+        id: "hss-ic",
+        title: "Making Inferences & Justifying Conclusions",
+        lessons: [
+          { id: "hss-ic-5", title: "Use Data from Randomized Experiments to Compare Treatments", ccss: "HSS-IC.B.5", duration: "40 mins" }
+        ]
+      },
+      {
+        id: "hss-cp",
+        title: "Conditional Probability & Probability Rules",
+        lessons: [
+          { id: "hss-cp-6", title: "Find Conditional Probabilities and Evaluate Independence", ccss: "HSS-CP.B.6", duration: "35 mins" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "college-calc",
+    title: "Calculus",
+    subtitle: "Calculus I & II",
+    description: "Limits, derivative rules, optimization, u-substitution, and integration by parts.",
+    topics: [
+      {
+        id: "calc-1",
         title: "Calculus I (Limits & Derivatives)",
         lessons: [
-          { id: "limits-definition", title: "Limits: The Conceptual Definition", ccss: "College-Calc1", duration: "40 mins" },
-          { id: "derivative-rules", title: "Power, Product, and Quotient Rules", ccss: "College-Calc1", duration: "35 mins" },
-          { id: "chain-rule", title: "The Chain Rule Step-by-Step", ccss: "College-Calc1", duration: "40 mins" },
-          { id: "optimization-problems", title: "Solving Optimization Problems in Calculus", ccss: "College-Calc1", duration: "45 mins" }
+          { id: "calc-limits", title: "Limits: The Conceptual Definition", ccss: "Calc-Limits", duration: "40 mins" },
+          { id: "calc-derivative-rules", title: "Derivatives: Power, Product, and Quotient Rules", ccss: "Calc-Deriv", duration: "35 mins" },
+          { id: "calc-chain-rule", title: "The Chain Rule Step-by-Step", ccss: "Calc-Chain", duration: "40 mins" },
+          { id: "calc-optimization", title: "Solving Optimization Problems", ccss: "Calc-Opt", duration: "45 mins" }
         ]
       },
       {
-        id: "calculus-2",
+        id: "calc-2",
         title: "Calculus II (Integration)",
         lessons: [
-          { id: "integration-substitution", title: "Integration by u-Substitution", ccss: "College-Calc2", duration: "40 mins" },
-          { id: "integration-by-parts", title: "Integration by Parts: LIATE Rule", ccss: "College-Calc2", duration: "45 mins" }
-        ]
-      },
-      {
-        id: "linear-algebra",
-        title: "Linear Algebra",
-        lessons: [
-          { id: "gaussian-elimination", title: "Row Reduction and Gaussian Elimination", ccss: "College-Linear", duration: "35 mins" },
-          { id: "determinants-eigenvalues", title: "Understanding Determinants & Eigenvalues", ccss: "College-Linear", duration: "45 mins" }
-        ]
-      },
-      {
-        id: "statistics",
-        title: "Introductory Statistics",
-        lessons: [
-          { id: "normal-distribution", title: "The Normal Distribution and Z-Scores", ccss: "HSS-ID.A.4", duration: "35 mins" },
-          { id: "hypothesis-testing", title: "Understanding p-Values and Hypothesis Testing", ccss: "HSS-IC.B.5", duration: "45 mins" }
+          { id: "calc-integration-sub", title: "Integration by u-Substitution", ccss: "Calc-IntSub", duration: "40 mins" },
+          { id: "calc-integration-parts", title: "Integration by Parts: LIATE Rule", ccss: "Calc-IntParts", duration: "45 mins" }
         ]
       }
     ]
@@ -1387,17 +1445,35 @@ export function generateDynamicLesson(id) {
   let meta = null;
   for (const level of curriculumLevels) {
     for (const topic of level.topics) {
-      const lesson = topic.lessons.find(l => l.id === id);
+      // Check flat lessons
+      let lesson = topic.lessons.find(l => l.id === id);
       if (lesson) {
         meta = {
           id: lesson.id,
           title: lesson.title,
           ccss: lesson.ccss || "Math-Standard",
-          level: level.name,
+          level: level.title,
           topic: topic.title
         };
         break;
       }
+      // Check subLessons
+      for (const parentL of topic.lessons) {
+        if (parentL.subLessons) {
+          const sub = parentL.subLessons.find(sl => sl.id === id);
+          if (sub) {
+            meta = {
+              id: sub.id,
+              title: sub.title,
+              ccss: sub.ccss || parentL.ccss || "Math-Standard",
+              level: level.title,
+              topic: `${topic.title} (${parentL.title})`
+            };
+            break;
+          }
+        }
+      }
+      if (meta) break;
     }
     if (meta) break;
   }
@@ -1418,7 +1494,13 @@ export function generateDynamicLesson(id) {
   curriculumLevels.forEach(lvl => {
     lvl.topics.forEach(topic => {
       topic.lessons.forEach(lesson => {
-        allSkills.push({ id: lesson.id, title: lesson.title });
+        if (lesson.subLessons) {
+          lesson.subLessons.forEach(sub => {
+            allSkills.push({ id: sub.id, title: sub.title });
+          });
+        } else {
+          allSkills.push({ id: lesson.id, title: lesson.title });
+        }
       });
     });
   });

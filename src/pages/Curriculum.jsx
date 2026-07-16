@@ -21,14 +21,36 @@ export default function Curriculum() {
   const [quizAnswers, setQuizAnswers] = useState({}); // { questionIndex: selectedOptionIndex }
   const [quizSubmitted, setQuizSubmitted] = useState(false);
 
+  // Accordion expanded state for nested standards
+  const [expandedLessons, setExpandedLessons] = useState({});
+  const toggleLessonExpand = (lessonId) => {
+    setExpandedLessons(prev => ({ ...prev, [lessonId]: !prev[lessonId] }));
+  };
+
   // Filter levels/lessons based on search
   const filteredLevels = curriculumLevels.map(level => {
     const matchedTopics = level.topics.map(topic => {
-      const matchedLessons = topic.lessons.filter(lesson => 
-        lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (lesson.ccss && lesson.ccss.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        topic.title.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const matchedLessons = topic.lessons.map(lesson => {
+        if (lesson.subLessons) {
+          const matchedSub = lesson.subLessons.filter(sub =>
+            sub.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (sub.ccss && sub.ccss.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            topic.title.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+          return { ...lesson, subLessons: matchedSub };
+        }
+        return lesson;
+      }).filter(lesson => {
+        if (lesson.subLessons) {
+          return lesson.subLessons.length > 0;
+        }
+        return (
+          lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (lesson.ccss && lesson.ccss.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          topic.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      });
       return { ...topic, lessons: matchedLessons };
     }).filter(topic => topic.lessons.length > 0);
 
@@ -149,32 +171,92 @@ export default function Curriculum() {
                             <div key={topic.id} className="topic-card">
                               <h3 className="topic-title">{topic.title}</h3>
                               <div className="lessons-list">
-                                {filteredTopic.lessons.map((lesson) => (
-                                  <button
-                                    key={lesson.id}
-                                    onClick={() => handleLessonSelect(lesson.id)}
-                                    className={`lesson-item-btn ${lesson.hasContent ? "has-content" : ""}`}
-                                  >
-                                    <div className="lesson-info">
-                                      <BookOpen size={16} className="lesson-icon" />
-                                      <div>
-                                        <span className="lesson-title-text">{lesson.title}</span>
-                                        {lesson.ccss && (
-                                          <span className="lesson-ccss-code-badge">{lesson.ccss}</span>
+                                {filteredTopic.lessons.map((lesson) => {
+                                  const hasSub = lesson.subLessons && lesson.subLessons.length > 0;
+                                  
+                                  if (hasSub) {
+                                    const isExpanded = expandedLessons[lesson.id];
+                                    return (
+                                      <div key={lesson.id} className="nested-lesson-group mb-2 border border-slate-100 rounded-lg p-2 bg-slate-50/50">
+                                        <button
+                                          onClick={() => toggleLessonExpand(lesson.id)}
+                                          className={`lesson-item-btn parent-standard-btn ${isExpanded ? "active-expanded" : ""}`}
+                                          style={{ width: "100%", justifyContent: "space-between" }}
+                                        >
+                                          <div className="lesson-info">
+                                            <BookOpen size={16} className="lesson-icon text-muted" />
+                                            <div className="text-left">
+                                              <span className="lesson-title-text font-semibold block">{lesson.title}</span>
+                                              {lesson.ccss && (
+                                                <span className="lesson-ccss-code-badge parent-badge">{lesson.ccss}</span>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <div className="lesson-meta">
+                                            <span className="text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">{isExpanded ? "Hide" : "Show"} Substandards ({lesson.subLessons.length})</span>
+                                          </div>
+                                        </button>
+                                        
+                                        {isExpanded && (
+                                          <div className="sub-lessons-container pl-6 border-l-2 border-primary/20 mt-2 flex flex-col gap-2" style={{ paddingLeft: "1.5rem", borderLeftWidth: "2px", borderLeftColor: "var(--color-primary, #b31b1b)", display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "0.5rem" }}>
+                                            {lesson.subLessons.map((sub) => (
+                                              <button
+                                                key={sub.id}
+                                                onClick={() => handleLessonSelect(sub.id)}
+                                                className={`lesson-item-btn sub-lesson-item ${sub.hasContent ? "has-content" : ""}`}
+                                              >
+                                                <div className="lesson-info text-left">
+                                                  <div className="sub-bullet mr-2 text-primary font-bold" style={{ marginRight: "0.5rem", color: "var(--color-primary, #b31b1b)", fontWeight: "bold" }}>↳</div>
+                                                  <div>
+                                                    <span className="lesson-title-text text-sm">{sub.title}</span>
+                                                    {sub.ccss && (
+                                                      <span className="lesson-ccss-code-badge sub-badge">{sub.ccss}</span>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                                <div className="lesson-meta text-xs">
+                                                  <span>{sub.duration || "25 mins"}</span>
+                                                  {sub.hasContent ? (
+                                                    <span className="badge-free text-[10px] px-1.5 py-0.5">Read Now</span>
+                                                  ) : (
+                                                    <span className="badge-soon text-[10px] px-1.5 py-0.5">Coming Soon</span>
+                                                  )}
+                                                </div>
+                                              </button>
+                                            ))}
+                                          </div>
                                         )}
                                       </div>
-                                    </div>
-                                    <div className="lesson-meta">
-                                      <Clock size={12} />
-                                      <span>{lesson.duration}</span>
-                                      {lesson.hasContent ? (
-                                        <span className="badge-free">Read Now</span>
-                                      ) : (
-                                        <span className="badge-soon">Coming Soon</span>
-                                      )}
-                                    </div>
-                                  </button>
-                                ))}
+                                    );
+                                  }
+
+                                  return (
+                                    <button
+                                      key={lesson.id}
+                                      onClick={() => handleLessonSelect(lesson.id)}
+                                      className={`lesson-item-btn ${lesson.hasContent ? "has-content" : ""}`}
+                                    >
+                                      <div className="lesson-info">
+                                        <BookOpen size={16} className="lesson-icon" />
+                                        <div className="text-left">
+                                          <span className="lesson-title-text block">{lesson.title}</span>
+                                          {lesson.ccss && (
+                                            <span className="lesson-ccss-code-badge">{lesson.ccss}</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="lesson-meta">
+                                        <Clock size={12} />
+                                        <span>{lesson.duration}</span>
+                                        {lesson.hasContent ? (
+                                          <span className="badge-free">Read Now</span>
+                                        ) : (
+                                          <span className="badge-soon">Coming Soon</span>
+                                        )}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
                               </div>
                             </div>
                           );
