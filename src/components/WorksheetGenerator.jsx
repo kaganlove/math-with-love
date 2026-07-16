@@ -333,8 +333,17 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
       const limitPageN = PAGE_HEIGHT - PADDING_BUFFER - SPACER_HEIGHT - FOOTER_BUFFER; // ~826px available
 
       const getAnswerCardHeight = (p) => {
-        const titleH = 25; // Problem number and solution text height
-        const stepsH = p.steps.length * 20; // Each step step line takes ~20px
+        // Estimation of title line wrapping (approx 65 characters max per line)
+        const titleLength = `Problem ${p.num}: ${p.solution}`.length;
+        const titleLines = Math.max(1, Math.ceil(titleLength / 65));
+        const titleH = titleLines * 25;
+
+        let stepsLines = 0;
+        p.steps.forEach(step => {
+          // Monospace font character limit in columns is around 65 characters.
+          stepsLines += Math.max(1, Math.ceil(step.length / 65));
+        });
+        const stepsH = stepsLines * 20; // Each step line takes ~20px
         const borderMarginH = 25; // Bottom margins and border padding
         return titleH + stepsH + borderMarginH;
       };
