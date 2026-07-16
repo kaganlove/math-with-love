@@ -14,15 +14,38 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
   const generateProblems = (count) => {
     const list = [];
     const equationTypes = ["basic", "parentheses", "both-sides"];
+    const isEarlyGrade = ccss && (ccss.startsWith("K.") || ccss.startsWith("1.") || ccss.startsWith("2.") || ccss.startsWith("3."));
 
     for (let i = 0; i < count; i++) {
-      const type = equationTypes[i % equationTypes.length];
       let equationText = "";
       let solutionText = "";
       let stepsText = [];
 
-      // x is the target integer solution
-      const x = Math.floor(Math.random() * 15) - 7 || 3; // random integer between -7 and 7, non-zero
+      if (isEarlyGrade) {
+        const a = Math.floor(Math.random() * 12) + 2; // 2 to 14
+        const b = Math.floor(Math.random() * 10) + 1; // 1 to 10
+        const isAddition = Math.random() > 0.5;
+        if (isAddition) {
+          equationText = `${a} + ${b} = x`;
+          solutionText = `x = ${a + b}`;
+          stepsText = [
+            `Original: x = ${a} + ${b}`,
+            `Count up from ${a} by ${b}: x = ${a + b}`
+          ];
+        } else {
+          const max = Math.max(a, b);
+          const min = Math.min(a, b);
+          equationText = `${max} - ${min} = x`;
+          solutionText = `x = ${max - min}`;
+          stepsText = [
+            `Original: x = ${max} - ${min}`,
+            `Subtract ${min} from ${max}: x = ${max - min}`
+          ];
+        }
+      } else {
+        const type = equationTypes[i % equationTypes.length];
+        // x is the target integer solution
+        const x = Math.floor(Math.random() * 15) - 7 || 3; // random integer between -7 and 7, non-zero
 
       if (type === "basic") {
         // ax + b = c
@@ -72,6 +95,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           `Divide by ${a - c}: x = ${x}`
         ];
         solutionText = `x = ${x}`;
+      }
       }
 
       list.push({

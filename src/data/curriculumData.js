@@ -1077,3 +1077,248 @@ export const sampleLessons = {
     ]
   }
 };
+
+// Dynamic Lesson Generator for K-12 Syllabus
+export function generateDynamicLesson(id) {
+  // 1. Find lesson metadata in the curriculum levels list
+  let meta = null;
+  for (const level of curriculumLevels) {
+    for (const topic of level.topics) {
+      const lesson = topic.lessons.find(l => l.id === id);
+      if (lesson) {
+        meta = {
+          id: lesson.id,
+          title: lesson.title,
+          ccss: lesson.ccss || "Math-Standard",
+          level: level.name,
+          topic: topic.title
+        };
+        break;
+      }
+    }
+    if (meta) break;
+  }
+
+  // Fallback metadata if not found in syllabus
+  if (!meta) {
+    meta = {
+      id: id,
+      title: id.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()),
+      ccss: "CCSS.Math.Practice",
+      level: "General Math",
+      topic: "Core Skills"
+    };
+  }
+
+  // 2. Generate dynamic prerequisites (the 3 skills listed prior in the syllabus)
+  const allSkills = [];
+  curriculumLevels.forEach(lvl => {
+    lvl.topics.forEach(topic => {
+      topic.lessons.forEach(lesson => {
+        allSkills.push({ id: lesson.id, title: lesson.title });
+      });
+    });
+  });
+  const currentIdx = allSkills.findIndex(sk => sk.id === meta.id);
+  const prerequisites = [];
+  if (currentIdx > 0) {
+    const startIdx = Math.max(0, currentIdx - 3);
+    for (let k = startIdx; k < currentIdx; k++) {
+      prerequisites.push(allSkills[k]);
+    }
+  }
+
+  // 3. Generate dynamic scale balancer equation based on grade level
+  const isEarly = meta.ccss && (meta.ccss.startsWith("K.") || meta.ccss.startsWith("1.") || meta.ccss.startsWith("2.") || meta.ccss.startsWith("3."));
+  const animationSteps = isEarly ? [
+    {
+      equation: "x + 2 = 6",
+      desc: "Original Equation: Find x. We must perform inverse operations on both sides to keep the scale balanced.",
+      left: { type: "expression", action: null, terms: [{ val: "x + 2", color: "slate" }] },
+      right: { type: "expression", action: null, terms: [{ val: "6", color: "slate" }] }
+    },
+    {
+      equation: "x + 2 - 2 = 6 - 2",
+      desc: "Balance Operation - Subtract: To isolate x, we undo the +2 by subtracting 2 from BOTH sides.",
+      left: {
+        type: "operation",
+        operationType: "subtract",
+        action: null,
+        terms: [{ val: "x", color: "slate" }, { val: " + 2", color: "slate" }],
+        opVal: "- 2"
+      },
+      right: {
+        type: "operation",
+        operationType: "subtract",
+        action: null,
+        terms: [{ val: "6", color: "slate" }],
+        opVal: "- 2"
+      }
+    },
+    {
+      equation: "x + 2 - 2 = 6 - 2",
+      desc: "Teacher Draw - Cancel: Draw diagonal red slashes through +2 and -2 to show they subtract to 0.",
+      left: {
+        type: "operation",
+        operationType: "subtract",
+        action: "cancel",
+        terms: [{ val: "x", color: "slate" }, { val: " + 2", color: "slate" }],
+        opVal: "- 2"
+      },
+      right: {
+        type: "operation",
+        operationType: "subtract",
+        action: null,
+        terms: [{ val: "6", color: "slate" }],
+        opVal: "- 2"
+      }
+    },
+    {
+      equation: "x = 4",
+      desc: "Final Answer: The left side simplifies to x. On the right, 6 - 2 simplifies to 4. The scale is balanced at x = 4!",
+      left: { type: "expression", action: null, terms: [{ val: "x", color: "blue", active: true }] },
+      right: { type: "expression", action: null, terms: [{ val: "4", color: "green", active: true }] }
+    }
+  ] : [
+    {
+      equation: "2x = 10",
+      desc: "Original Equation: Find x. We must perform inverse operations on both sides to keep the scale balanced.",
+      left: { type: "expression", action: null, terms: [{ val: "2x", color: "blue" }] },
+      right: { type: "expression", action: null, terms: [{ val: "10", color: "slate" }] }
+    },
+    {
+      equation: "2x / 2 = 10 / 2",
+      desc: "Balance Operation - Divide: To isolate x, we undo the multiplication of 2 by dividing BOTH sides by 2.",
+      left: {
+        type: "operation",
+        operationType: "divide",
+        action: null,
+        terms: [{ val: "2x", color: "blue" }],
+        opVal: "2"
+      },
+      right: {
+        type: "operation",
+        operationType: "divide",
+        action: null,
+        terms: [{ val: "10", color: "slate" }],
+        opVal: "2"
+      }
+    },
+    {
+      equation: "2x / 2 = 10 / 2",
+      desc: "Teacher Draw - Cancel: Draw slashes through the numerator 2 and denominator 2 to cancel to 1.",
+      left: {
+        type: "operation",
+        operationType: "divide",
+        action: "cancel-division",
+        terms: [{ val: "2x", color: "blue" }],
+        opVal: "2"
+      },
+      right: {
+        type: "operation",
+        operationType: "divide",
+        action: null,
+        terms: [{ val: "10", color: "slate" }],
+        opVal: "2"
+      }
+    },
+    {
+      equation: "x = 5",
+      desc: "Final Answer: The left side simplifies to x. On the right, 10 / 2 simplifies to 5. The scale is balanced at x = 5!",
+      left: { type: "expression", action: null, terms: [{ val: "x", color: "blue", active: true }] },
+      right: { type: "expression", action: null, terms: [{ val: "5", color: "green", active: true }] }
+    }
+  ];
+
+  return {
+    id: meta.id,
+    title: meta.title,
+    subtitle: `${meta.topic} Essentials`,
+    duration: "25 mins",
+    level: meta.level,
+    topic: meta.topic,
+    ccss: meta.ccss,
+    introduction: `Welcome to the lesson on **${meta.title}**! In this lesson, we will explore key concepts and formulas related to **${meta.title}** under Common Core Standard **${meta.ccss}**. Mastering this standard builds critical reasoning and solving foundations.`,
+    steps: [
+      {
+        title: "Step 1: Identify Key Components",
+        content: "Examine the problem. Locate the numbers, variables, operations, or shapes described in the question."
+      },
+      {
+        title: "Step 2: Apply the Rules",
+        content: "Use the appropriate mathematical rules (like inverse operations or volume formulas) to solve step-by-step."
+      },
+      {
+        title: "Step 3: Simplify and Verify",
+        content: "Perform calculations to find the simplified final value, and double check your answers for accuracy."
+      }
+    ],
+    prerequisites: prerequisites.length > 0 ? prerequisites : null,
+    mathBox: {
+      title: "Interactive Reference Guide",
+      equations: [
+        { desc: "Core Standard Aligned", formula: `CCSS Standard: ${meta.ccss}` },
+        { desc: "General Balance Rule", formula: "What is done to one side must be done to the other." }
+      ]
+    },
+    animationSteps: animationSteps,
+    practiceQuestions: isEarly ? [
+      {
+        question: `Solve for x:  x + 3 = 7`,
+        options: ["x = 3", "x = 4", "x = 10", "x = 5"],
+        correctIndex: 1,
+        explanation: "To solve for x, undo adding 3 by subtracting 3 from both sides: x = 7 - 3 = 4."
+      },
+      {
+        question: `Solve for x:  x - 2 = 5`,
+        options: ["x = 3", "x = 7", "x = 8", "x = 2"],
+        correctIndex: 1,
+        explanation: "To solve for x, undo subtracting 2 by adding 2 to both sides: x = 5 + 2 = 7."
+      },
+      {
+        question: `If you have 4 apples and buy 3 more, how many do you have?`,
+        options: ["5 apples", "6 apples", "7 apples", "8 apples"],
+        correctIndex: 2,
+        explanation: "This matches the addition problem: 4 + 3 = 7 apples."
+      },
+      {
+        question: `What is the value of 10 - 6?`,
+        options: ["3", "4", "5", "16"],
+        correctIndex: 1,
+        explanation: "Subtracting 6 from 10 leaves exactly 4."
+      }
+    ] : [
+      {
+        question: `If x + 5 = 12, what is the value of x?`,
+        options: ["x = 5", "x = 7", "x = 17", "x = 6"],
+        correctIndex: 1,
+        explanation: "To solve for x, perform the inverse of adding 5. Subtract 5 from both sides: x = 12 - 5 = 7."
+      },
+      {
+        question: `Solve the equation: 3x = 18`,
+        options: ["x = 6", "x = 15", "x = 21", "x = 5"],
+        correctIndex: 0,
+        explanation: "To isolate x, undo the multiplication of 3 by dividing both sides of the equation by 3: x = 18 / 3 = 6."
+      },
+      {
+        question: `If 2x - 3 = 7, what is the value of x?`,
+        options: ["x = 2", "x = 4", "x = 5", "x = 10"],
+        correctIndex: 2,
+        explanation: "First, add 3 to both sides: 2x = 10. Then, divide both sides by 2: x = 5."
+      },
+      {
+        question: `What is the inverse operation of multiplication?`,
+        options: ["Addition", "Subtraction", "Division", "Exponents"],
+        correctIndex: 2,
+        explanation: "The inverse of multiplication is division, which cancels out the coefficient to isolate the variable."
+      }
+    ]
+  };
+}
+
+export function getLessonById(id) {
+  if (sampleLessons[id]) {
+    return sampleLessons[id];
+  }
+  return generateDynamicLesson(id);
+}

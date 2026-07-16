@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, BookOpen, Clock, AlertCircle, ArrowLeft, CheckCircle, XCircle, FileText, ClipboardCheck, Sparkles } from "lucide-react";
-import { curriculumLevels, sampleLessons, testPrepMappings } from "../data/curriculumData";
+import { curriculumLevels, sampleLessons, testPrepMappings, getLessonById } from "../data/curriculumData";
 import AdsSlot from "../components/AdsSlot";
 import EquationVisualizer from "../components/EquationVisualizer";
 import WorksheetGenerator from "../components/WorksheetGenerator";
@@ -51,7 +51,7 @@ export default function Curriculum() {
   };
 
   const currentLevelData = curriculumLevels.find(l => l.id === activeLevel);
-  const activeLesson = sampleLessons[selectedLessonId];
+  const activeLesson = selectedLessonId ? getLessonById(selectedLessonId) : null;
   const currentTestData = testPrepMappings[selectedTest];
 
   return (
