@@ -93,22 +93,23 @@ export default function ExpressionPartsVisualizer() {
         </h3>
       </div>
 
-      {/* Main Interactive Expression Row - Extra Large for Better Legibility */}
+      {/* Main Interactive Expression Row - Formatted to fit on one line */}
       <div style={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        flexWrap: "wrap",
-        gap: "0.25rem",
-        padding: "2.5rem 1.5rem",
+        flexWrap: "nowrap",
+        gap: "0.15rem",
+        padding: "2rem 1.5rem",
         backgroundColor: "rgba(2, 6, 23, 0.6)",
         borderRadius: "0.75rem",
         border: "1.5px solid rgba(30, 41, 59, 0.8)",
-        marginTop: "2rem",
-        marginBottom: "2rem",
+        marginTop: "1.5rem",
+        marginBottom: "1.5rem",
         fontFamily: "monospace",
-        fontSize: "2.5rem",
-        userSelect: "none"
+        fontSize: "2rem",
+        userSelect: "none",
+        overflowX: "auto"
       }}>
         {parts.map((part, idx) => {
           const isActive = idx === activeIndex;
