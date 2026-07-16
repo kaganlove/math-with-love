@@ -98,12 +98,7 @@ export default function Home() {
       <section className="meet-tutor-section">
         <div className="meet-tutor-grid">
           <div className="meet-tutor-image-placeholder">
-            {/* Visual representation of an educational blackboard background */}
-            <div className="blackboard-design">
-              <div className="chalk-text">{"f(x) = \\lim_{\\Delta x \\to 0} \\frac{f(x+\\Delta x)-f(x)}{\\Delta x}"}</div>
-              <div className="chalk-formula">y - y₁ = m(x - x₁)</div>
-              <div className="chalk-graph">▲ y = mx + b</div>
-            </div>
+            <img src="/images/kagan-board.jpg" alt="Kagan Love solving math problems on a board" />
           </div>
           <div className="meet-tutor-info">
             <span className="info-tag">Your Tutor</span>

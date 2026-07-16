@@ -141,7 +141,13 @@ export default function PrivateTutoring() {
           <div className="bio-grid">
             {/* Left Column: Story */}
             <div className="bio-story-card">
-              <h2 className="section-title">Meet Your Instructor: Kagan Love</h2>
+              <div className="bio-header-wrapper">
+                <img src="/images/kagan-headshot.jpg" alt="Kagan Love" className="bio-headshot-img" />
+                <div>
+                  <h2 className="section-title">Meet Your Instructor: Kagan Love</h2>
+                  <p className="story-tagline">Math Tutor & Educational Technologist</p>
+                </div>
+              </div>
               <p className="story-paragraph">
                 With a BS in Mathematics/Physics and a Master of Education in Educational Technology, I bridge the gap between academic rigor and modern digital learning. I believe every student can succeed when math is explained in a way that matches their unique thought process.
               </p>
