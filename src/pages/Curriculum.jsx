@@ -6,7 +6,7 @@ import AdsSlot from "../components/AdsSlot";
 
 export default function Curriculum() {
   const [activeTab, setActiveTab] = useState("library"); // "library" | "testprep"
-  const [activeLevel, setActiveLevel] = useState("9-12"); // Default to High School
+  const [activeLevel, setActiveLevel] = useState("hs-alg"); // Default to High School Algebra
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLessonId, setSelectedLessonId] = useState(null);
   
