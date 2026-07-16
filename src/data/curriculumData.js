@@ -1,76 +1,78 @@
+// Comprehensive K-12 Common Core Aligned Curriculum & Test Prep Mappings
+
 export const curriculumLevels = [
   {
     id: "k-5",
     title: "Elementary School",
     subtitle: "Grades K-5",
-    description: "Building confidence and strong numerical foundations. We focus on conceptual understanding, visual math models, and math facts mastery.",
+    description: "Building numerical confidence and foundational skills. Conceptual understanding, visual math models, and math facts mastery.",
     topics: [
       {
-        id: "counting",
-        title: "Counting & Cardinality",
+        id: "counting-cardinality",
+        title: "Counting & Cardinality (K.CC)",
         lessons: [
-          { id: "counting-10", title: "Counting to 10 with Visuals", duration: "10 mins" },
-          { id: "number-patterns", title: "Number Patterns & Skip Counting", duration: "15 mins" }
+          { id: "counting-10", title: "Counting to 10 with Visuals", ccss: "K.CC.A.1", duration: "10 mins" },
+          { id: "number-patterns", title: "Number Patterns & Skip Counting", ccss: "K.CC.A.2", duration: "15 mins" }
         ]
       },
       {
         id: "operations-algebraic",
-        title: "Operations & Algebraic Thinking",
+        title: "Operations & Algebraic Thinking (1-5.OA)",
         lessons: [
-          { id: "addition-facts", title: "Visualizing Addition: Making 10", duration: "15 mins" },
-          { id: "subtraction-takeaway", title: "Subtraction as Taking Away", duration: "15 mins" },
-          { id: "intro-multiplication", title: "Intro to Multiplication: Repeated Addition", duration: "20 mins" },
-          { id: "division-sharing", title: "Intro to Division: Equal Sharing", duration: "20 mins" }
+          { id: "addition-facts", title: "Visualizing Addition: Making 10", ccss: "1.OA.A.1", duration: "15 mins" },
+          { id: "subtraction-takeaway", title: "Subtraction as Taking Away", ccss: "1.OA.A.2", duration: "15 mins" },
+          { id: "intro-multiplication", title: "Intro to Multiplication: Repeated Addition", ccss: "3.OA.A.1", duration: "20 mins" },
+          { id: "division-sharing", title: "Intro to Division: Equal Sharing", ccss: "3.OA.A.2", duration: "20 mins" }
         ]
       },
       {
         id: "base-ten",
-        title: "Numbers in Base Ten",
+        title: "Numbers in Base Ten (1-5.NBT)",
         lessons: [
-          { id: "place-value-ones-tens", title: "Understanding Tens and Ones", duration: "15 mins" },
-          { id: "double-digit-addition", title: "Double-Digit Addition with Regrouping", duration: "20 mins" }
+          { id: "place-value-ones-tens", title: "Understanding Tens and Ones", ccss: "1.NBT.B.2", duration: "15 mins" },
+          { id: "double-digit-addition", title: "Double-Digit Addition with Regrouping", ccss: "2.NBT.B.5", duration: "20 mins" }
         ]
       },
       {
         id: "fractions-elementary",
-        title: "Fractions & Decimals",
+        title: "Fractions & Decimals (3-5.NF)",
         lessons: [
-          { id: "fraction-pizza", title: "Fractions with Pizza: Parts of a Whole", duration: "20 mins" },
-          { id: "equivalent-fractions", title: "Equivalent Fractions with Bars", duration: "25 mins" }
+          { id: "fraction-pizza", title: "Fractions with Pizza: Parts of a Whole", ccss: "3.NF.A.1", duration: "20 mins" },
+          { id: "equivalent-fractions", title: "Equivalent Fractions with Bars", ccss: "4.NF.A.1", duration: "25 mins" }
         ]
       }
     ]
   },
   {
     id: "6-8",
-    title: "Middle School",
+    title: "Middle School Math",
     subtitle: "Grades 6-8",
-    description: "Bridging the gap between concrete numbers and abstract thinking. We master ratios, proportions, integers, and intro algebraic expressions.",
+    description: "Bridging the gap between concrete numbers and abstract thinking. We master ratios, proportions, integers, and expressions.",
     topics: [
       {
         id: "ratios-rates",
-        title: "Ratios & Proportional Relationships",
+        title: "Ratios & Proportional Relationships (6-7.RP)",
         lessons: [
-          { id: "understanding-ratios", title: "Understanding Ratios & Rates", duration: "20 mins" },
-          { id: "unit-rates", title: "Calculating Unit Rates in Real Life", duration: "25 mins" },
-          { id: "proportions-cross-multiply", title: "Solving Proportions: The Why Behind Cross-Multiplying", duration: "25 mins" }
+          { id: "understanding-ratios", title: "Understanding Ratios & Rates", ccss: "6.RP.A.1", duration: "20 mins" },
+          { id: "unit-rates", title: "Calculating Unit Rates in Real Life", ccss: "6.RP.A.2", duration: "25 mins" },
+          { id: "proportions-cross-multiply", title: "Solving Proportions: The Why Behind Cross-Multiplying", ccss: "7.RP.A.2", duration: "25 mins" }
         ]
       },
       {
         id: "number-system",
-        title: "The Number System",
+        title: "The Number System (6-8.NS)",
         lessons: [
-          { id: "integers-number-line", title: "Integers & Absolute Value on a Number Line", duration: "20 mins" },
-          { id: "fraction-division", title: "Dividing Fractions: Keep, Change, Flip", duration: "25 mins" }
+          { id: "integers-number-line", title: "Integers & Absolute Value on a Number Line", ccss: "6.NS.C.6", duration: "20 mins" },
+          { id: "fraction-division", title: "Dividing Fractions: Keep, Change, Flip", ccss: "6.NS.A.1", duration: "25 mins" }
         ]
       },
       {
         id: "expressions-equations",
-        title: "Expressions & Equations",
+        title: "Expressions & Equations (6-8.EE)",
         lessons: [
-          { id: "like-terms", title: "Combining Like Terms with Visual Blocks", duration: "25 mins" },
-          { id: "one-step-equations", title: "Solving One-Step Equations", duration: "25 mins" },
-          { id: "two-step-equations", title: "Solving Two-Step Equations Step-by-Step", duration: "30 mins" }
+          { id: "like-terms", title: "Combining Like Terms with Visual Blocks", ccss: "6.EE.A.3", duration: "25 mins" },
+          { id: "one-step-equations", title: "Solving One-Step Equations", ccss: "6.EE.B.7", duration: "25 mins" },
+          { id: "two-step-equations", title: "Solving Two-Step Equations Step-by-Step", ccss: "7.EE.B.4", duration: "30 mins" }
         ]
       }
     ]
@@ -79,42 +81,42 @@ export const curriculumLevels = [
     id: "9-12",
     title: "High School Math",
     subtitle: "Grades 9-12",
-    description: "Developing rigorous problem-solving skills for Algebra, Geometry, Algebra II, Pre-Calculus, and AP Calculus & Test Prep.",
+    description: "Rigorous preparation for Algebra, Geometry, Algebra II, Pre-Calculus, and AP exams.",
     topics: [
       {
         id: "algebra-1",
-        title: "Algebra 1",
+        title: "Algebra 1 (HSA)",
         lessons: [
-          { id: "linear-equations", title: "Solving Multi-Step Linear Equations", duration: "30 mins", hasContent: true },
-          { id: "graphing-slope-intercept", title: "Graphing Lines in Slope-Intercept Form (y = mx + b)", duration: "30 mins" },
-          { id: "systems-substitution", title: "Systems of Equations: Substitution Method", duration: "35 mins" },
-          { id: "factoring-quadratics", title: "Factoring Quadratic Trinomials (x² + bx + c)", duration: "40 mins" }
+          { id: "linear-equations", title: "Solving Multi-Step Linear Equations", ccss: "HSA-REI.B.3", duration: "30 mins", hasContent: true },
+          { id: "graphing-slope-intercept", title: "Graphing Lines in Slope-Intercept Form (y = mx + b)", ccss: "8.F.B.4", duration: "30 mins" },
+          { id: "systems-substitution", title: "Systems of Equations: Substitution Method", ccss: "HSA-REI.C.6", duration: "35 mins" },
+          { id: "factoring-quadratics", title: "Factoring Quadratic Trinomials (x² + bx + c)", ccss: "HSA-SSE.A.2", duration: "40 mins" }
         ]
       },
       {
         id: "geometry",
-        title: "Geometry",
+        title: "Geometry (HSG)",
         lessons: [
-          { id: "pythagorean-theorem", title: "Pythagorean Theorem: Proof and Practice", duration: "25 mins" },
-          { id: "triangle-congruence", title: "Triangle Congruence Postulates (SSS, SAS, ASA)", duration: "30 mins" },
-          { id: "trig-ratios", title: "Right Triangle Trig: SOH CAH TOA", duration: "35 mins" }
+          { id: "pythagorean-theorem", title: "Pythagorean Theorem: Proof and Practice", ccss: "8.G.B.7", duration: "25 mins" },
+          { id: "triangle-congruence", title: "Triangle Congruence Postulates (SSS, SAS, ASA)", ccss: "HSG-CO.B.8", duration: "30 mins" },
+          { id: "trig-ratios", title: "Right Triangle Trig: SOH CAH TOA", ccss: "HSG-SRT.C.8", duration: "35 mins" }
         ]
       },
       {
         id: "algebra-2",
-        title: "Algebra 2",
+        title: "Algebra 2 (HSA & HSF)",
         lessons: [
-          { id: "quadratic-formula", title: "The Quadratic Formula Demystified", duration: "35 mins" },
-          { id: "laws-of-exponents", title: "Mastering Laws of Exponents & Radicals", duration: "30 mins" },
-          { id: "logarithms-intro", title: "Intro to Logarithms: Undoing Exponents", duration: "35 mins" }
+          { id: "quadratic-formula", title: "The Quadratic Formula Demystified", ccss: "HSA-REI.B.4", duration: "35 mins" },
+          { id: "laws-of-exponents", title: "Mastering Laws of Exponents & Radicals", ccss: "HSN-RN.A.2", duration: "30 mins" },
+          { id: "logarithms-intro", title: "Intro to Logarithms: Undoing Exponents", ccss: "HSF-LE.A.4", duration: "35 mins" }
         ]
       },
       {
         id: "pre-calculus",
-        title: "Pre-Calculus & Trig",
+        title: "Pre-Calculus & Trig (HSF)",
         lessons: [
-          { id: "unit-circle-understanding", title: "Understanding the Unit Circle without Memorizing", duration: "40 mins" },
-          { id: "trig-identities", title: "Proving Trigonometric Identities", duration: "45 mins" }
+          { id: "unit-circle-understanding", title: "Understanding the Unit Circle", ccss: "HSF-TF.A.2", duration: "40 mins" },
+          { id: "trig-identities", title: "Proving Trigonometric Identities", ccss: "HSF-TF.C.8", duration: "45 mins" }
         ]
       }
     ]
@@ -123,45 +125,195 @@ export const curriculumLevels = [
     id: "college",
     title: "Early College Math",
     subtitle: "Undergraduate Level",
-    description: "Advanced mathematics for STEM majors and college core requirements. Covers Calculus I & II, Linear Algebra, and Statistics.",
+    description: "Advanced math for STEM and college core requirements. Covers Calculus, Linear Algebra, and Statistics.",
     topics: [
       {
         id: "calculus-1",
         title: "Calculus I (Limits & Derivatives)",
         lessons: [
-          { id: "limits-definition", title: "Limits: The Conceptual Definition", duration: "40 mins" },
-          { id: "derivative-rules", title: "Power, Product, and Quotient Rules", duration: "35 mins" },
-          { id: "chain-rule", title: "The Chain Rule Step-by-Step", duration: "40 mins" },
-          { id: "optimization-problems", title: "Solving Optimization Problems in Calculus", duration: "45 mins" }
+          { id: "limits-definition", title: "Limits: The Conceptual Definition", ccss: "College-Calc1", duration: "40 mins" },
+          { id: "derivative-rules", title: "Power, Product, and Quotient Rules", ccss: "College-Calc1", duration: "35 mins" },
+          { id: "chain-rule", title: "The Chain Rule Step-by-Step", ccss: "College-Calc1", duration: "40 mins" },
+          { id: "optimization-problems", title: "Solving Optimization Problems in Calculus", ccss: "College-Calc1", duration: "45 mins" }
         ]
       },
       {
         id: "calculus-2",
         title: "Calculus II (Integration)",
         lessons: [
-          { id: "integration-substitution", title: "Integration by u-Substitution", duration: "40 mins" },
-          { id: "integration-by-parts", title: "Integration by Parts: LIATE Rule", duration: "45 mins" }
+          { id: "integration-substitution", title: "Integration by u-Substitution", ccss: "College-Calc2", duration: "40 mins" },
+          { id: "integration-by-parts", title: "Integration by Parts: LIATE Rule", ccss: "College-Calc2", duration: "45 mins" }
         ]
       },
       {
         id: "linear-algebra",
         title: "Linear Algebra",
         lessons: [
-          { id: "gaussian-elimination", title: "Row Reduction and Gaussian Elimination", duration: "35 mins" },
-          { id: "determinants-eigenvalues", title: "Understanding Determinants & Eigenvalues", duration: "45 mins" }
+          { id: "gaussian-elimination", title: "Row Reduction and Gaussian Elimination", ccss: "College-Linear", duration: "35 mins" },
+          { id: "determinants-eigenvalues", title: "Understanding Determinants & Eigenvalues", ccss: "College-Linear", duration: "45 mins" }
         ]
       },
       {
         id: "statistics",
         title: "Introductory Statistics",
         lessons: [
-          { id: "normal-distribution", title: "The Normal Distribution and Z-Scores", duration: "35 mins" },
-          { id: "hypothesis-testing", title: "Understanding p-Values and Hypothesis Testing", duration: "45 mins" }
+          { id: "normal-distribution", title: "The Normal Distribution and Z-Scores", ccss: "HSS-ID.A.4", duration: "35 mins" },
+          { id: "hypothesis-testing", title: "Understanding p-Values and Hypothesis Testing", ccss: "HSS-IC.B.5", duration: "45 mins" }
         ]
       }
     ]
   }
 ];
+
+// Test Prep Diagnostic mappings matching exam score report feedback to CCSS lessons
+export const testPrepMappings = {
+  sat: {
+    name: "SAT (Digital)",
+    description: "Match your College Board score report feedback to review weak areas.",
+    sections: [
+      {
+        name: "Heart of Algebra",
+        skills: [
+          { feedback: "Linear equations in one variable", lessonId: "linear-equations", ccss: "HSA-REI.B.3" },
+          { feedback: "Linear equations in two variables (systems)", lessonId: "systems-substitution", ccss: "HSA-REI.C.6" },
+          { feedback: "Linear functions and graphing", lessonId: "graphing-slope-intercept", ccss: "8.F.B.4" }
+        ]
+      },
+      {
+        name: "Passport to Advanced Math",
+        skills: [
+          { feedback: "Solving quadratic equations", lessonId: "quadratic-formula", ccss: "HSA-REI.B.4" },
+          { feedback: "Factoring quadratic polynomials", lessonId: "factoring-quadratics", ccss: "HSA-SSE.A.2" },
+          { feedback: "Exponents, radicals, and polynomial operations", lessonId: "laws-of-exponents", ccss: "HSN-RN.A.2" },
+          { feedback: "Logarithmic and exponential growth", lessonId: "logarithms-intro", ccss: "HSF-LE.A.4" }
+        ]
+      },
+      {
+        name: "Problem Solving and Data Analysis",
+        skills: [
+          { feedback: "Ratios, rates, proportions, and percentages", lessonId: "understanding-ratios", ccss: "6.RP.A.1" },
+          { feedback: "Unit rates and unit conversions", lessonId: "unit-rates", ccss: "6.RP.A.2" },
+          { feedback: "Normal distribution and statistical spreads", lessonId: "normal-distribution", ccss: "HSS-ID.A.4" }
+        ]
+      },
+      {
+        name: "Geometry and Trigonometry",
+        skills: [
+          { feedback: "Pythagorean Theorem and triangle lengths", lessonId: "pythagorean-theorem", ccss: "8.G.B.7" },
+          { feedback: "Right triangle trigonometry ratios (SOH CAH TOA)", lessonId: "trig-ratios", ccss: "HSG-SRT.C.8" },
+          { feedback: "Unit circle angles and radians", lessonId: "unit-circle-understanding", ccss: "HSF-TF.A.2" }
+        ]
+      }
+    ]
+  },
+  act: {
+    name: "ACT",
+    description: "Align your ACT score report math categories to clear lessons.",
+    sections: [
+      {
+        name: "Preparing for Higher Math - Algebra",
+        skills: [
+          { feedback: "Solve linear equations and simple inequalities", lessonId: "linear-equations", ccss: "HSA-REI.B.3" },
+          { feedback: "Systems of linear equations", lessonId: "systems-substitution", ccss: "HSA-REI.C.6" }
+        ]
+      },
+      {
+        name: "Preparing for Higher Math - Functions",
+        skills: [
+          { feedback: "Linear functions, slope, and intercepts", lessonId: "graphing-slope-intercept", ccss: "8.F.B.4" },
+          { feedback: "Exponential and logarithmic models", lessonId: "logarithms-intro", ccss: "HSF-LE.A.4" }
+        ]
+      },
+      {
+        name: "Preparing for Higher Math - Geometry",
+        skills: [
+          { feedback: "Pythagorean theorem & right triangles", lessonId: "pythagorean-theorem", ccss: "8.G.B.7" },
+          { feedback: "Basic trigonometric ratios", lessonId: "trig-ratios", ccss: "HSG-SRT.C.8" },
+          { feedback: "Congruence and similarity criteria", lessonId: "triangle-congruence", ccss: "HSG-CO.B.8" }
+        ]
+      },
+      {
+        name: "Preparing for Higher Math - Number & Quantity",
+        skills: [
+          { feedback: "Exponents, powers, and radical laws", lessonId: "laws-of-exponents", ccss: "HSN-RN.A.2" }
+        ]
+      },
+      {
+        name: "Preparing for Higher Math - Stats & Probability",
+        skills: [
+          { feedback: "Normal distribution curves and probability spreads", lessonId: "normal-distribution", ccss: "HSS-ID.A.4" }
+        ]
+      },
+      {
+        name: "Integrating Essential Skills",
+        skills: [
+          { feedback: "Ratios, proportions, percentages, and scale factors", lessonId: "understanding-ratios", ccss: "6.RP.A.1" },
+          { feedback: "Division of fractions and word problems", lessonId: "fraction-division", ccss: "6.NS.A.1" }
+        ]
+      }
+    ]
+  },
+  psat: {
+    name: "PSAT",
+    description: "Review diagnostic indicators on your PSAT score sheet.",
+    sections: [
+      {
+        name: "Heart of Algebra (PSAT)",
+        skills: [
+          { feedback: "Solving single-variable linear equations", lessonId: "linear-equations", ccss: "HSA-REI.B.3" },
+          { feedback: "Linear functions and basic slope concepts", lessonId: "graphing-slope-intercept", ccss: "8.F.B.4" }
+        ]
+      },
+      {
+        name: "Passport to Advanced Math (PSAT)",
+        skills: [
+          { feedback: "Factoring quadratic binomials/trinomials", lessonId: "factoring-quadratics", ccss: "HSA-SSE.A.2" },
+          { feedback: "Laws of exponents", lessonId: "laws-of-exponents", ccss: "HSN-RN.A.2" }
+        ]
+      },
+      {
+        name: "Problem Solving and Data Analysis (PSAT)",
+        skills: [
+          { feedback: "Ratios and unit rates", lessonId: "understanding-ratios", ccss: "6.RP.A.1" }
+        ]
+      }
+    ]
+  },
+  tsi: {
+    name: "TSI (TSIA2)",
+    description: "Align your TSIA2 diagnostic feedback strands to review areas.",
+    sections: [
+      {
+        name: "Quantitative Reasoning",
+        skills: [
+          { feedback: "Division of fractions and decimals", lessonId: "fraction-division", ccss: "6.NS.A.1" },
+          { feedback: "Ratios, proportions, and unit rates", lessonId: "understanding-ratios", ccss: "6.RP.A.1" }
+        ]
+      },
+      {
+        name: "Algebraic Reasoning",
+        skills: [
+          { feedback: "Linear equations and systems of equations", lessonId: "linear-equations", ccss: "HSA-REI.B.3" },
+          { feedback: "Quadratic equations and functions", lessonId: "quadratic-formula", ccss: "HSA-REI.B.4" },
+          { feedback: "Exponential and logarithmic properties", lessonId: "logarithms-intro", ccss: "HSF-LE.A.4" }
+        ]
+      },
+      {
+        name: "Geometric and Spatial Reasoning",
+        skills: [
+          { feedback: "Pythagorean Theorem right-triangles", lessonId: "pythagorean-theorem", ccss: "8.G.B.7" },
+          { feedback: "Similarity and congruence rules", lessonId: "triangle-congruence", ccss: "HSG-CO.B.8" }
+        ]
+      },
+      {
+        name: "Probabilistic and Statistical Reasoning",
+        skills: [
+          { feedback: "Normal distribution and standard deviations", lessonId: "normal-distribution", ccss: "HSS-ID.A.4" }
+        ]
+      }
+    ]
+  }
+};
 
 export const sampleLessons = {
   "linear-equations": {
@@ -171,6 +323,7 @@ export const sampleLessons = {
     duration: "30 mins",
     level: "High School Math",
     topic: "Algebra 1",
+    ccss: "HSA-REI.B.3",
     introduction: "Solving equations is like balancing a scale. Whatever you do to one side of the equation, you must do to the other side to keep it balanced. Our ultimate goal is to isolate the variable (get x by itself on one side).",
     steps: [
       {

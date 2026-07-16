@@ -2386,3 +2386,261 @@ h1, h2, h3, h4, h5, h6 {
 .animate-pulse {
   animation: pulse 2s infinite ease-in-out;
 }
+
+/* ==========================================================================
+   Curriculum Tabs & Test Prep Matcher Styling
+   ========================================================================== */
+
+.curriculum-mode-tabs {
+  margin-top: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.btn-mode-tab {
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--foreground-muted);
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-mode-tab:hover {
+  color: var(--primary);
+  background-color: var(--background-muted);
+}
+
+.btn-mode-tab.active {
+  color: var(--primary);
+  background-color: #ffffff;
+  border-color: var(--border-color);
+  box-shadow: 2px 2px 0 0 var(--border-color);
+}
+
+/* Test Selector Tabs (SAT, ACT, PSAT, TSI) */
+.test-selector-tabs {
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.btn-test-tab {
+  padding: 0.6rem 1.5rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--foreground-muted);
+  background-color: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 2px 2px 0 0 var(--border-color);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-test-tab:hover {
+  background-color: var(--background-muted);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 var(--border-color);
+}
+
+.btn-test-tab.active {
+  background-color: var(--primary);
+  color: #ffffff;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Notebook Info/Callout Box */
+.notebook-callout {
+  background-color: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-left: 5px solid var(--primary);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  box-shadow: 2px 2px 0 0 var(--border-color);
+}
+
+.notebook-callout .bullet {
+  font-size: 1.25rem;
+}
+
+/* Diagnostic Sections Grid */
+.test-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.test-section-card {
+  background-color: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0 0 var(--border-color);
+  padding: 1.5rem;
+}
+
+.test-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 0.75rem;
+}
+
+.test-section-title {
+  font-family: var(--font-heading);
+  font-weight: 750;
+  font-size: 1.1rem;
+  color: #090d16;
+}
+
+.diagnostic-skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+/* Interactive diagnostic buttons */
+.diagnostic-skill-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background-color: #f8fafc;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.diagnostic-skill-item:hover {
+  background-color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 2px 2px 0 0 var(--primary);
+  transform: translate(-1px, -1px);
+}
+
+.skill-feedback-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  max-width: 80%;
+}
+
+.feedback-bullet {
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.feedback-text-label {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: #1e293b;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.skill-ccss-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  background-color: #eff6ff;
+  border: 1px solid var(--primary);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Badge tags inside curriculum directory cards */
+.lesson-ccss-code-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--foreground-muted);
+  background-color: #f1f5f9;
+  border: 1px solid var(--border-color);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Diagnostic banner at the top of lesson views */
+.diagnostic-match-callout {
+  background-color: #f0fdf4;
+  border: 1.5px solid #16a34a;
+  border-left: 6px solid #16a34a;
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  box-shadow: 3px 3px 0 0 #16a34a;
+}
+
+.diagnostic-match-callout .callout-header {
+  font-family: var(--font-heading);
+  font-weight: 750;
+  font-size: 1.05rem;
+  color: #15803d;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.diagnostic-match-callout .callout-body {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  color: #166534;
+  line-height: 1.5;
+}
+
+.diagnostic-match-callout strong {
+  color: #14532d;
+  font-weight: 700;
+}
+
+/* Coming Soon lesson cards */
+.soon-lesson-card {
+  background-color: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: 6px 6px 0 0 var(--border-color);
+  padding: 4rem 2rem;
+  max-width: 600px;
+  margin: 3rem auto;
+}
+
+.soon-lesson-card h2 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.8rem;
+  color: #090d16;
+  margin-bottom: 1rem;
+}
+
+.soon-cta-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
