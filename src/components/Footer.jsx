@@ -20,7 +20,6 @@ export default function Footer() {
           <div className="footer-links">
             <Link to="/curriculum" className="footer-link">Free Lessons</Link>
             <Link to="/tutoring" className="footer-link">Private Tutoring</Link>
-            <Link to="/classroom" className="footer-link">Online Classroom</Link>
             <Link to="/resources" className="footer-link">Resources</Link>
           </div>
         </div>

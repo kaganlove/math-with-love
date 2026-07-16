@@ -10,7 +10,6 @@ export default function Navigation() {
     { name: "Home", path: "/" },
     { name: "Free Lessons", path: "/curriculum" },
     { name: "Private Tutoring", path: "/tutoring" },
-    { name: "Online Classroom", path: "/classroom" },
     { name: "Resources", path: "/resources" },
     { name: "Contact & Book", path: "/contact" }
   ];
