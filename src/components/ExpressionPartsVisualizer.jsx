@@ -58,16 +58,58 @@ export default function ExpressionPartsVisualizer() {
   };
 
   return (
-    <div className="interactive-parts-card p-8 bg-slate-900 text-slate-100 rounded-2xl shadow-xl border border-slate-800">
-      <div className="text-center mb-8">
-        <span className="text-xs text-primary bg-primary/10 px-3 py-1 rounded-full font-semibold uppercase tracking-wider">
+    <div 
+      className="interactive-parts-card" 
+      style={{
+        padding: "2rem",
+        backgroundColor: "#0f172a",
+        color: "#f1f5f9",
+        borderRadius: "1rem",
+        border: "1.5px solid #1e293b",
+        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "stretch",
+        gap: "1.5rem"
+      }}
+    >
+      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+        <span 
+          style={{
+            fontSize: "0.75rem",
+            color: "#3b82f6",
+            backgroundColor: "rgba(59, 130, 246, 0.1)",
+            padding: "0.25rem 0.75rem",
+            borderRadius: "9999px",
+            fontWeight: "600",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em"
+          }}
+        >
           Interactive Expression Visualizer
         </span>
-        <h3 className="text-xl font-bold mt-2 text-white">Click parts of the expression below to explore!</h3>
+        <h3 style={{ fontSize: "1.25rem", fontWeight: "700", marginTop: "0.5rem", color: "#ffffff" }}>
+          Click parts of the expression below to explore!
+        </h3>
       </div>
 
       {/* Main Interactive Expression Row - Extra Large for Better Legibility */}
-      <div className="flex justify-center items-center gap-1 py-12 px-6 bg-slate-950/60 rounded-xl border border-slate-800/80 mt-8 mb-8 font-mono text-3xl md:text-5xl select-none">
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: "0.25rem",
+        padding: "2.5rem 1.5rem",
+        backgroundColor: "rgba(2, 6, 23, 0.6)",
+        borderRadius: "0.75rem",
+        border: "1.5px solid rgba(30, 41, 59, 0.8)",
+        marginTop: "2rem",
+        marginBottom: "2rem",
+        fontFamily: "monospace",
+        fontSize: "2.5rem",
+        userSelect: "none"
+      }}>
         {parts.map((part, idx) => {
           const isActive = idx === activeIndex;
           let colorStyle = {};
@@ -113,45 +155,102 @@ export default function ExpressionPartsVisualizer() {
       </div>
 
       {/* Stepper Navigation - Centered, Spaced Out, and matching tab button styles */}
-      <div className="flex flex-col items-center gap-4 mt-8 mb-8">
-        <div className="flex flex-wrap justify-center items-center gap-10">
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        marginTop: "1.5rem",
+        marginBottom: "2rem",
+        width: "100%"
+      }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "2.5rem",
+          width: "100%"
+        }}>
           <button
             onClick={handlePrev}
-            className="btn-primary btn-small flex items-center justify-center gap-2"
+            className="btn-primary btn-small flex-center gap-2"
             style={{
-              minWidth: "120px"
+              minWidth: "120px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
             }}
           >
-            <ArrowLeft size={14} /> Prev Part
+            <ArrowLeft size={14} /> <span>Prev Part</span>
           </button>
           
-          <span className="text-sm font-bold text-slate-300 font-mono px-4 py-1.5 bg-slate-950/80 rounded-lg border border-slate-800">
+          <span 
+            style={{
+              fontSize: "0.875rem",
+              fontWeight: "700",
+              color: "#cbd5e1",
+              fontFamily: "monospace",
+              padding: "0.375rem 1rem",
+              backgroundColor: "rgba(2, 6, 23, 0.8)",
+              borderRadius: "0.5rem",
+              border: "1.5px solid #1e293b"
+            }}
+          >
             Part {activeIndex + 1} of {parts.length}
           </span>
 
           <button
             onClick={handleNext}
-            className="btn-primary btn-small flex items-center justify-center gap-2"
+            className="btn-primary btn-small flex-center gap-2"
             style={{
-              minWidth: "120px"
+              minWidth: "120px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
             }}
           >
-            Next Part <ArrowRight size={14} />
+            <span>Next Part</span> <ArrowRight size={14} />
           </button>
         </div>
       </div>
 
       {/* active Info Card */}
-      <div className="info-card p-6 rounded-2xl border border-slate-800 bg-slate-900/80 relative overflow-hidden transition-all duration-300 shadow-inner mt-4">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full blur-3xl transform translate-x-12 -translate-y-12"></div>
-        <div className="flex items-start gap-4">
-          <div className="p-3 bg-white/5 rounded-xl text-primary mt-1">
+      <div 
+        className="info-card" 
+        style={{
+          padding: "1.5rem",
+          borderRadius: "1rem",
+          border: "1.5px solid #1e293b",
+          backgroundColor: "rgba(15, 23, 42, 0.8)",
+          marginTop: "1rem",
+          boxShadow: "inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)",
+          position: "relative",
+          overflow: "hidden"
+        }}
+      >
+        <div style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          width: "8rem",
+          height: "8rem",
+          backgroundColor: "rgba(255, 255, 255, 0.01)",
+          borderRadius: "9999px",
+          filter: "blur(24px)",
+          transform: "translate(3rem, -3rem)"
+        }}></div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+          <div style={{ padding: "0.75rem", backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: "0.75rem", color: "#3b82f6", marginTop: "0.25rem" }}>
             <Sparkles size={20} />
           </div>
           <div>
-            <h4 className="text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <h4 style={{ fontSize: "1.125rem", fontWeight: "700", color: "#ffffff", display: "flex", alignItems: "center", gap: "0.5rem", margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
               {parts[activeIndex].name}
-              <span className="inline-block w-3 h-3 rounded-full" style={{
+              <span style={{
+                display: "inline-block",
+                width: "0.75rem",
+                height: "0.75rem",
+                borderRadius: "9999px",
                 backgroundColor: 
                   parts[activeIndex].color === "purple" ? "#c084fc" :
                   parts[activeIndex].color === "green" ? "#34d399" :
@@ -160,10 +259,10 @@ export default function ExpressionPartsVisualizer() {
                   parts[activeIndex].color === "blue" ? "#38bdf8" : "#fbbf24"
               }}></span>
             </h4>
-            <p className="text-slate-200 text-sm mt-3 leading-relaxed">
+            <p style={{ color: "#e2e8f0", fontSize: "0.875rem", marginTop: "0.75rem", lineHeight: "1.6", marginBlockEnd: 0 }}>
               {parts[activeIndex].explanation}
             </p>
-            <div className="mt-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl text-xs text-slate-400 italic font-sans leading-relaxed">
+            <div style={{ marginTop: "1rem", padding: "1rem", backgroundColor: "rgba(255, 255, 255, 0.02)", border: "1px solid rgba(255, 255, 255, 0.05)", borderRadius: "0.75rem", fontSize: "0.75rem", color: "#94a3b8", fontStyle: "italic", lineHeight: "1.6" }}>
               <strong>Context: </strong>{parts[activeIndex].context}
             </div>
           </div>
