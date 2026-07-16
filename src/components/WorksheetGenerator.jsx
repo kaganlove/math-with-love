@@ -86,6 +86,21 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
 
   const handlePrint = () => {
     const problems = generateProblems(problemCount);
+    
+    // Chunk problems by 6 per page to ensure ample space and zero overlaps
+    const problemChunks = [];
+    for (let i = 0; i < problems.length; i += 6) {
+      problemChunks.push(problems.slice(i, i + 6));
+    }
+
+    // Chunk answers by 8 per page
+    const answerChunks = [];
+    if (includeAnswers) {
+      for (let i = 0; i < problems.length; i += 8) {
+        answerChunks.push(problems.slice(i, i + 8));
+      }
+    }
+
     const printWindow = window.open("", "_blank");
 
     if (!printWindow) {
@@ -100,13 +115,22 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
         <title>${customTitle}</title>
         <style>
           @page {
-            margin: 20mm 15mm 25mm 15mm; /* Enforces browser page-breaking on grid rows */
+            margin: 0;
           }
           body {
             font-family: 'Courier New', Courier, monospace;
             margin: 0;
+            padding: 0;
             color: #000000;
             line-height: 1.6;
+            background-color: #ffffff;
+          }
+          .print-page {
+            position: relative;
+            box-sizing: border-box;
+            padding: 20mm 15mm 25mm 15mm;
+            width: 100%;
+            min-height: 297mm; /* Fits A4 and Letter standards */
           }
           .header {
             text-align: center;
@@ -161,10 +185,10 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           }
           .page-break {
             page-break-before: always;
+            break-before: page;
           }
           .answer-key-header {
             text-align: center;
-            margin-top: 50px;
             border-bottom: 2px solid #000000;
             padding-bottom: 10px;
             margin-bottom: 30px;
@@ -183,78 +207,81 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             font-size: 14px;
             color: #444444;
           }
-          .footer-note {
-            position: fixed;
-            bottom: -18mm; /* Absolute position inside the bottom margin */
-            left: 0;
+          .page-footer {
+            position: absolute;
+            bottom: 12mm;
+            left: 15mm;
+            right: 15mm;
+            display: flex;
+            justify-content: space-between;
             font-size: 10px;
             color: #555555;
             font-family: Arial, sans-serif;
-            background-color: #ffffff; /* White background covers about:blank */
-            padding-right: 60px; /* Extends to hide any about:blank text */
-            white-space: nowrap;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 5px;
           }
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1>${customTitle}</h1>
-          <p>Topic: ${lessonTitle} (${ccss})</p>
-          ${customInstructions ? `<div class="instructions-box"><strong>Instructions:</strong> ${customInstructions}</div>` : ""}
-        </div>
-
-        <div class="meta-info">
-          <span>Name: ______________________</span>
-          <span>Date: ______________________</span>
-        </div>
-
-        <div class="problems-grid">
-          ${problems
-            .map(
-              (p) => `
-            <div class="problem-card">
-              <div class="problem-num">${p.num})</div>
-              <div class="problem-eq">${p.question.split("\n")[1]}</div>
-            </div>
-          `
-            )
-            .join("")}
-        </div>
-
-        <div class="footer-note">
-          mathwlove.com
-        </div>
-
-        ${
-          includeAnswers
-            ? `
-          <div class="page-break"></div>
-          <div class="answer-key-header">
-            <h1>Answer Key & Explanations</h1>
-            <p>Topic: ${lessonTitle}</p>
-          </div>
-
-          <div style="margin-top: 30px; margin-bottom: 50px;">
-            ${problems
-              .map(
-                (p) => `
-              <div class="answer-card">
-                <p><strong>Problem ${p.num}:</strong> <span style="background: #e2e8f0; padding: 2px 6px; font-weight: bold;">${p.solution}</span></p>
-                <div class="answer-steps">
-                  ${p.steps.map((step) => `<p>→ ${step}</p>`).join("")}
-                </div>
+        ${problemChunks.map((chunk, chunkIdx) => `
+          <div class="print-page">
+            ${chunkIdx === 0 ? `
+              <div class="header">
+                <h1>${customTitle}</h1>
+                <p>Topic: ${lessonTitle} (${ccss})</p>
+                ${customInstructions ? `<div class="instructions-box"><strong>Instructions:</strong> ${customInstructions}</div>` : ""}
               </div>
-            `
-              )
-              .join("")}
+
+              <div class="meta-info">
+                <span>Name: ______________________</span>
+                <span>Date: ______________________</span>
+              </div>
+            ` : `
+              <div style="height: 20px;"></div>
+            `}
+
+            <div class="problems-grid">
+              ${chunk.map(p => `
+                <div class="problem-card">
+                  <div class="problem-num">${p.num})</div>
+                  <div class="problem-eq">${p.question.split("\n")[1]}</div>
+                </div>
+              `).join("")}
+            </div>
+
+            <div class="page-footer">
+              <span class="footer-left">mathwlove.com</span>
+              <span class="footer-right">Page ${chunkIdx + 1}</span>
+            </div>
           </div>
-          
-          <div class="footer-note">
-            mathwlove.com
+          ${chunkIdx < problemChunks.length - 1 || includeAnswers ? '<div class="page-break"></div>' : ''}
+        `).join("")}
+
+        ${includeAnswers ? answerChunks.map((chunk, chunkIdx) => `
+          <div class="print-page">
+            <div class="answer-key-header">
+              <h1>Answer Key & Explanations</h1>
+              <p>Topic: ${lessonTitle}</p>
+            </div>
+
+            <div style="margin-top: 30px;">
+              ${chunk.map(p => `
+                <div class="answer-card">
+                  <p><strong>Problem ${p.num}:</strong> <span style="background: #e2e8f0; padding: 2px 6px; font-weight: bold;">${p.solution}</span></p>
+                  <div class="answer-steps">
+                    ${p.steps.map((step) => `<p>→ ${step}</p>`).join("")}
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+
+            <div class="page-footer">
+              <span class="footer-left">mathwlove.com</span>
+              <span class="footer-right">Page ${problemChunks.length + chunkIdx + 1}</span>
+            </div>
           </div>
-        `
-            : ""
-        }
+          ${chunkIdx < answerChunks.length - 1 ? '<div class="page-break"></div>' : ''}
+        `).join("") : ''}
 
         <script>
           window.onload = function() {
