@@ -1,27 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Play, Pause, SkipForward, SkipBack, RotateCcw, Scale } from "lucide-react";
+import React, { useState } from "react";
+import { ArrowLeft, ArrowRight, RotateCcw, Scale } from "lucide-react";
 
 export default function EquationVisualizer({ steps }) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  useEffect(() => {
-    let interval = null;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setCurrentStep((prev) => {
-          if (prev >= steps.length - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, 3500); // Wait 3.5s per step to let the student read the description
-    } else {
-      clearInterval(interval);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, steps.length]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -37,7 +18,6 @@ export default function EquationVisualizer({ steps }) {
 
   const handleReset = () => {
     setCurrentStep(0);
-    setIsPlaying(false);
   };
 
   const step = steps[currentStep];
@@ -48,35 +28,91 @@ export default function EquationVisualizer({ steps }) {
       case "blue": return "term-variable"; // Variable terms (blue)
       case "orange": return "term-constant"; // Constant terms (orange)
       case "green": return "term-solved"; // Final answer (green)
+      case "red": return "term-operation-active"; // Active operation (red)
       default: return "term-slate"; // Unmodified slate terms
     }
+  };
+
+  // Helper to render the contents of a plate
+  const renderPlate = (plate) => {
+    if (plate.type === "expression") {
+      return (
+        <div className="expression-row">
+          {plate.terms.map((t, idx) => (
+            <span
+              key={idx}
+              className={`math-term ${getColorClass(t.color)} ${t.active ? "animate-highlight" : ""}`}
+            >
+              {t.val}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    if (plate.type === "operation") {
+      if (plate.operationType === "subtract") {
+        return (
+          <div className="vertical-operation-layout">
+            <div className="expression-row">
+              {plate.terms.map((t, idx) => (
+                <span key={idx} className={`math-term ${getColorClass(t.color)}`}>
+                  {t.val}
+                </span>
+              ))}
+            </div>
+            <div className="subtraction-row animate-operation-fade">
+              <span>{plate.opVal}</span>
+            </div>
+          </div>
+        );
+      }
+
+      if (plate.operationType === "divide") {
+        return (
+          <div className="fraction-layout animate-operation-fade">
+            <div className="fraction-numerator">
+              {plate.terms.map((t, idx) => (
+                <span key={idx} className={`math-term ${getColorClass(t.color)}`}>
+                  {t.val}
+                </span>
+              ))}
+            </div>
+            <div className="fraction-line" />
+            <div className="fraction-denominator term-operation-divide">
+              {plate.opVal}
+            </div>
+          </div>
+        );
+      }
+    }
+
+    return null;
   };
 
   return (
     <div className="visualizer-card">
       <div className="visualizer-header">
         <Scale size={20} className="text-primary" />
-        <h4>Interactive Equation Balancer</h4>
+        <h4>Step-by-Step Algebra Balancer</h4>
       </div>
 
       <p className="visualizer-intro">
-        Watch how operations are balanced on both sides of the equal sign.
+        Solve equations by applying balancing operations to both sides of the equal sign. Click through each step below.
       </p>
+
+      {/* Large Equation Typewriter Display */}
+      <div className="visualizer-equation-display text-center">
+        <code>{step.equation}</code>
+      </div>
 
       {/* The Balancing Scale Display */}
       <div className="scale-container">
         <div className="scale-beam-wrapper">
           {/* Left Side Plate */}
-          <div className={`scale-plate left-plate ${step.leftTerms.some(t => t.active) ? "active-plate" : ""}`}>
+          <div className={`scale-plate left-plate ${step.left.type === "operation" ? "active-plate" : ""}`}>
             <div className="plate-contents">
-              {step.leftTerms.map((t, idx) => (
-                <span
-                  key={idx}
-                  className={`math-term ${getColorClass(t.color)} ${t.active ? "animate-highlight" : ""}`}
-                >
-                  {t.val}
-                </span>
-              ))}
+              {renderPlate(step.left)}
             </div>
             <div className="plate-base" />
           </div>
@@ -87,16 +123,9 @@ export default function EquationVisualizer({ steps }) {
           </div>
 
           {/* Right Side Plate */}
-          <div className={`scale-plate right-plate ${step.rightTerms.some(t => t.active) ? "active-plate" : ""}`}>
+          <div className={`scale-plate right-plate ${step.right.type === "operation" ? "active-plate" : ""}`}>
             <div className="plate-contents">
-              {step.rightTerms.map((t, idx) => (
-                <span
-                  key={idx}
-                  className={`math-term ${getColorClass(t.color)} ${t.active ? "animate-highlight" : ""}`}
-                >
-                  {t.val}
-                </span>
-              ))}
+              {renderPlate(step.right)}
             </div>
             <div className="plate-base" />
           </div>
@@ -117,38 +146,30 @@ export default function EquationVisualizer({ steps }) {
         <p className="step-text-body">{step.desc}</p>
       </div>
 
-      {/* Controls */}
+      {/* Manual Click-Through Controls */}
       <div className="visualizer-controls">
         <button
           onClick={handlePrev}
           disabled={currentStep === 0}
-          className="btn-control"
+          className="btn-control flex-center gap-1"
           title="Previous Step"
         >
-          <SkipBack size={16} />
-        </button>
-
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          className={`btn-control btn-play ${isPlaying ? "playing" : ""}`}
-          title={isPlaying ? "Pause Autoplay" : "Play Autoplay"}
-        >
-          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+          <ArrowLeft size={16} /> <span>Back</span>
         </button>
 
         <button
           onClick={handleNext}
           disabled={currentStep === steps.length - 1}
-          className="btn-control"
+          className="btn-control btn-play flex-center gap-1"
           title="Next Step"
         >
-          <SkipForward size={16} />
+          <span>Next Step</span> <ArrowRight size={16} />
         </button>
 
         <button
           onClick={handleReset}
           className="btn-control"
-          title="Reset Animation"
+          title="Reset"
         >
           <RotateCcw size={16} />
         </button>
