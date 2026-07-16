@@ -267,12 +267,16 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
 
         ${includeAnswers ? answerChunks.map((chunk, chunkIdx) => `
           <div class="print-page">
-            <div class="answer-key-header">
-              <h1>Answer Key & Explanations</h1>
-              <p>Topic: ${lessonTitle}</p>
-            </div>
+            ${chunkIdx === 0 ? `
+              <div class="answer-key-header">
+                <h1>Answer Key & Explanations</h1>
+                <p>Topic: ${lessonTitle}</p>
+              </div>
+            ` : `
+              <div style="height: 20px;"></div>
+            `}
 
-            <div style="margin-top: 30px;">
+            <div style="margin-top: 20px;">
               ${chunk.map(p => `
                 <div class="answer-card">
                   <p><strong>Problem ${p.num}:</strong> <span style="background: #e2e8f0; padding: 2px 6px; font-weight: bold;">${p.solution}</span></p>
