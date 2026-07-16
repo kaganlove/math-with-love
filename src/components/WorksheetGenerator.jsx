@@ -42,65 +42,133 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             `Subtract ${min} from ${max}: x = ${max - min}`
           ];
         }
+      } else if (lessonId === "factoring-quadratics") {
+        const p = Math.floor(Math.random() * 8) - 4 || 2; // -4 to 4, non-zero
+        const q = Math.floor(Math.random() * 8) - 4 || 3; // -4 to 4, non-zero
+        const b = p + q;
+        const c = p * q;
+        const bSign = b > 0 ? `+ ${b}` : b < 0 ? `- ${Math.abs(b)}` : "";
+        const cSign = c > 0 ? `+ ${c}` : `- ${Math.abs(c)}`;
+        
+        equationText = `Factor the trinomial:\nx² ${bSign ? `${bSign}x` : ""} ${cSign}`;
+        solutionText = `(x ${p >= 0 ? `+ ${p}` : `- ${Math.abs(p)}`})(x ${q >= 0 ? `+ ${q}` : `- ${Math.abs(q)}`})`;
+        
+        stepsText = [
+          `Trinomial: x² ${bSign ? `${bSign}x` : ""} ${cSign}`,
+          `Find numbers that multiply to ${c} and add to ${b}: ${p} and ${q}`,
+          `Rewrite as binomial product: ${solutionText}`
+        ];
+      } else if (lessonId === "systems-substitution") {
+        const xVal = Math.floor(Math.random() * 6) - 3 || 2; // -3 to 3
+        const a = Math.floor(Math.random() * 3) + 1; // 1 to 3
+        const b = Math.floor(Math.random() * 8) - 4; // -4 to 4
+        const yVal = a * xVal + b;
+        const c = Math.floor(Math.random() * 2) + 1; // 1 to 2
+        const d = c * xVal + yVal;
+        
+        const bSign = b >= 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+        const cSign = c === 1 ? "" : `${c}`;
+
+        equationText = `Solve the system using substitution:\ny = ${a}x ${bSign}\n${cSign}x + y = ${d}`;
+        solutionText = `x = ${xVal}, y = ${yVal} => (${xVal}, ${yVal})`;
+        
+        stepsText = [
+          `Equations: y = ${a}x ${bSign}  and  ${cSign}x + y = ${d}`,
+          `Substitute y: ${cSign}x + (${a}x ${bSign}) = ${d}`,
+          `Combine and simplify: ${c + a}x = ${d - b} => x = ${xVal}`,
+          `Substitute x back: y = ${a}(${xVal}) ${bSign} => y = ${yVal}`
+        ];
+      } else if (lessonId === "hsa-sse-1") {
+        const types = ["coeff", "constant", "terms", "factor"];
+        const qType = types[i % types.length];
+        
+        if (qType === "coeff") {
+          const a = Math.floor(Math.random() * 8) + 2;
+          const b = Math.floor(Math.random() * 15) + 1;
+          equationText = `Identify the coefficient of x in the expression:\n${a}x - ${b}`;
+          solutionText = `${a}`;
+          stepsText = [
+            `Expression: ${a}x - ${b}`,
+            `The coefficient is the multiplier of the variable, which is ${a}.`
+          ];
+        } else if (qType === "constant") {
+          const a = Math.floor(Math.random() * 5) + 2;
+          const b = Math.floor(Math.random() * 10) + 1;
+          equationText = `Identify the constant term in the expression:\n${a}x + ${b}`;
+          solutionText = `${b}`;
+          stepsText = [
+            `Expression: ${a}x + ${b}`,
+            `The constant term is the fixed number with no variable, which is ${b}.`
+          ];
+        } else if (qType === "terms") {
+          const a = Math.floor(Math.random() * 5) + 2;
+          const b = Math.floor(Math.random() * 8) + 2;
+          equationText = `How many terms are in the expression:\n${a}x² - ${b}x + 12`;
+          solutionText = `3`;
+          stepsText = [
+            `Expression: ${a}x² - ${b}x + 12`,
+            `Terms are parts separated by + or -: ${a}x², -${b}x, and 12. Total = 3.`
+          ];
+        } else {
+          const a = Math.floor(Math.random() * 4) + 2;
+          const b = Math.floor(Math.random() * 8) + 2;
+          equationText = `Identify the binomial factor in the expression:\n${a}(x + ${b})`;
+          solutionText = `x + ${b}`;
+          stepsText = [
+            `Expression: ${a}(x + ${b})`,
+            `The factors are ${a} and (x + ${b}). The binomial factor is (x + ${b}).`
+          ];
+        }
       } else {
         const type = equationTypes[i % equationTypes.length];
-        // x is the target integer solution
-        const x = Math.floor(Math.random() * 15) - 7 || 3; // random integer between -7 and 7, non-zero
+        const x = Math.floor(Math.random() * 15) - 7 || 3;
 
-      if (type === "basic") {
-        // ax + b = c
-        const a = Math.floor(Math.random() * 8) + 2; // 2 to 9
-        const b = Math.floor(Math.random() * 20) - 10 || 4; // -10 to 10
-        const c = a * x + b;
-        const bSign = b > 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
-        equationText = `${a}x ${bSign} = ${c}`;
-        
-        stepsText = [
-          `Original: ${a}x ${bSign} = ${c}`,
-          `Subtract/add constant: ${a}x = ${c - b}`,
-          `Divide by ${a}: x = ${x}`
-        ];
-        solutionText = `x = ${x}`;
-      } else if (type === "parentheses") {
-        // a(x + b) = c
-        const a = Math.floor(Math.random() * 5) + 2; // 2 to 6
-        const b = Math.floor(Math.random() * 8) - 4 || 2; // -4 to 4
-        const c = a * (x + b);
-        const bSign = b > 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
-        equationText = `${a}(x ${bSign}) = ${c}`;
-        
-        stepsText = [
-          `Original: ${a}(x ${bSign}) = ${c}`,
-          `Distribute the ${a}: ${a}x ${b > 0 ? `+ ${a*b}` : `- ${Math.abs(a*b)}`} = ${c}`,
-          `Isolate variable term: ${a}x = ${c - (a*b)}`,
-          `Divide by ${a}: x = ${x}`
-        ];
-        solutionText = `x = ${x}`;
-      } else {
-        // ax + b = cx + d
-        const a = Math.floor(Math.random() * 6) + 4; // 4 to 9
-        const c = Math.floor(Math.random() * 3) + 2; // 2 to 4 (guaranteed a !== c)
-        const b = Math.floor(Math.random() * 16) - 8 || 3; // -8 to 8
-        // d = ax + b - cx => d = (a-c)x + b
-        const d = (a - c) * x + b;
-        
-        const bSign = b > 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
-        const dSign = d >= 0 ? `+ ${d}` : `- ${Math.abs(d)}`;
-        equationText = `${a}x ${bSign} = ${c}x ${d >= 0 ? `+ ${d}` : `- ${Math.abs(d)}`}`;
-        
-        stepsText = [
-          `Original: ${a}x ${bSign} = ${c}x ${dSign.substring(1)}`,
-          `Subtract ${c}x from both sides: ${a - c}x ${bSign} = ${d}`,
-          `Subtract/add constant: ${a - c}x = ${d - b}`,
-          `Divide by ${a - c}: x = ${x}`
-        ];
-        solutionText = `x = ${x}`;
-      }
+        if (type === "basic") {
+          const a = Math.floor(Math.random() * 8) + 2;
+          const b = Math.floor(Math.random() * 20) - 10 || 4;
+          const c = a * x + b;
+          const bSign = b > 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+          equationText = `${a}x ${bSign} = ${c}`;
+          stepsText = [
+            `Original: ${a}x ${bSign} = ${c}`,
+            `Subtract/add constant: ${a}x = ${c - b}`,
+            `Divide by ${a}: x = ${x}`
+          ];
+          solutionText = `x = ${x}`;
+        } else if (type === "parentheses") {
+          const a = Math.floor(Math.random() * 5) + 2;
+          const b = Math.floor(Math.random() * 8) - 4 || 2;
+          const c = a * (x + b);
+          const bSign = b > 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+          equationText = `${a}(x ${bSign}) = ${c}`;
+          stepsText = [
+            `Original: ${a}(x ${bSign}) = ${c}`,
+            `Distribute the ${a}: ${a}x ${b > 0 ? `+ ${a*b}` : `- ${Math.abs(a*b)}`} = ${c}`,
+            `Isolate variable term: ${a}x = ${c - (a*b)}`,
+            `Divide by ${a}: x = ${x}`
+          ];
+          solutionText = `x = ${x}`;
+        } else {
+          const a = Math.floor(Math.random() * 6) + 4;
+          const c = Math.floor(Math.random() * 3) + 2;
+          const b = Math.floor(Math.random() * 16) - 8 || 3;
+          const d = (a - c) * x + b;
+          const bSign = b > 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+          const dSign = d >= 0 ? `+ ${d}` : `- ${Math.abs(d)}`;
+          equationText = `${a}x ${bSign} = ${c}x ${d >= 0 ? `+ ${d}` : `- ${Math.abs(d)}`}`;
+          stepsText = [
+            `Original: ${a}x ${bSign} = ${c}x ${dSign.substring(1)}`,
+            `Subtract ${c}x from both sides: ${a - c}x ${bSign} = ${d}`,
+            `Subtract/add constant: ${a - c}x = ${d - b}`,
+            `Divide by ${a - c}: x = ${x}`
+          ];
+          solutionText = `x = ${x}`;
+        }
       }
 
       list.push({
         num: i + 1,
-        question: `Solve for x:\n${equationText}`,
+        question: lessonId === "hsa-sse-1" || lessonId === "factoring-quadratics" || lessonId === "systems-substitution" ? `${equationText}` : `Solve for x:\n${equationText}`,
         solution: solutionText,
         steps: stepsText
       });

@@ -570,8 +570,25 @@ export const curriculumLevels = [
         id: "hsa-sse",
         title: "Seeing Structure in Expressions",
         lessons: [
-          { id: "hsa-sse-1", title: "Interpret Parts of an Expression", ccss: "HSA-SSE.A.1", duration: "25 mins" },
-          { id: "factoring-quadratics", title: "Factoring Quadratic Trinomials (x² + bx + c)", ccss: "HSA-SSE.A.2", duration: "40 mins" }
+          { id: "hsa-sse-1", title: "Interpret Parts of an Expression", ccss: "HSA-SSE.A.1", duration: "25 mins", hasContent: true },
+          { id: "factoring-quadratics", title: "Factoring Quadratic Trinomials (x² + bx + c)", ccss: "HSA-SSE.A.2", duration: "40 mins", hasContent: true },
+          { id: "completing-the-square", title: "Completing the Square", ccss: "HSA-SSE.B.3.b", duration: "35 mins" }
+        ]
+      },
+      {
+        id: "hsa-apr",
+        title: "Arithmetic with Polynomials & Rational Expressions",
+        lessons: [
+          { id: "polynomial-operations", title: "Operations on Polynomials (Add, Subtract, Multiply)", ccss: "HSA-APR.A.1", duration: "30 mins" },
+          { id: "zeros-polynomials", title: "Finding Zeros of Polynomial Functions", ccss: "HSA-APR.B.3", duration: "35 mins" }
+        ]
+      },
+      {
+        id: "hsa-ced",
+        title: "Creating Equations",
+        lessons: [
+          { id: "create-equations", title: "Creating Linear Equations from Word Problems", ccss: "HSA-CED.A.1", duration: "30 mins" },
+          { id: "graphing-linear", title: "Graphing Linear Equations in Two Variables", ccss: "HSA-CED.A.2", duration: "35 mins" }
         ]
       },
       {
@@ -579,7 +596,10 @@ export const curriculumLevels = [
         title: "Reasoning with Equations & Inequalities",
         lessons: [
           { id: "linear-equations", title: "Solving Multi-Step Linear Equations", ccss: "HSA-REI.B.3", duration: "30 mins", hasContent: true },
-          { id: "systems-substitution", title: "Systems of Equations: Substitution Method", ccss: "HSA-REI.C.6", duration: "35 mins" }
+          { id: "quadratic-formula", title: "Solving Quadratic Equations: Quadratic Formula", ccss: "HSA-REI.B.4.b", duration: "40 mins" },
+          { id: "systems-substitution", title: "Systems of Equations: Substitution Method", ccss: "HSA-REI.C.6", duration: "35 mins", hasContent: true },
+          { id: "systems-elimination", title: "Systems of Equations: Elimination Method", ccss: "HSA-REI.C.5", duration: "35 mins" },
+          { id: "graphing-inequalities", title: "Graphing Systems of Linear Inequalities", ccss: "HSA-REI.D.12", duration: "40 mins" }
         ]
       }
     ]
