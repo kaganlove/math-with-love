@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { Download, FileText, X, Check, Eye } from "lucide-react";
 
-export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
+export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWidth }) {
   const [isOpen, setIsOpen] = useState(false);
   const [problemCount, setProblemCount] = useState(10);
   const [includeAnswers, setIncludeAnswers] = useState(true);
+  const [customTitle, setCustomTitle] = useState(`${lessonTitle} Practice`);
+  const [customInstructions, setCustomInstructions] = useState(
+    "Solve each equation step-by-step. Show all work and circle your final answer."
+  );
 
   // Helper to generate randomized equations with integer solutions
   const generateProblems = (count) => {
@@ -93,13 +97,14 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Worksheet - ${lessonTitle}</title>
+        <title>${customTitle}</title>
         <style>
           body {
             font-family: 'Courier New', Courier, monospace;
             padding: 40px;
             color: #000000;
             line-height: 1.6;
+            margin-bottom: 60px;
           }
           .header {
             text-align: center;
@@ -115,6 +120,14 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
           .header p {
             margin: 5px 0 0 0;
             font-size: 14px;
+          }
+          .instructions-box {
+            background-color: #f8fafc;
+            border: 1px dashed #000000;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 13px;
+            text-align: left;
           }
           .meta-info {
             display: flex;
@@ -168,12 +181,25 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
             font-size: 14px;
             color: #444444;
           }
+          .footer-note {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 9pt;
+            color: #777777;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 5px;
+            font-family: Arial, sans-serif;
+          }
         </style>
       </head>
       <body>
         <div class="header">
-          <h1>Math with Love Worksheet</h1>
+          <h1>${customTitle}</h1>
           <p>Topic: ${lessonTitle} (${ccss})</p>
+          ${customInstructions ? `<div class="instructions-box"><strong>Instructions:</strong> ${customInstructions}</div>` : ""}
         </div>
 
         <div class="meta-info">
@@ -186,12 +212,16 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
             .map(
               (p) => `
             <div class="problem-card">
-              <div className="problem-num">${p.num})</div>
+              <div class="problem-num">${p.num})</div>
               <div class="problem-eq">${p.question.split("\n")[1]}</div>
             </div>
           `
             )
             .join("")}
+        </div>
+
+        <div class="footer-note">
+          Generated on mathwlove.com
         </div>
 
         ${
@@ -203,7 +233,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
             <p>Topic: ${lessonTitle}</p>
           </div>
 
-          <div style="margin-top: 30px;">
+          <div style="margin-top: 30px; margin-bottom: 50px;">
             ${problems
               .map(
                 (p) => `
@@ -216,6 +246,10 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
             `
               )
               .join("")}
+          </div>
+          
+          <div class="footer-note">
+            Generated on mathwlove.com
           </div>
         `
             : ""
@@ -236,8 +270,11 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
   };
 
   return (
-    <div className="worksheet-generator-container">
-      <button onClick={() => setIsOpen(true)} className="btn-primary flex-center gap-2">
+    <div className={`worksheet-generator-container ${fullWidth ? "w-full" : ""}`}>
+      <button 
+        onClick={() => setIsOpen(true)} 
+        className={fullWidth ? "btn-primary w-full flex-center gap-2 mb-6" : "btn-primary flex-center gap-2"}
+      >
         <Download size={16} /> Generate Practice Worksheet
       </button>
 
@@ -259,8 +296,35 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
                 Configure your custom worksheet below. This generates unique, randomized practice problems matching **{lessonTitle}** standard **{ccss}**.
               </p>
 
+              {/* Title Input */}
+              <div className="form-group mt-4 text-left">
+                <label htmlFor="customTitle" className="form-label">Worksheet Title</label>
+                <input
+                  type="text"
+                  id="customTitle"
+                  value={customTitle}
+                  onChange={(e) => setCustomTitle(e.target.value)}
+                  className="form-input-field mt-1"
+                  placeholder="Enter custom worksheet title..."
+                />
+              </div>
+
+              {/* Instructions Input */}
+              <div className="form-group mt-4 text-left">
+                <label htmlFor="customInstructions" className="form-label">Instructions</label>
+                <textarea
+                  id="customInstructions"
+                  value={customInstructions}
+                  onChange={(e) => setCustomInstructions(e.target.value)}
+                  className="form-input-field mt-1"
+                  rows={2}
+                  style={{ height: "auto", minHeight: "60px", padding: "0.5rem" }}
+                  placeholder="Enter custom solving instructions..."
+                />
+              </div>
+
               {/* Problem Count */}
-              <div className="form-group mt-6">
+              <div className="form-group mt-4 text-left">
                 <label className="form-label">Number of Problems</label>
                 <div className="flex gap-2 mt-2">
                   {[5, 10, 15].map((num) => (
@@ -277,9 +341,9 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
               </div>
 
               {/* Include Answers Option */}
-              <div className="form-group mt-6">
+              <div className="form-group mt-4">
                 <div className="flex-between items-center checkbox-row">
-                  <div>
+                  <div className="text-left">
                     <label className="form-label">Include Answer Key</label>
                     <p className="text-xs text-muted">Generates a second page with step-by-step solving solutions.</p>
                   </div>
@@ -294,7 +358,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss }) {
               </div>
             </div>
 
-            <div className="modal-footer flex-end gap-2 mt-8">
+            <div className="modal-footer flex-end gap-2 mt-6">
               <button onClick={() => setIsOpen(false)} className="btn-secondary">
                 Cancel
               </button>

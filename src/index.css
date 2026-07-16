@@ -3001,10 +3001,11 @@ h1, h2, h3, h4, h5, h6 {
   background-color: rgba(9, 13, 22, 0.4);
   backdrop-filter: blur(4px);
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Aligns modal to the top of screen */
   justify-content: center;
   z-index: 1000;
-  padding: 1.5rem;
+  padding: 4rem 1.5rem; /* Pushes modal down slightly from top boundary */
+  overflow-y: auto;
   animation: fadeIn 0.2s ease-out;
 }
 

@@ -292,14 +292,7 @@ export default function Curriculum() {
                       <span className="lesson-ccss-badge">CCSS: {activeLesson.ccss}</span>
                     )}
                   </div>
-                  <div className="flex-between items-center flex-wrap gap-4 mb-6">
-                    <h1 className="lesson-main-title m-0">{activeLesson.title}</h1>
-                    <WorksheetGenerator
-                      lessonId={activeLesson.id}
-                      lessonTitle={activeLesson.title}
-                      ccss={activeLesson.ccss}
-                    />
-                  </div>
+                  <h1 className="lesson-main-title">{activeLesson.title}</h1>
                   <div className="lesson-intro">
                     <p>{activeLesson.introduction}</p>
                   </div>
@@ -397,6 +390,12 @@ export default function Curriculum() {
 
                 {/* Sidebar Cards */}
                 <div className="lesson-sidebar">
+                  <WorksheetGenerator
+                    lessonId={activeLesson.id}
+                    lessonTitle={activeLesson.title}
+                    ccss={activeLesson.ccss}
+                    fullWidth={true}
+                  />
                   {/* Prerequisites Card */}
                   {activeLesson.prerequisites && (
                     <div className="sidebar-card prereq-card">

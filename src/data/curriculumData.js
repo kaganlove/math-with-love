@@ -885,13 +885,13 @@ export const sampleLessons = {
     animationSteps: [
       {
         equation: "3(x + 2) - 5 = 13",
-        desc: "Find x. We must perform inverse operations on both sides to keep the equation balanced.",
+        desc: "Find x. We must perform inverse operations on both sides to keep the scale balanced.",
         leftTerms: [{ val: "3(x + 2) - 5", active: false, color: "slate" }],
         rightTerms: [{ val: "13", active: false, color: "slate" }]
       },
       {
         equation: "3x + 6 - 5 = 13",
-        desc: "Distribute the 3 to terms inside the parenthesis: 3 * x and 3 * 2. This clears the parenthesis.",
+        desc: "Distribute the 3 to terms inside the parenthesis: multiply 3 by x, and 3 by 2. This clears the parenthesis.",
         leftTerms: [
           { val: "3x", active: true, color: "blue" },
           { val: " + 6", active: true, color: "orange" },
@@ -901,7 +901,7 @@ export const sampleLessons = {
       },
       {
         equation: "3x + 1 = 13",
-        desc: "Combine constants on the left side: +6 and -5 simplifies to +1.",
+        desc: "Combine constant numbers on the left side: +6 and -5 simplifies to +1.",
         leftTerms: [
           { val: "3x", active: false, color: "slate" },
           { val: " + 1", active: true, color: "orange" }
@@ -909,14 +909,38 @@ export const sampleLessons = {
         rightTerms: [{ val: "13", active: false, color: "slate" }]
       },
       {
+        equation: "3x + 1 - 1 = 13 - 1",
+        desc: "Balance Operation: To isolate the x term, we undo the +1 constant by subtracting 1 from BOTH sides of the equation.",
+        leftTerms: [
+          { val: "3x + 1", active: false, color: "slate" },
+          { val: " - 1", active: true, color: "red" }
+        ],
+        rightTerms: [
+          { val: "13", active: false, color: "slate" },
+          { val: " - 1", active: true, color: "red" }
+        ]
+      },
+      {
         equation: "3x = 12",
-        desc: "Subtract 1 from both sides to isolate the x term. Left: +1 - 1 = 0. Right: 13 - 1 = 12.",
+        desc: "Simplify: Perform the subtraction on both sides. On the left: +1 - 1 = 0. On the right: 13 - 1 = 12.",
         leftTerms: [{ val: "3x", active: true, color: "blue" }],
         rightTerms: [{ val: "12", active: true, color: "orange" }]
       },
       {
+        equation: "3x / 3 = 12 / 3",
+        desc: "Balance Operation: To isolate x completely, we undo the multiplication of 3 by dividing BOTH sides of the equation by 3.",
+        leftTerms: [
+          { val: "3x", active: false, color: "slate" },
+          { val: " / 3", active: true, color: "red" }
+        ],
+        rightTerms: [
+          { val: "12", active: false, color: "slate" },
+          { val: " / 3", active: true, color: "red" }
+        ]
+      },
+      {
         equation: "x = 4",
-        desc: "Divide both sides by 3 to isolate x. Left: 3x / 3 = x. Right: 12 / 3 = 4. We found x!",
+        desc: "Simplify: Perform the division on both sides. On the left: 3x / 3 = x. On the right: 12 / 3 = 4. x is now isolated and solved!",
         leftTerms: [{ val: "x", active: true, color: "blue" }],
         rightTerms: [{ val: "4", active: true, color: "green" }]
       }
