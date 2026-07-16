@@ -42,6 +42,97 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             `Subtract ${min} from ${max}: x = ${max - min}`
           ];
         }
+      } else if (lessonId === "hsa-sse-1b") {
+        const groups = ["(x + y)", "(a + b)", "(2x - 3)", "(p + q)", "(1 + r)"];
+        const group = groups[i % groups.length];
+        const coeff1 = Math.floor(Math.random() * 5) + 2;
+        const coeff2 = Math.floor(Math.random() * 4) + 1;
+        const constVal = Math.floor(Math.random() * 8) + 1;
+        
+        equationText = `Treat the compound term as a single entity 'u' and rewrite the expression:\n${coeff1}${group}² - ${coeff2}${group} + ${constVal}`;
+        solutionText = `${coeff1}u² - ${coeff2}u + ${constVal}  (where u = ${group})`;
+        stepsText = [
+          `Original: ${coeff1}${group}² - ${coeff2}${group} + ${constVal}`,
+          `Identify the repeated compound grouping: ${group}`,
+          `Let u = ${group} to rewrite the expression: ${solutionText}`
+        ];
+      } else if (lessonId === "hsa-sse-2") {
+        if (i % 2 === 0) {
+          const bases = [3, 4, 5, 2];
+          const b = bases[i % bases.length];
+          const bSq = b * b;
+          const bQuad = bSq * bSq;
+          equationText = `Factor completely using difference of squares:\nx⁴ - ${bQuad}`;
+          solutionText = `(x - ${b})(x + ${b})(x² + ${bSq})`;
+          stepsText = [
+            `Original: x⁴ - ${bQuad}`,
+            `Rewrite as squares: (x²)² - (${bSq})²`,
+            `First factor step: (x² - ${bSq})(x² + ${bSq})`,
+            `Factor (x² - ${bSq}) further: (x - ${b})(x + ${b})(x² + ${bSq})`
+          ];
+        } else {
+          const a = Math.floor(Math.random() * 4) + 2;
+          const b = Math.floor(Math.random() * 3) + 2;
+          equationText = `Factor by grouping:\nx³ + ${a}x² + ${b}x + ${a*b}`;
+          solutionText = `(x² + ${b})(x + ${a})`;
+          stepsText = [
+            `Original: x³ + ${a}x² + ${b}x + ${a*b}`,
+            `Group first two and last two terms: x²(x + ${a}) + ${b}(x + ${a})`,
+            `Factor out the common binomial (x + ${a}): (x² + ${b})(x + ${a})`
+          ];
+        }
+      } else if (lessonId === "hsa-sse-3b") {
+        const b = (Math.floor(Math.random() * 5) + 2) * 2; // 4, 6, 8, 10, 12
+        const halfB = b / 2;
+        const halfBSq = halfB * halfB;
+        const c = Math.floor(Math.random() * 15) + 1;
+        const remainder = c - halfBSq;
+        const remSign = remainder >= 0 ? `+ ${remainder}` : `- ${Math.abs(remainder)}`;
+        
+        equationText = `Rewrite in vertex form by completing the square:\nx² + ${b}x + ${c}`;
+        solutionText = `(x + ${halfB})² ${remSign}`;
+        stepsText = [
+          `Original expression: x² + ${b}x + ${c}`,
+          `Find half of the linear term coefficient: ${b} / 2 = ${halfB}`,
+          `Square it to find the perfect square constant: ${halfB}² = ${halfBSq}`,
+          `Add and subtract ${halfBSq} to balance: x² + ${b}x + ${halfBSq} - ${halfBSq} + ${c}`,
+          `Factor trinomial and combine remaining constants: (x + ${halfB})² ${remSign}`
+        ];
+      } else if (lessonId === "hsa-sse-3c") {
+        const rates = [1.12, 1.15, 1.08, 1.24];
+        const base = rates[i % rates.length];
+        const pct = Math.round((base - 1) * 100);
+        const monthlyBase = Math.round(Math.pow(base, 1/12) * 10000) / 10000;
+        const monthlyPct = Math.round((monthlyBase - 1) * 10000) / 100;
+        
+        equationText = `An account grows annually by ${pct}%: ${base}^t. Find the equivalent monthly compounding rate formula.`;
+        solutionText = `(${monthlyBase})^(12t)  (approx. ${monthlyPct}% monthly rate)`;
+        stepsText = [
+          `Annual formula: ${base}^t`,
+          `Set up monthly intervals (1/12 scale): (${base}^(1/12))^(12t)`,
+          `Evaluate the inner base: ${base}^(1/12) ≈ ${monthlyBase}`,
+          `New growth base: (${monthlyBase})^(12t)`
+        ];
+      } else if (lessonId === "hsa-sse-4") {
+        const a = Math.floor(Math.random() * 3) + 2; // 2 to 4
+        const r = Math.floor(Math.random() * 2) + 2; // 2 to 3
+        const n = Math.floor(Math.random() * 2) + 3; // 3 to 4
+        
+        const termsList = [];
+        for (let k = 0; k < n; k++) {
+          termsList.push(a * Math.pow(r, k));
+        }
+        const seriesText = termsList.join(" + ");
+        const sumVal = a * (Math.pow(r, n) - 1) / (r - 1);
+        
+        equationText = `Find the sum of the finite geometric series:\n${seriesText}`;
+        solutionText = `Sn = ${sumVal}`;
+        stepsText = [
+          `Series: ${seriesText}  (where a = ${a}, r = ${r}, n = ${n})`,
+          `Formula: Sn = a(1 - r^n) / (1 - r)`,
+          `Calculate: Sn = ${a}(1 - ${r}^${n}) / (1 - ${r}) = ${a}(1 - ${Math.pow(r, n)}) / (${1 - r})`,
+          `Result: Sn = ${sumVal}`
+        ];
       } else if (lessonId === "hsa-sse-3a") {
         const p = Math.floor(Math.random() * 8) - 4 || 2; // -4 to 4, non-zero
         const q = Math.floor(Math.random() * 8) - 4 || 3; // -4 to 4, non-zero
@@ -168,7 +259,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
 
       list.push({
         num: i + 1,
-        question: lessonId === "hsa-sse-1a" || lessonId === "hsa-sse-3a" || lessonId === "hsa-rei-6" ? `${equationText}` : `Solve for x:\n${equationText}`,
+        question: (lessonId && lessonId.startsWith("hsa-sse-")) || lessonId === "hsa-rei-6" ? `${equationText}` : `Solve for x:\n${equationText}`,
         solution: solutionText,
         steps: stepsText
       });

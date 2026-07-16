@@ -1242,6 +1242,161 @@ export const sampleLessons = {
       }
     ]
   },
+  "hsa-sse-1b": {
+    id: "hsa-sse-1b",
+    title: "Interpret Complicated Expressions as Single Entities",
+    subtitle: "Algebra 1 Expressions",
+    duration: "25 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-SSE.A.1.b",
+    prerequisites: [
+      { id: "hsa-sse-1a", title: "Interpret Parts of an Expression (HSA-SSE.A.1.a)" }
+    ],
+    introduction: "In algebra, we can often simplify our understanding of a complicated expression by viewing one or more of its parts as a single variable or 'entity'. For example, in the expression P(1 + r)^t, we can treat (1 + r) as a single scale factor that determines growth.",
+    steps: [
+      {
+        title: "Step 1: Identify Nested Groupings",
+        content: "Locate parentheses containing operations. In 5(x + 3)² - 4, the nested group is (x + 3)."
+      },
+      {
+        title: "Step 2: Substitute with a Single Variable",
+        content: "Temporarily replace the grouping with a letter like 'u'. The expression 5(x + 3)² - 4 becomes 5u² - 4, which is a simple quadratic expression."
+      },
+      {
+        title: "Step 3: Analyze the Overall Structure",
+        content: "Interpret what the simplified expression represents. The growth formula P(1 + r)^t is a simple exponential growth expression P * u^t, where u is the compounding growth factor."
+      }
+    ],
+    mathBox: {
+      title: "Group Substitution Guide",
+      equations: [
+        { desc: "Original Compound Expression", formula: "P(1 + r)^t" },
+        { desc: "Let u represent the compound entity", formula: "u = (1 + r)" },
+        { desc: "Simplified Exponential Form", formula: "P * u^t" }
+      ]
+    },
+    animationSteps: [
+      {
+        equation: "P(1 + r)^t",
+        desc: "Compound Form: This represents compound interest where r is the interest rate, but (1 + r) is a single multiplier.",
+        left: { type: "expression", action: null, terms: [{ val: "P", color: "slate" }, { val: "(1 + r)", color: "blue", active: true }, { val: "^t", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Compound rate group", color: "blue" }] }
+      },
+      {
+        equation: "Let u = 1 + r",
+        desc: "Substitution Step: We define a new variable u to represent the entire term (1 + r).",
+        left: { type: "expression", action: null, terms: [{ val: "u", color: "green" }] },
+        right: { type: "expression", action: null, terms: [{ val: "1 + r", color: "blue" }] }
+      },
+      {
+        equation: "P * u^t",
+        desc: "Simplified Form: Replacing the group with u reveals a standard exponential growth function, making it easier to analyze.",
+        left: { type: "expression", action: null, terms: [{ val: "P", color: "slate" }, { val: "u", color: "green", active: true }, { val: "^t", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Standard Exponential", color: "green" }] }
+      }
+    ],
+    practiceQuestions: [
+      {
+        question: "In the expression 4(x + y)² - 3(x + y) + 2, if we substitute u = x + y, what is the resulting structure?",
+        options: ["4u² - 3u + 2", "4u - 3u + 2", "u² - u + 2", "4u² + 2"],
+        correctIndex: 0,
+        explanation: "Replacing every occurrence of (x + y) with u gives 4u² - 3u + 2."
+      },
+      {
+        question: "For the formula A = P(1 + r)^n, treating (1 + r) as a single entity helps us see it as:",
+        options: ["A linear growth factor", "A constant exponent", "A single compounding base", "A variable coefficient"],
+        correctIndex: 2,
+        explanation: "Treating (1 + r) as a single base u simplifies it to A = P(u)^n, which is a standard exponential base."
+      },
+      {
+        question: "In the expression 3(2x + 1)³ - 7, what is the best choice of entity to simplify the expression?",
+        options: ["3", "2x", "2x + 1", "7"],
+        correctIndex: 2,
+        explanation: "The quantity inside parentheses, 2x + 1, is the best entity to substitute to get the simple cubic form 3u³ - 7."
+      }
+    ]
+  },
+  "hsa-sse-2": {
+    id: "hsa-sse-2",
+    title: "Use Structure to Rewrite Expressions",
+    subtitle: "Algebra 1 Expressions",
+    duration: "40 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-SSE.A.2",
+    prerequisites: [
+      { id: "hsa-sse-1a", title: "Interpret Parts of an Expression (HSA-SSE.A.1.a)" }
+    ],
+    introduction: "Algebraic expressions often contain hidden patterns. By recognizing structural patterns like the difference of squares or common factor groups, we can rewrite expressions into useful equivalent forms.",
+    steps: [
+      {
+        title: "Step 1: Look for Difference of Squares",
+        content: "Recognize the difference of two perfect squares: a² - b² = (a - b)(a + b). For example, x² - 9 = (x - 3)(x + 3)."
+      },
+      {
+        title: "Step 2: Group Terms to Factor",
+        content: "For four-term polynomials, group the first two terms and the last two terms to extract common factors: x³ + x² + 2x + 2 = x²(x + 1) + 2(x + 1) = (x² + 2)(x + 1)."
+      },
+      {
+        title: "Step 3: Factor Higher-Order Powers",
+        content: "Rewrite higher powers using square patterns: x⁴ - y⁴ = (x²)² - (y²)² = (x² - y²)(x² + y²)."
+      }
+    ],
+    mathBox: {
+      title: "Structural Identities",
+      equations: [
+        { desc: "Difference of Squares", formula: "a² - b² = (a - b)(a + b)" },
+        { desc: "Grouping Structure", formula: "x(a + b) + y(a + b) = (x + y)(a + b)" }
+      ]
+    },
+    animationSteps: [
+      {
+        equation: "x⁴ - y⁴",
+        desc: "Original Expression: A binomial with fourth powers. We can rewrite these as squares of squares.",
+        left: { type: "expression", action: null, terms: [{ val: "x⁴", color: "blue" }, { val: " - ", color: "slate" }, { val: "y⁴", color: "red" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Initial Expression", color: "slate" }] }
+      },
+      {
+        equation: "(x²)² - (y²)²",
+        desc: "Rewrite as Squares: Express x⁴ as (x²)² and y⁴ as (y²)² to fit the difference of squares format.",
+        left: { type: "expression", action: null, terms: [{ val: "(x²)", color: "blue", active: true }, { val: "² - ", color: "slate" }, { val: "(y²)", color: "red", active: true }, { val: "²", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "a² - b² pattern", color: "green" }] }
+      },
+      {
+        equation: "(x² - y²)(x² + y²)",
+        desc: "First Factoring: Apply the difference of squares rule using a = x² and b = y².",
+        left: { type: "expression", action: null, terms: [{ val: "(x² - y²)", color: "blue" }, { val: "(x² + y²)", color: "red" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Binomial factors", color: "green" }] }
+      },
+      {
+        equation: "(x - y)(x + y)(x² + y²)",
+        desc: "Complete Factoring: Recognize that (x² - y²) is itself a difference of squares and can be factored further.",
+        left: { type: "expression", action: null, terms: [{ val: "(x - y)(x + y)", color: "blue", active: true }, { val: "(x² + y²)", color: "red" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Fully Factored Form", color: "green" }] }
+      }
+    ],
+    practiceQuestions: [
+      {
+        question: "Factor completely: 9x² - 25",
+        options: ["(3x - 5)(3x + 5)", "(9x - 5)(x + 5)", "(3x - 5)²", "(9x - 25)(x + 1)"],
+        correctIndex: 0,
+        explanation: "9x² is (3x)² and 25 is 5². The difference of squares is (3x - 5)(3x + 5)."
+      },
+      {
+        question: "Factor by grouping: x³ + 3x² + 4x + 12",
+        options: ["(x² + 3)(x + 4)", "(x² + 4)(x + 3)", "(x² - 4)(x - 3)", "(x + 3)(x + 4)"],
+        correctIndex: 1,
+        explanation: "Group as x²(x + 3) + 4(x + 3). Factoring out the common binomial gives (x² + 4)(x + 3)."
+      },
+      {
+        question: "Which of the following is equivalent to x⁴ - 81?",
+        options: ["(x - 3)(x + 3)(x² + 9)", "(x - 9)(x + 9)", "(x² - 9)²", "(x - 3)⁴"],
+        correctIndex: 0,
+        explanation: "x⁴ - 81 = (x² - 9)(x² + 9) = (x - 3)(x + 3)(x² + 9)."
+      }
+    ]
+  },
   "hsa-sse-3a": {
     id: "hsa-sse-3a",
     title: "Factor Quadratics to Reveal Zeros",
@@ -1327,6 +1482,248 @@ export const sampleLessons = {
         options: ["(x - 5)(x + 4)", "(x + 5)(x - 4)", "(x - 10)(x + 2)", "(x - 2)(x + 10)"],
         correctIndex: 0,
         explanation: "We need two numbers that multiply to -20 and add to -1. These numbers are -5 and 4: (x - 5)(x + 4)."
+      }
+    ]
+  },
+  "hsa-sse-3b": {
+    id: "hsa-sse-3b",
+    title: "Complete the Square to Find Extremes",
+    subtitle: "Algebra 1 Quadratics",
+    duration: "35 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-SSE.B.3.b",
+    prerequisites: [
+      { id: "hsa-sse-3a", title: "Factor Quadratics to Reveal Zeros (HSA-SSE.B.3.a)" }
+    ],
+    introduction: "Completing the square is an algebraic technique used to rewrite a quadratic expression x² + bx + c in the vertex form (x - h)² + k. This form immediately reveals the vertex (h, k), which is the maximum or minimum point.",
+    steps: [
+      {
+        title: "Step 1: Calculate (b / 2)¹",
+        content: "Take the coefficient of the middle linear term (b), divide it by 2, and square the result. For x² + 6x, b = 6, so (6 / 2)² = 9."
+      },
+      {
+        title: "Step 2: Add and Subtract this Constant",
+        content: "Add and subtract this value inside the expression to keep it equivalent: x² + 6x + 9 - 9."
+      },
+      {
+        title: "Step 3: Write in Vertex Form",
+        content: "Factor the perfect square trinomial (x² + bx + (b/2)²) into (x + b/2)² and combine remaining constants: (x + 3)² - 9."
+      }
+    ],
+    mathBox: {
+      title: "Vertex Form formula",
+      equations: [
+        { desc: "Standard Form", formula: "x² + bx + c" },
+        { desc: "Vertex Form", formula: "(x - h)² + k" },
+        { desc: "Extremum Vertex", formula: "Vertex coordinate: (h, k)" }
+      ]
+    },
+    animationSteps: [
+      {
+        equation: "x² + 6x + 5",
+        desc: "Original Expression: We want to find the minimum of this quadratic by rewriting it in vertex form.",
+        left: { type: "expression", action: null, terms: [{ val: "x² + 6x", color: "blue" }, { val: " + 5", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "c = 5", color: "slate" }] }
+      },
+      {
+        equation: "x² + 6x + 9 - 9 + 5",
+        desc: "Complete the Square: Calculate (6 / 2)² = 9. Add and subtract 9 to keep the expression balanced.",
+        left: { type: "expression", action: null, terms: [{ val: "x² + 6x + 9", color: "blue", active: true }, { val: " - 9 + 5", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Added/subtracted 9", color: "green" }] }
+      },
+      {
+        equation: "(x + 3)² - 9 + 5",
+        desc: "Factor Trinomial: Factor the perfect square trinomial x² + 6x + 9 into (x + 3)².",
+        left: { type: "expression", action: null, terms: [{ val: "(x + 3)²", color: "blue" }, { val: " - 9 + 5", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Perfect square binomial", color: "green" }] }
+      },
+      {
+        equation: "(x + 3)² - 4",
+        desc: "Simplify Constants: Combine -9 + 5 to get -4. The minimum value is -4, occurring at x = -3 (Vertex: -3, -4).",
+        left: { type: "expression", action: null, terms: [{ val: "(x + 3)²", color: "blue" }, { val: " - 4", color: "green", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "Minimum value: -4", color: "green" }] }
+      }
+    ],
+    practiceQuestions: [
+      {
+        question: "Complete the square for x² + 8x. What is the value that completes the square?",
+        options: ["4", "8", "16", "64"],
+        correctIndex: 2,
+        explanation: "Take b = 8, divide by 2 to get 4, and square it: 4² = 16."
+      },
+      {
+        question: "Rewrite x² - 10x + 30 in vertex form.",
+        options: ["(x - 5)² + 5", "(x - 5)² - 25", "(x + 5)² + 5", "(x - 10)² + 30"],
+        correctIndex: 0,
+        explanation: "(b/2)² = (-10/2)² = 25. Add/subtract 25: x² - 10x + 25 - 25 + 30 = (x - 5)² + 5."
+      },
+      {
+        question: "For the function f(x) = (x - 4)² + 7, what is the minimum value of f(x)?",
+        options: ["4", "-4", "7", "-7"],
+        correctIndex: 2,
+        explanation: "The vertex form reveals the minimum value is the constant term outside, which is 7."
+      }
+    ]
+  },
+  "hsa-sse-3c": {
+    id: "hsa-sse-3c",
+    title: "Transform Exponential Expressions",
+    subtitle: "Algebra 1 Exponential",
+    duration: "30 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-SSE.B.3.c",
+    prerequisites: [
+      { id: "hsa-sse-1a", title: "Interpret Parts of an Expression (HSA-SSE.A.1.a)" }
+    ],
+    introduction: "Using the laws of exponents, we can rewrite exponential growth functions to change scales, such as converting an annual growth rate to find an equivalent monthly rate.",
+    steps: [
+      {
+        title: "Step 1: Represent the Time Conversion",
+        content: "Since there are 12 months in a year, represent annual time t as 12m, where m is the number of months: t = 12m."
+      },
+      {
+        title: "Step 2: Apply Exponent Power of a Power Law",
+        content: "Rewrite base^t as base^(12 * m/12) = (base^(1/12))^(12t). This isolates the monthly scaling base."
+      },
+      {
+        title: "Step 3: Calculate the New Base",
+        content: "Compute the inner base decimal. For example, 1.15^(1/12) ≈ 1.0117. This reveals a monthly interest rate of approximately 1.17%."
+      }
+    ],
+    mathBox: {
+      title: "Exponent Scaling Rule",
+      equations: [
+        { desc: "Annual Growth Form", formula: "(1 + r)^t" },
+        { desc: "Split Exponent", formula: "((1 + r)^(1/k))^(kt)" },
+        { desc: "New Growth Base", formula: "B^(kt) where B = (1+r)^(1/k)" }
+      ]
+    },
+    animationSteps: [
+      {
+        equation: "1.15^t",
+        desc: "Annual Growth: 1.15^t represents a 15% annual growth rate. We want to find the monthly rate.",
+        left: { type: "expression", action: null, terms: [{ val: "1.15", color: "blue" }, { val: "^t", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "15% annual rate", color: "slate" }] }
+      },
+      {
+        equation: "(1.15^(1/12))^(12t)",
+        desc: "Exponent Division: Rewrite the exponent t as 12 * (t / 12) to structure it for 12 compounding periods.",
+        left: { type: "expression", action: null, terms: [{ val: "(1.15^(1/12))", color: "blue", active: true }, { val: "^(12t)", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Power of power rule", color: "green" }] }
+      },
+      {
+        equation: "(1.0117)^(12t)",
+        desc: "Calculate Base: Evaluate 1.15^(1/12) ≈ 1.0117. This is the equivalent compounding monthly base.",
+        left: { type: "expression", action: null, terms: [{ val: "1.0117", color: "green", active: true }, { val: "^(12t)", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Monthly growth base", color: "green" }] }
+      },
+      {
+        equation: "(1 + 0.0117)^(12t)",
+        desc: "Interpret Rate: The decimal 0.0117 reveals an equivalent monthly growth rate of approximately 1.17%.",
+        left: { type: "expression", action: null, terms: [{ val: "1 + 0.0117", color: "green" }] },
+        right: { type: "expression", action: null, terms: [{ val: "1.17% monthly rate", color: "green" }] }
+      }
+    ],
+    practiceQuestions: [
+      {
+        question: "Which of the following is equivalent to (3^2t)?",
+        options: ["9^t", "6^t", "3^t", "5^t"],
+        correctIndex: 0,
+        explanation: "By exponent rules, 3^(2t) = (3²)^t = 9^t."
+      },
+      {
+        question: "If an investment grows by 12% annually (1.12^t), what calculation gives the monthly factor?",
+        options: ["1.12 / 12", "1.12 * 12", "1.12^(1/12)", "1.12^12"],
+        correctIndex: 2,
+        explanation: "To find the monthly multiplier, we take the 12th root of the annual multiplier, which is 1.12^(1/12)."
+      },
+      {
+        question: "Simplify the expression (2^4t) * (2^t) into a single power of 2.",
+        options: ["2^5t", "4^5t", "2^4t²", "2^3t"],
+        correctIndex: 0,
+        explanation: "Add exponents when multiplying like bases: 4t + t = 5t, giving 2^(5t)."
+      }
+    ]
+  },
+  "hsa-sse-4": {
+    id: "hsa-sse-4",
+    title: "Sum of a Finite Geometric Series Formula",
+    subtitle: "Algebra 1 Series",
+    duration: "45 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-SSE.B.4",
+    prerequisites: [
+      { id: "hsa-sse-1a", title: "Interpret Parts of an Expression (HSA-SSE.A.1.a)" }
+    ],
+    introduction: "A geometric series is the sum of terms that have a constant ratio. The sum of the first n terms of a geometric series Sn = a + ar + ar² + ... + ar^(n-1) can be derived by multiplying the series by the ratio and subtracting it.",
+    steps: [
+      {
+        title: "Step 1: Write the Sum Equation",
+        content: "Express the sum of the series: Sn = a + ar + ar² + ... + ar^(n-1)."
+      },
+      {
+        title: "Step 2: Multiply by r",
+        content: "Multiply every term in the equation by the common ratio r: r * Sn = ar + ar² + ar³ + ... + ar^n."
+      },
+      {
+        title: "Step 3: Subtract and Factor",
+        content: "Subtract the two equations: Sn - r * Sn = a - ar^n. Factor both sides: Sn(1 - r) = a(1 - r^n). Divide by (1 - r) to get Sn = a(1 - r^n) / (1 - r)."
+      }
+    ],
+    mathBox: {
+      title: "Geometric Series Formula",
+      equations: [
+        { desc: "Geometric Series Sum", formula: "Sn = a + ar + ar² + ... + ar^(n-1)" },
+        { desc: "Derived Sum Formula", formula: "Sn = a * (1 - r^n) / (1 - r)" }
+      ]
+    },
+    animationSteps: [
+      {
+        equation: "Sn = a + ar + ar² + ... + ar^(n-1)",
+        desc: "Original Sum: The sum of the first n terms of a geometric series with first term a and ratio r.",
+        left: { type: "expression", action: null, terms: [{ val: "Sn", color: "blue" }] },
+        right: { type: "expression", action: null, terms: [{ val: "a + ar + ... + ar^(n-1)", color: "slate" }] }
+      },
+      {
+        equation: "r*Sn = ar + ar² + ar³ + ... + ar^n",
+        desc: "Multiply by r: Scale the entire equation by the common ratio r. Every term shifts up one power of r.",
+        left: { type: "expression", action: null, terms: [{ val: "r*Sn", color: "blue", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "ar + ar² + ... + ar^n", color: "slate" }] }
+      },
+      {
+        equation: "Sn - r*Sn = a - ar^n",
+        desc: "Subtract Equations: Subtracting the second equation from the first cancels out all the intermediate terms (ar, ar², ..., ar^(n-1)), leaving only a and -ar^n.",
+        left: { type: "expression", action: null, terms: [{ val: "Sn - r*Sn", color: "blue" }] },
+        right: { type: "expression", action: null, terms: [{ val: "a - ar^n", color: "red", active: true }] }
+      },
+      {
+        equation: "Sn = a(1 - r^n) / (1 - r)",
+        desc: "Factor and Solve: Factor out Sn on the left and a on the right: Sn(1 - r) = a(1 - r^n). Divide by (1 - r) to complete the proof.",
+        left: { type: "expression", action: null, terms: [{ val: "Sn", color: "blue" }] },
+        right: { type: "expression", action: null, terms: [{ val: "a(1 - r^n) / (1 - r)", color: "green", active: true }] }
+      }
+    ],
+    practiceQuestions: [
+      {
+        question: "Find the sum of the first 4 terms of the series: 3 + 6 + 12 + 24",
+        options: ["45", "48", "30", "42"],
+        correctIndex: 0,
+        explanation: "Here, a = 3, r = 2, n = 4. Sn = 3(1 - 2⁴)/(1 - 2) = 3(-15)/(-1) = 45."
+      },
+      {
+        question: "What is the common ratio r in the geometric series: 5 - 15 + 45 - 135?",
+        options: ["3", "-3", "10", "-10"],
+        correctIndex: 1,
+        explanation: "Divide the second term by the first: -15 / 5 = -3."
+      },
+      {
+        question: "If Sn = a(1 - r^n)/(1 - r), what happens to the sum as n gets very large if |r| < 1?",
+        options: ["It approaches infinity", "It approaches zero", "It approaches a / (1 - r)", "It approaches a"],
+        correctIndex: 2,
+        explanation: "If |r| < 1, then r^n approaches 0 as n goes to infinity, simplifying the formula to a / (1 - r)."
       }
     ]
   },
