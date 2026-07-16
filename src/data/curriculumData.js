@@ -1075,6 +1075,289 @@ export const sampleLessons = {
         explanation: "1) Subtract 8 from both sides: -2x = 8. \n2) Divide both sides by -2: x = 8 / -2 = -4."
       }
     ]
+  },
+  "hsa-sse-1": {
+    id: "hsa-sse-1",
+    title: "Interpret Parts of an Expression",
+    subtitle: "Algebra 1 Expressions",
+    duration: "25 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-SSE.A.1",
+    prerequisites: [
+      { id: "like-terms", title: "Combining Like Terms (6.EE.A.3)" },
+      { id: "order-operations", title: "Order of Operations (5.OA.A.1)" }
+    ],
+    introduction: "Algebraic expressions contain variables, coefficients, operators, and constants. Interpreting these parts allows us to understand the underlying structure of equations, formulas, and real-world math applications.",
+    steps: [
+      {
+        title: "Step 1: Identify the Terms",
+        content: "Terms are parts of an expression separated by addition (+) or subtraction (-) operators. For example, in 3x + 5, '3x' and '5' are terms."
+      },
+      {
+        title: "Step 2: Identify Coefficients and Variables",
+        content: "A coefficient is a numerical factor multiplied by a variable. In 3x, '3' is the coefficient and 'x' is the variable."
+      },
+      {
+        title: "Step 3: Identify Constants and Factors",
+        content: "Constants are fixed numbers with no variable part (like '5'). Factors are quantities multiplied together (like the quantity (x + 2) in 3(x + 2))."
+      }
+    ],
+    mathBox: {
+      title: "Parts of an Expression Guide",
+      equations: [
+        { desc: "General Expression", formula: "ax + b" },
+        { desc: "ax term components", formula: "a = Coefficient,  x = Variable" },
+        { desc: "b term component", formula: "b = Constant Term" }
+      ]
+    },
+    animationSteps: [
+      {
+        equation: "3(x + 4) + 7",
+        desc: "Original Expression: We will analyze the terms, factors, coefficients, and constants in this algebraic expression.",
+        left: { type: "expression", action: null, terms: [{ val: "3(x + 4) + 7", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Expression", color: "green" }] }
+      },
+      {
+        equation: "3(x + 4) + 7",
+        desc: "Identify Terms: Terms are separated by plus/minus signs. Here, 3(x + 4) and 7 are the two terms.",
+        left: { type: "expression", action: null, terms: [{ val: "3(x + 4)", color: "blue", active: true }, { val: " and ", color: "slate" }, { val: "7", color: "blue", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "2 Terms", color: "green" }] }
+      },
+      {
+        equation: "3(x + 4) + 7",
+        desc: "Identify Coefficients and Factors: 3 is the coefficient of the quantity (x + 4), and (x + 4) is a binomial factor.",
+        left: { type: "expression", action: null, terms: [{ val: "3", color: "red", active: true }, { val: " is coefficient, ", color: "slate" }, { val: "(x + 4)", color: "purple", active: true }, { val: " is factor", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Factors", color: "green" }] }
+      },
+      {
+        equation: "3(x + 4) + 7",
+        desc: "Identify Constants: 7 is a constant term because it has a fixed value and does not contain a variable.",
+        left: { type: "expression", action: null, terms: [{ val: "7", color: "green", active: true }, { val: " is the Constant", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Constant", color: "green" }] }
+      }
+    ],
+    practiceQuestions: [
+      {
+        question: "In the expression 5x - 3, what is the coefficient?",
+        options: ["5", "x", "-3", "5x"],
+        correctIndex: 0,
+        explanation: "The coefficient is the numerical factor multiplied by the variable. Here, 5 is multiplied by x."
+      },
+      {
+        question: "Which of the following is a constant term in 2(x + 4) + 9?",
+        options: ["2", "x", "4", "9"],
+        correctIndex: 3,
+        explanation: "The constant term is 9 because it is a fixed number and not associated with a variable."
+      },
+      {
+        question: "In the expression P(1 + r)^t, what does (1 + r) represent?",
+        options: ["A single constant", "A binomial factor", "A coefficient", "An exponent"],
+        correctIndex: 1,
+        explanation: "The quantity (1 + r) is a factor consisting of two terms, making it a binomial factor in the expression."
+      },
+      {
+        question: "How many terms are in the expression 3x² - 5x + 12?",
+        options: ["1", "2", "3", "4"],
+        correctIndex: 2,
+        explanation: "There are three terms separated by operators: 3x², -5x, and 12."
+      }
+    ]
+  },
+  "factoring-quadratics": {
+    id: "factoring-quadratics",
+    title: "Factoring Quadratic Trinomials (x² + bx + c)",
+    subtitle: "Algebra 1 Quadratics",
+    duration: "40 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-SSE.A.2",
+    prerequisites: [
+      { id: "distributive-property", title: "Distributive Property (7.EE.A.1)" },
+      { id: "greatest-common-factor", title: "Greatest Common Factor (6.NS.B.4)" }
+    ],
+    introduction: "Factoring is the process of breaking an expression down into a product of simpler expressions. To factor trinomials in the form x² + bx + c, we look for two numbers that multiply to c and add to b.",
+    steps: [
+      {
+        title: "Step 1: Identify b and c",
+        content: "Find the middle term coefficient (b) and the constant term (c). For example, in x² + 5x + 6, b = 5 and c = 6."
+      },
+      {
+        title: "Step 2: Find Factors of c that Add to b",
+        content: "List factor pairs of c. Find the pair that sums up to b. For 6: pairs are (1,6) and (2,3). The pair (2,3) adds up to 5."
+      },
+      {
+        title: "Step 3: Write the Factored Expression",
+        content: "Using the factor values p and q, write the expression in binomial form: (x + p)(x + q). For x² + 5x + 6, this is (x + 2)(x + 3)."
+      }
+    ],
+    mathBox: {
+      title: "Factoring Trinomials Guide",
+      equations: [
+        { desc: "General Form", formula: "x² + bx + c = (x + p)(x + q)" },
+        { desc: "Addition Rule", formula: "p + q = b" },
+        { desc: "Multiplication Rule", formula: "p * q = c" }
+      ]
+    },
+    animationSteps: [
+      {
+        equation: "x² + 5x + 6",
+        desc: "Original Trinomial: We need to find two numbers p and q that multiply to 6 (the constant) and add to 5 (the middle coefficient).",
+        left: { type: "expression", action: null, terms: [{ val: "x² + 5x + 6", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "p + q = 5, p*q = 6", color: "blue" }] }
+      },
+      {
+        equation: "x² + 2x + 3x + 6",
+        desc: "Identify Factors & Split: The numbers are 2 and 3 because 2 + 3 = 5 and 2 * 3 = 6. Split the middle term 5x into 2x + 3x.",
+        left: { type: "expression", action: null, terms: [{ val: "x² + 2x", color: "blue" }, { val: " + 3x + 6", color: "purple" }] },
+        right: { type: "expression", action: null, terms: [{ val: "2 and 3", color: "green" }] }
+      },
+      {
+        equation: "x(x + 2) + 3(x + 2)",
+        desc: "Factor by Grouping: Factor out x from the first two terms, and 3 from the last two terms. Notice (x + 2) is common.",
+        left: { type: "expression", action: null, terms: [{ val: "x(x + 2)", color: "blue" }, { val: " + 3(x + 2)", color: "purple" }] },
+        right: { type: "expression", action: null, terms: [{ val: "Common: (x+2)", color: "green" }] }
+      },
+      {
+        equation: "(x + 2)(x + 3)",
+        desc: "Factored Form: Factor out the common binomial (x + 2) to get the final factored trinomial expression.",
+        left: { type: "expression", action: null, terms: [{ val: "(x + 2)", color: "blue", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "(x + 3)", color: "green", active: true }] }
+      }
+    ],
+    practiceQuestions: [
+      {
+        question: "Factor x² + 7x + 12",
+        options: ["(x + 3)(x + 4)", "(x + 2)(x + 6)", "(x + 1)(x + 12)", "(x - 3)(x - 4)"],
+        correctIndex: 0,
+        explanation: "We need two numbers that multiply to 12 and add to 7. These numbers are 3 and 4: (x + 3)(x + 4)."
+      },
+      {
+        question: "Which two numbers multiply to -15 and add to 2?",
+        options: ["-3 and 5", "3 and -5", "-1 and 15", "-5 and -3"],
+        correctIndex: 0,
+        explanation: "-3 * 5 = -15, and -3 + 5 = 2. So the numbers are -3 and 5."
+      },
+      {
+        question: "Factor x² - 5x + 6",
+        options: ["(x - 2)(x - 3)", "(x - 1)(x - 6)", "(x + 2)(x + 3)", "(x + 1)(x - 6)"],
+        correctIndex: 0,
+        explanation: "We need two numbers that multiply to 6 and add to -5. These numbers are -2 and -3: (x - 2)(x - 3)."
+      },
+      {
+        question: "Factor x² - x - 20",
+        options: ["(x - 5)(x + 4)", "(x + 5)(x - 4)", "(x - 10)(x + 2)", "(x - 2)(x + 10)"],
+        correctIndex: 0,
+        explanation: "We need two numbers that multiply to -20 and add to -1. These numbers are -5 and 4: (x - 5)(x + 4)."
+      }
+    ]
+  },
+  "systems-substitution": {
+    id: "systems-substitution",
+    title: "Systems of Equations: Substitution Method",
+    subtitle: "Algebra 1 Systems",
+    duration: "35 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-REI.C.6",
+    prerequisites: [
+      { id: "one-step-equations", title: "Solving One-Step Equations (6.EE.B.7)" },
+      { id: "two-step-equations", title: "Solving Two-Step Equations (7.EE.B.4)" },
+      { id: "linear-equations", title: "Solving Multi-Step Equations (HSA-REI.B.3)" }
+    ],
+    introduction: "A system of equations is a set of two or more equations. The substitution method solves systems by replacing one variable with an equivalent expression from the other equation, reducing it to a single-variable problem.",
+    steps: [
+      {
+        title: "Step 1: Isolate One Variable",
+        content: "Look for an equation where x or y is already isolated (or easy to isolate). For example, in y = 2x and x + y = 9, y is isolated."
+      },
+      {
+        title: "Step 2: Substitute and Solve",
+        content: "Substitute that expression into the other equation. Solve the resulting single-variable equation for its value."
+      },
+      {
+        title: "Step 3: Solve for the Other Variable",
+        content: "Plug the value found in Step 2 back into the original equation to solve for the second variable, writing the solution as (x, y)."
+      }
+    ],
+    mathBox: {
+      title: "Substitution Method Guide",
+      equations: [
+        { desc: "System equations example", formula: "y = ax + b  and  cy + dx = e" },
+        { desc: "Substitution step", formula: "c(ax + b) + dx = e" },
+        { desc: "Final solution coordinate", formula: "Coordinate: (x, y)" }
+      ]
+    },
+    animationSteps: [
+      {
+        equation: "y = 2x  and  x + y = 9",
+        desc: "Original System: We have y isolated in the first equation. We will substitute 2x in place of y in the second equation.",
+        left: { type: "expression", action: null, terms: [{ val: "y = 2x", color: "blue" }] },
+        right: { type: "expression", action: null, terms: [{ val: "x + y = 9", color: "slate" }] }
+      },
+      {
+        equation: "x + (2x) = 9",
+        desc: "Substitution: Replace y with (2x) in the second equation to get an equation in terms of x only.",
+        left: { type: "expression", action: null, terms: [{ val: "x + (2x)", color: "blue", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "9", color: "slate" }] }
+      },
+      {
+        equation: "3x = 9",
+        desc: "Combine Like Terms: Add the x terms together (1x + 2x = 3x) to simplify the left side.",
+        left: { type: "expression", action: null, terms: [{ val: "3x", color: "blue" }] },
+        right: { type: "expression", action: null, terms: [{ val: "9", color: "slate" }] }
+      },
+      {
+        equation: "3x / 3 = 9 / 3",
+        desc: "Balance Operation - Divide: To isolate x, write fraction bars and divide BOTH sides by 3.",
+        left: { type: "operation", operationType: "divide", action: null, terms: [{ val: "3x", color: "blue" }], opVal: "3" },
+        right: { type: "operation", operationType: "divide", action: null, terms: [{ val: "9", color: "slate" }], opVal: "3" }
+      },
+      {
+        equation: "x = 3",
+        desc: "Solve for x: Simplifying gives x = 3. Now substitute x = 3 back into y = 2x to find y.",
+        left: { type: "expression", action: null, terms: [{ val: "x", color: "blue", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "3", color: "green", active: true }] }
+      },
+      {
+        equation: "y = 2(3)",
+        desc: "Solve for y: Substitute 3 for x in the first equation. This simplifies to y = 6.",
+        left: { type: "expression", action: null, terms: [{ val: "y", color: "blue" }] },
+        right: { type: "expression", action: null, terms: [{ val: "2(3)", color: "green", active: true }] }
+      },
+      {
+        equation: "y = 6",
+        desc: "Final Solution: The solution to the system is the coordinate point (3, 6). Both equations are balanced!",
+        left: { type: "expression", action: null, terms: [{ val: "x = 3", color: "blue", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "y = 6", color: "green", active: true }] }
+      }
+    ],
+    practiceQuestions: [
+      {
+        question: "Solve using substitution: y = 3x and x + y = 12",
+        options: ["(3, 9)", "(2, 6)", "(4, 8)", "(1, 3)"],
+        correctIndex: 0,
+        explanation: "Substitute 3x for y in the second equation: x + 3x = 12 => 4x = 12 => x = 3. Plug x = 3 back in: y = 3(3) = 9. Solution is (3, 9)."
+      },
+      {
+        question: "Solve using substitution: y = x - 2 and 2x + y = 7",
+        options: ["(3, 1)", "(4, 2)", "(2, 0)", "(5, 3)"],
+        correctIndex: 0,
+        explanation: "Substitute (x - 2) for y: 2x + x - 2 = 7 => 3x = 9 => x = 3. Plug in: y = 3 - 2 = 1. Solution is (3, 1)."
+      },
+      {
+        question: "What is the first step when solving a system using substitution?",
+        options: ["Graph both equations", "Add both equations together", "Isolate a variable in one equation", "Multiply one equation by -1"],
+        correctIndex: 2,
+        explanation: "To use substitution, we must first isolate one variable in one equation to substitute it into the other."
+      },
+      {
+        question: "Solve: y = 2x + 1 and x + y = 10",
+        options: ["(3, 7)", "(4, 9)", "(2, 5)", "(5, 11)"],
+        correctIndex: 0,
+        explanation: "Substitute (2x + 1) for y: x + 2x + 1 = 10 => 3x = 9 => x = 3. Plug in: y = 2(3) + 1 = 7. Solution is (3, 7)."
+      }
+    ]
   }
 };
 
