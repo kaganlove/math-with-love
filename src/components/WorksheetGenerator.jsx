@@ -93,11 +93,11 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
       problemChunks.push(problems.slice(i, i + 6));
     }
 
-    // Chunk answers by 5 per page
+    // Chunk answers by 3 per page to guarantee zero margin overflows
     const answerChunks = [];
     if (includeAnswers) {
-      for (let i = 0; i < problems.length; i += 5) {
-        answerChunks.push(problems.slice(i, i + 5));
+      for (let i = 0; i < problems.length; i += 3) {
+        answerChunks.push(problems.slice(i, i + 3));
       }
     }
 
@@ -199,18 +199,21 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             margin-bottom: 30px;
           }
           .answer-card {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             page-break-inside: avoid;
             border-bottom: 1px dashed #cccccc;
-            padding-bottom: 15px;
+            padding-bottom: 10px;
           }
           .answer-card strong {
-            font-size: 16px;
+            font-size: 15px;
           }
           .answer-steps {
             margin-left: 20px;
-            font-size: 14px;
+            font-size: 13px;
             color: #444444;
+          }
+          .answer-steps p {
+            margin: 3px 0;
           }
           .page-footer {
             position: absolute;
