@@ -170,44 +170,71 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           `Substitute x back: y = ${a}(${xVal}) ${bSign} => y = ${yVal}`
         ];
       } else if (lessonId === "hsa-sse-1a") {
-        const types = ["coeff", "constant", "terms", "factor"];
+        const types = ["identify-coeff", "identify-constant", "name-factor", "name-coeff", "name-constant", "name-variable", "identify-terms"];
         const qType = types[i % types.length];
         
-        if (qType === "coeff") {
+        if (qType === "identify-coeff") {
           const a = Math.floor(Math.random() * 8) + 2;
           const b = Math.floor(Math.random() * 15) + 1;
-          equationText = `Identify the coefficient of x in the expression:\n${a}x - ${b}`;
+          equationText = `In the expression:\n${a}x - ${b}\nWhat is the coefficient of x?`;
           solutionText = `${a}`;
           stepsText = [
             `Expression: ${a}x - ${b}`,
-            `The coefficient is the multiplier of the variable, which is ${a}.`
+            `The coefficient is the numerical factor multiplied by the variable. Here, x is multiplied by ${a}.`
           ];
-        } else if (qType === "constant") {
+        } else if (qType === "identify-constant") {
           const a = Math.floor(Math.random() * 5) + 2;
           const b = Math.floor(Math.random() * 10) + 1;
-          equationText = `Identify the constant term in the expression:\n${a}x + ${b}`;
+          equationText = `In the expression:\n${a}x + ${b}\nWhat is the constant term?`;
           solutionText = `${b}`;
           stepsText = [
             `Expression: ${a}x + ${b}`,
-            `The constant term is the fixed number with no variable, which is ${b}.`
+            `The constant term is the stand-alone number with no variable. Here, it is ${b}.`
           ];
-        } else if (qType === "terms") {
+        } else if (qType === "name-factor") {
+          const a = Math.floor(Math.random() * 4) + 2;
+          const b = Math.floor(Math.random() * 8) + 2;
+          equationText = `In the expression:\n${a}(x + ${b})\nWhat algebraic part does the grouping '(x + ${b})' represent?`;
+          solutionText = `Factor (or Binomial Factor)`;
+          stepsText = [
+            `Expression: ${a}(x + ${b})`,
+            `The terms ${a} and (x + ${b}) are multiplied together, so they are factors. A factor with two terms is a binomial factor.`
+          ];
+        } else if (qType === "name-coeff") {
+          const a = Math.floor(Math.random() * 6) + 2;
+          const b = Math.floor(Math.random() * 12) + 1;
+          equationText = `In the expression:\n${a}x - ${b}\nWhat algebraic part does the number '${a}' represent?`;
+          solutionText = `Coefficient`;
+          stepsText = [
+            `Expression: ${a}x - ${b}`,
+            `The number ${a} is multiplied by the variable x, which makes it a coefficient.`
+          ];
+        } else if (qType === "name-constant") {
+          const a = Math.floor(Math.random() * 6) + 2;
+          const b = Math.floor(Math.random() * 12) + 1;
+          equationText = `In the expression:\n${a}x + ${b}\nWhat algebraic part does the number '${b}' represent?`;
+          solutionText = `Constant Term`;
+          stepsText = [
+            `Expression: ${a}x + ${b}`,
+            `The number ${b} stands alone without a variable, so it is a constant term.`
+          ];
+        } else if (qType === "name-variable") {
+          const a = Math.floor(Math.random() * 8) + 2;
+          const b = Math.floor(Math.random() * 12) + 1;
+          equationText = `In the expression:\n${a}y + ${b}\nWhat algebraic part does the letter 'y' represent?`;
+          solutionText = `Variable`;
+          stepsText = [
+            `Expression: ${a}y + ${b}`,
+            `The letter y is a symbol representing a changing or unknown value, making it a variable.`
+          ];
+        } else {
           const a = Math.floor(Math.random() * 5) + 2;
           const b = Math.floor(Math.random() * 8) + 2;
           equationText = `How many terms are in the expression:\n${a}x² - ${b}x + 12`;
           solutionText = `3`;
           stepsText = [
             `Expression: ${a}x² - ${b}x + 12`,
-            `Terms are parts separated by + or -: ${a}x², -${b}x, and 12. Total = 3.`
-          ];
-        } else {
-          const a = Math.floor(Math.random() * 4) + 2;
-          const b = Math.floor(Math.random() * 8) + 2;
-          equationText = `Identify the binomial factor in the expression:\n${a}(x + ${b})`;
-          solutionText = `x + ${b}`;
-          stepsText = [
-            `Expression: ${a}(x + ${b})`,
-            `The factors are ${a} and (x + ${b}). The binomial factor is (x + ${b}).`
+            `Terms are parts separated by addition or subtraction: '${a}x²', '-${b}x', and '12'. There are exactly 3 terms.`
           ];
         }
       } else {

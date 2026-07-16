@@ -1169,16 +1169,24 @@ export const sampleLessons = {
     introduction: "Algebraic expressions contain variables, coefficients, operators, and constants. Interpreting these parts allows us to understand the underlying structure of equations, formulas, and real-world math applications.",
     steps: [
       {
-        title: "Step 1: Identify the Terms",
-        content: "Terms are parts of an expression separated by addition (+) or subtraction (-) operators. For example, in 3x + 5, '3x' and '5' are terms."
+        title: "Terms",
+        content: "Terms are parts of an expression separated by addition (+) or subtraction (-) operators.\n• Example 1: In 4x + 7, the terms are 4x and 7.\n• Example 2: In 3x² - 5x + 12, the terms are 3x², -5x, and 12.\n• Example 3: In 8(x + 1), the entire expression is a single term until expanded."
       },
       {
-        title: "Step 2: Identify Coefficients and Variables",
-        content: "A coefficient is a numerical factor multiplied by a variable. In 3x, '3' is the coefficient and 'x' is the variable."
+        title: "Coefficients",
+        content: "A coefficient is a numerical factor multiplied by a variable or factor.\n• Example 1: In 7x, the coefficient is 7.\n• Example 2: In -x, the coefficient is -1.\n• Example 3: In 4(y - 2)², the coefficient is 4."
       },
       {
-        title: "Step 3: Identify Constants and Factors",
-        content: "Constants are fixed numbers with no variable part (like '5'). Factors are quantities multiplied together (like the quantity (x + 2) in 3(x + 2))."
+        title: "Variables",
+        content: "A variable is a symbol (usually a letter) representing an unknown value that can change.\n• Example 1: In 3x + 2, the variable is x.\n• Example 2: In A = πr², the variables are A and r (note: π is a constant value!).\n• Example 3: In 2a - 5b, the variables are a and b."
+      },
+      {
+        title: "Constants",
+        content: "A constant term is a number with a fixed value that does not contain any variables.\n• Example 1: In 2x + 9, the constant is 9.\n• Example 2: In x² - 15, the constant is -15.\n• Example 3: In P(1 + r)^t, if initial principal P and annual rate r are fixed numbers, they are constants."
+      },
+      {
+        title: "Factors",
+        content: "Factors are quantities multiplied together to form a product.\n• Example 1: In 3x, the factors are 3 and x.\n• Example 2: In 5(x - 3), the factors are 5 and (x - 3).\n• Example 3: In (x + 2)(x + 4), the factors are (x + 2) and (x + 4)."
       }
     ],
     mathBox: {
