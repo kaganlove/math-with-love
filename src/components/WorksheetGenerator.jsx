@@ -104,7 +104,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           }
           body {
             font-family: 'Courier New', Courier, monospace;
-            margin: 20mm 15mm 22mm 15mm;
+            margin: 20mm 15mm 28mm 15mm; /* 28mm bottom margin protects footers from overlap */
             color: #000000;
             line-height: 1.6;
           }
@@ -191,6 +191,17 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             color: #64748b;
             font-family: Arial, sans-serif;
           }
+          .footer-page-number {
+            position: fixed;
+            bottom: 10mm;
+            right: 15mm;
+            font-size: 10px;
+            color: #64748b;
+            font-family: Arial, sans-serif;
+          }
+          .footer-page-number::after {
+            content: "Page " counter(page);
+          }
         </style>
       </head>
       <body>
@@ -221,6 +232,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
         <div class="footer-note">
           mathwlove.com
         </div>
+        <div class="footer-page-number"></div>
 
         ${
           includeAnswers
@@ -249,6 +261,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           <div class="footer-note">
             mathwlove.com
           </div>
+          <div class="footer-page-number"></div>
         `
             : ""
         }
