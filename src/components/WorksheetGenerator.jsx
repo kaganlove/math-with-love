@@ -93,11 +93,11 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
       problemChunks.push(problems.slice(i, i + 6));
     }
 
-    // Chunk answers by 8 per page
+    // Chunk answers by 5 per page
     const answerChunks = [];
     if (includeAnswers) {
-      for (let i = 0; i < problems.length; i += 8) {
-        answerChunks.push(problems.slice(i, i + 8));
+      for (let i = 0; i < problems.length; i += 5) {
+        answerChunks.push(problems.slice(i, i + 5));
       }
     }
 
