@@ -297,7 +297,7 @@ export default function Curriculum() {
         {/* Bottom Banner */}
         {!selectedLessonId && (
           <div className="curriculum-footer-promo mt-12">
-            <AdsSlot format="horizontal" fallbackText="Unlock academic success in your math classes. Check out our customizable private tutoring rates starting at $80/hr." />
+            <AdsSlot format="horizontal" fallbackText="Unlock academic success in your math classes. Check out our customizable private tutoring rates starting at $100/hr." />
           </div>
         )}
       </div>

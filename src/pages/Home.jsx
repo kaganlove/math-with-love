@@ -57,7 +57,7 @@ export default function Home() {
 
       {/* Ad/Affiliate Slot */}
       <div className="content-width">
-        <AdsSlot format="horizontal" fallbackText="Join Kagan Love for private, custom math lessons online or in Wichita Falls, TX. Book your free consultation today!" />
+        <AdsSlot format="horizontal" fallbackText="Join Kagan Love for private, custom math lessons online. In-person tutoring is available in the DFW area by request." />
       </div>
 
       {/* Core Method/Mission Section */}

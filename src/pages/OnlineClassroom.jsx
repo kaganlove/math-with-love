@@ -98,7 +98,7 @@ export default function OnlineClassroom() {
         </div>
 
         <div className="mt-8">
-          <AdsSlot format="horizontal" fallbackText="Need one-on-one exam review or homework prep? Check out our tutoring options starting at $80/hour." />
+          <AdsSlot format="horizontal" fallbackText="Need one-on-one exam review or homework prep? Check out our tutoring options starting at $100/hour." />
         </div>
       </div>
     </div>

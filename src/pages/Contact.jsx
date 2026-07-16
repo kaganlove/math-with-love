@@ -50,7 +50,7 @@ export default function Contact() {
     },
     {
       q: "Do you offer in-person or online sessions?",
-      a: "Both! We offer in-person tutoring for students located in Wichita Falls, TX, USA. We also offer interactive online tutoring sessions nationwide using our embedded Classroom page (Jitsi video and collaborative whiteboard)."
+      a: "Most tutoring sessions occur online through our interactive fullscreen Online Classroom. However, requests can be made for in-person tutoring in the Dallas-Fort Worth (DFW) area. Please inquire directly for in-person pricing, as rates may vary based on travel times."
     },
     {
       q: "How do I connect to an online tutoring session?",
@@ -136,8 +136,8 @@ export default function Contact() {
                     onChange={handleChange}
                     className="form-select-field"
                   >
-                    <option value="One-on-One Tutoring">One-on-One ($80/hr)</option>
-                    <option value="Group Session">Group Session ($140)</option>
+                    <option value="One-on-One Tutoring">One-on-One ($100/hr)</option>
+                    <option value="Group Session">Group Session ($160)</option>
                     <option value="General Inquiry">General Question</option>
                   </select>
                 </div>
@@ -190,7 +190,7 @@ export default function Contact() {
                   </div>
                   <div className="detail-text">
                     <span className="detail-label">Location</span>
-                    <span className="detail-value">Wichita Falls, TX, USA</span>
+                    <span className="detail-value">Dallas-Fort Worth, TX, USA</span>
                   </div>
                 </div>
               </div>

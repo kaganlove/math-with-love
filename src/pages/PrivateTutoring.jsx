@@ -7,7 +7,7 @@ export default function PrivateTutoring() {
   const services = [
     {
       title: "One-on-One Tutoring",
-      price: "$80",
+      price: "$100",
       period: "per hour",
       subtitle: "Personalized, targeted 1-on-1 instruction",
       description: "Ideal for students needing dedicated help catching up, mastering difficult subjects, preparing for exams, or building foundational math skills.",
@@ -24,7 +24,7 @@ export default function PrivateTutoring() {
     },
     {
       title: "Group Session",
-      price: "$140",
+      price: "$160",
       period: "per session",
       subtitle: "Collaborative, small-group instruction",
       description: "Great for friends, siblings, or classmates studying the same topic who benefit from collaborative learning and shared problem-solving.",
@@ -91,7 +91,7 @@ export default function PrivateTutoring() {
         <section className="tutoring-hero text-center">
           <h1 className="page-title">Expert Private Math Tutoring</h1>
           <p className="page-desc">
-            Building confidence and mathematical mastery through 1-on-1 personalized instruction. In-person in Wichita Falls, TX, and online nationwide.
+            Building confidence and mathematical mastery through personalized instruction. Tutoring occurs online nationwide through our interactive Online Classroom. In-person tutoring requests can be made for the Dallas-Fort Worth (DFW) area—please inquire for pricing adjustments due to travel times.
           </p>
         </section>
 

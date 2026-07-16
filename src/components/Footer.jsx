@@ -31,7 +31,7 @@ export default function Footer() {
               <Mail size={16} /> mathwlove@gmail.com
             </a>
             <span className="footer-contact-item">
-              <MapPin size={16} /> Wichita Falls, TX, USA
+              <MapPin size={16} /> Dallas-Fort Worth, TX, USA
             </span>
           </div>
         </div>
