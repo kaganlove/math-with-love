@@ -854,6 +854,11 @@ export const sampleLessons = {
     level: "High School Math",
     topic: "Algebra 1",
     ccss: "HSA-REI.B.3",
+    prerequisites: [
+      { id: "like-terms", title: "Combining Like Terms (6.EE.A.3)" },
+      { id: "one-step-equations", title: "Solving One-Step Equations (6.EE.B.7)" },
+      { id: "two-step-equations", title: "Solving Two-Step Equations (7.EE.B.4)" }
+    ],
     introduction: "Solving equations is like balancing a scale. Whatever you do to one side of the equation, you must do to the other side to keep it balanced. Our ultimate goal is to isolate the variable (get x by itself on one side).",
     steps: [
       {
@@ -875,6 +880,45 @@ export const sampleLessons = {
       {
         title: "Step 5: Undo multiplication/division (Isolate variable)",
         content: "Finally, divide or multiply to get the variable completely alone.\n\nExample: In 3x = 12, undo the multiplication of 3 by DIVIDING both sides by 3: x = 4."
+      }
+    ],
+    animationSteps: [
+      {
+        equation: "3(x + 2) - 5 = 13",
+        desc: "Find x. We must perform inverse operations on both sides to keep the equation balanced.",
+        leftTerms: [{ val: "3(x + 2) - 5", active: false, color: "slate" }],
+        rightTerms: [{ val: "13", active: false, color: "slate" }]
+      },
+      {
+        equation: "3x + 6 - 5 = 13",
+        desc: "Distribute the 3 to terms inside the parenthesis: 3 * x and 3 * 2. This clears the parenthesis.",
+        leftTerms: [
+          { val: "3x", active: true, color: "blue" },
+          { val: " + 6", active: true, color: "orange" },
+          { val: " - 5", active: false, color: "slate" }
+        ],
+        rightTerms: [{ val: "13", active: false, color: "slate" }]
+      },
+      {
+        equation: "3x + 1 = 13",
+        desc: "Combine constants on the left side: +6 and -5 simplifies to +1.",
+        leftTerms: [
+          { val: "3x", active: false, color: "slate" },
+          { val: " + 1", active: true, color: "orange" }
+        ],
+        rightTerms: [{ val: "13", active: false, color: "slate" }]
+      },
+      {
+        equation: "3x = 12",
+        desc: "Subtract 1 from both sides to isolate the x term. Left: +1 - 1 = 0. Right: 13 - 1 = 12.",
+        leftTerms: [{ val: "3x", active: true, color: "blue" }],
+        rightTerms: [{ val: "12", active: true, color: "orange" }]
+      },
+      {
+        equation: "x = 4",
+        desc: "Divide both sides by 3 to isolate x. Left: 3x / 3 = x. Right: 12 / 3 = 4. We found x!",
+        leftTerms: [{ val: "x", active: true, color: "blue" }],
+        rightTerms: [{ val: "4", active: true, color: "green" }]
       }
     ],
     mathBox: {
@@ -907,6 +951,28 @@ export const sampleLessons = {
         ],
         correctIndex: 1, // x = 5
         explanation: "1) Subtract 2x from both sides: 3x + 3 = 18. \n2) Subtract 3 from both sides: 3x = 15. \n3) Divide by 3: x = 5."
+      },
+      {
+        question: "Solve for x:  3(x + 4) = 2x + 15",
+        options: [
+          "x = 3",
+          "x = 9",
+          "x = -3",
+          "x = 2"
+        ],
+        correctIndex: 0, // x = 3
+        explanation: "1) Distribute the 3: 3x + 12 = 2x + 15. \n2) Subtract 2x from both sides: x + 12 = 15. \n3) Subtract 12 from both sides: x = 3."
+      },
+      {
+        question: "Solve for x:  -2x + 8 = 16",
+        options: [
+          "x = 4",
+          "x = -4",
+          "x = -12",
+          "x = 12"
+        ],
+        correctIndex: 1, // x = -4
+        explanation: "1) Subtract 8 from both sides: -2x = 8. \n2) Divide both sides by -2: x = 8 / -2 = -4."
       }
     ]
   }

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Search, BookOpen, Clock, AlertCircle, ArrowLeft, CheckCircle, XCircle, FileText, ClipboardCheck, Sparkles } from "lucide-react";
 import { curriculumLevels, sampleLessons, testPrepMappings } from "../data/curriculumData";
 import AdsSlot from "../components/AdsSlot";
+import EquationVisualizer from "../components/EquationVisualizer";
+import WorksheetGenerator from "../components/WorksheetGenerator";
 
 export default function Curriculum() {
   const [activeTab, setActiveTab] = useState("library"); // "library" | "testprep"
@@ -290,10 +292,23 @@ export default function Curriculum() {
                       <span className="lesson-ccss-badge">CCSS: {activeLesson.ccss}</span>
                     )}
                   </div>
-                  <h1 className="lesson-main-title">{activeLesson.title}</h1>
+                  <div className="flex-between items-center flex-wrap gap-4 mb-6">
+                    <h1 className="lesson-main-title m-0">{activeLesson.title}</h1>
+                    <WorksheetGenerator
+                      lessonId={activeLesson.id}
+                      lessonTitle={activeLesson.title}
+                      ccss={activeLesson.ccss}
+                    />
+                  </div>
                   <div className="lesson-intro">
                     <p>{activeLesson.introduction}</p>
                   </div>
+
+                  {activeLesson.animationSteps && (
+                    <div className="my-6">
+                      <EquationVisualizer steps={activeLesson.animationSteps} />
+                    </div>
+                  )}
 
                   <div className="lesson-steps">
                     <h3 className="section-divider-title">Step-by-Step Explanation</h3>
@@ -382,6 +397,24 @@ export default function Curriculum() {
 
                 {/* Sidebar Cards */}
                 <div className="lesson-sidebar">
+                  {/* Prerequisites Card */}
+                  {activeLesson.prerequisites && (
+                    <div className="sidebar-card prereq-card">
+                      <h3 className="sidebar-card-title">Before You Begin</h3>
+                      <p className="text-xs text-muted mb-3">Make sure you are comfortable with these prerequisite topics:</p>
+                      <div className="prereq-list">
+                        {activeLesson.prerequisites.map((prereq, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => handleLessonSelect(prereq.id)}
+                            className="prereq-link-btn"
+                          >
+                            <span className="prereq-bullet">✓</span> {prereq.title}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {/* Formula / Equations Card */}
                   <div className="sidebar-card formula-card">
                     <h3 className="sidebar-card-title">{activeLesson.mathBox.title}</h3>
