@@ -885,78 +885,140 @@ export const sampleLessons = {
     animationSteps: [
       {
         equation: "3(x + 2) - 5 = 13",
-        desc: "Find x. We must perform inverse operations on both sides to keep the scale balanced.",
-        left: { type: "expression", terms: [{ val: "3(x + 2) - 5", color: "slate" }] },
-        right: { type: "expression", terms: [{ val: "13", color: "slate" }] }
+        desc: "Original Equation: Find x. We must perform inverse operations on both sides to keep the scale balanced.",
+        left: { type: "expression", action: null, terms: [{ val: "3(x + 2) - 5", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "13", color: "slate" }] }
+      },
+      {
+        equation: "3(x + 2) - 5 = 13",
+        desc: "Teacher Draw - Distribute: Draw distribution arcs to multiply the 3 outside by both terms inside the parenthesis.",
+        left: { type: "expression", action: "distribute", terms: [{ val: "3(x + 2) - 5", color: "slate" }] },
+        right: { type: "expression", action: null, terms: [{ val: "13", color: "slate" }] }
       },
       {
         equation: "3x + 6 - 5 = 13",
-        desc: "First, distribute the 3 to terms inside the parenthesis: multiply 3 by x, and 3 by 2. This clears the parenthesis.",
+        desc: "Simplify Distribution: Clear the parenthesis by multiplying: 3 * x = 3x and 3 * 2 = 6.",
         left: {
           type: "expression",
+          action: null,
           terms: [
             { val: "3x", color: "blue", active: true },
             { val: " + 6", color: "orange", active: true },
             { val: " - 5", color: "slate" }
           ]
         },
-        right: { type: "expression", terms: [{ val: "13", color: "slate" }] }
+        right: { type: "expression", action: null, terms: [{ val: "13", color: "slate" }] }
+      },
+      {
+        equation: "3x + 6 - 5 = 13",
+        desc: "Teacher Draw - Combine Constants: Draw a loop under the constant numbers +6 and -5 to group them.",
+        left: {
+          type: "expression",
+          action: "combine",
+          terms: [
+            { val: "3x", color: "slate" },
+            { val: " + 6", color: "orange" },
+            { val: " - 5", color: "orange" }
+          ]
+        },
+        right: { type: "expression", action: null, terms: [{ val: "13", color: "slate" }] }
       },
       {
         equation: "3x + 1 = 13",
-        desc: "Combine constant numbers on the left side: +6 and -5 simplifies to +1.",
+        desc: "Simplify Constants: Combine +6 and -5 to get +1. The left side is now 3x + 1.",
         left: {
           type: "expression",
+          action: null,
           terms: [
             { val: "3x", color: "slate" },
             { val: " + 1", color: "orange", active: true }
           ]
         },
-        right: { type: "expression", terms: [{ val: "13", color: "slate" }] }
+        right: { type: "expression", action: null, terms: [{ val: "13", color: "slate" }] }
       },
       {
         equation: "3x + 1 - 1 = 13 - 1",
-        desc: "Balance Operation: To isolate the variable term, we undo the constant of +1. We subtract 1 from BOTH sides of the equation.",
+        desc: "Balance Operation - Subtract: To isolate the 3x term, undo the +1 constant. Write '- 1' in red on BOTH sides of the scale.",
         left: {
           type: "operation",
           operationType: "subtract",
+          action: null,
           terms: [{ val: "3x", color: "slate" }, { val: " + 1", color: "slate" }],
           opVal: "- 1"
         },
         right: {
           type: "operation",
           operationType: "subtract",
+          action: null,
+          terms: [{ val: "13", color: "slate" }],
+          opVal: "- 1"
+        }
+      },
+      {
+        equation: "3x + 1 - 1 = 13 - 1",
+        desc: "Teacher Draw - Cancel: Draw diagonal red slashes through +1 and -1 to show they subtract to 0.",
+        left: {
+          type: "operation",
+          operationType: "subtract",
+          action: "cancel",
+          terms: [{ val: "3x", color: "slate" }, { val: " + 1", color: "slate" }],
+          opVal: "- 1"
+        },
+        right: {
+          type: "operation",
+          operationType: "subtract",
+          action: null,
           terms: [{ val: "13", color: "slate" }],
           opVal: "- 1"
         }
       },
       {
         equation: "3x = 12",
-        desc: "Simplify both sides. On the left: +1 - 1 = 0 (constant is gone). On the right: 13 - 1 = 12.",
-        left: { type: "expression", terms: [{ val: "3x", color: "blue", active: true }] },
-        right: { type: "expression", terms: [{ val: "12", color: "orange", active: true }] }
+        desc: "Simplify Subtraction: Performing the subtraction leaves 3x on the left and 12 (13 - 1) on the right.",
+        left: { type: "expression", action: null, terms: [{ val: "3x", color: "blue", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "12", color: "orange", active: true }] }
       },
       {
         equation: "3x / 3 = 12 / 3",
-        desc: "Balance Operation: To isolate x completely, we undo the multiplication of 3. We divide BOTH sides of the equation by 3.",
+        desc: "Balance Operation - Divide: To isolate x, undo the multiplication of 3. Write fraction bars and divide BOTH sides by 3.",
         left: {
           type: "operation",
           operationType: "divide",
+          action: null,
           terms: [{ val: "3x", color: "blue" }],
           opVal: "3"
         },
         right: {
           type: "operation",
           operationType: "divide",
+          action: null,
+          terms: [{ val: "12", color: "slate" }],
+          opVal: "3"
+        }
+      },
+      {
+        equation: "3x / 3 = 12 / 3",
+        desc: "Teacher Draw - Cancel Coefficient: Draw slashes through the numerator 3 and denominator 3 to cancel to 1.",
+        left: {
+          type: "operation",
+          operationType: "divide",
+          action: "cancel-division",
+          terms: [{ val: "3x", color: "blue" }],
+          opVal: "3"
+        },
+        right: {
+          type: "operation",
+          operationType: "divide",
+          action: null,
           terms: [{ val: "12", color: "slate" }],
           opVal: "3"
         }
       },
       {
         equation: "x = 4",
-        desc: "Simplify one final time. On the left: 3x / 3 = x. On the right: 12 / 3 = 4. x is now isolated and solved!",
-        left: { type: "expression", terms: [{ val: "x", color: "blue", active: true }] },
-        right: { type: "expression", terms: [{ val: "4", color: "green", active: true }] }
+        desc: "Final Answer: The left side becomes x. On the right, 12 / 3 simplifies to 4. The scale is balanced at x = 4!",
+        left: { type: "expression", action: null, terms: [{ val: "x", color: "blue", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "4", color: "green", active: true }] }
       }
     ],
     mathBox: {

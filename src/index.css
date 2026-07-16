@@ -3245,3 +3245,90 @@ h1, h2, h3, h4, h5, h6 {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ==========================================================================
+   Hand-Drawn Whiteboard Markers & Animation Styles
+   ========================================================================== */
+
+/* 1. Cancellation Red Slash Markers */
+.whiteboard-slash {
+  position: relative;
+  display: inline-block;
+}
+
+.whiteboard-slash::after {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(to top right, transparent 46%, #dc2626 48%, #dc2626 52%, transparent 54%);
+  pointer-events: none;
+  animation: slashDraw 0.45s ease-out forwards;
+  animation-delay: 0.2s;
+  clip-path: polygon(0 100%, 0 100%, 0 100%, 0 100%);
+}
+
+@keyframes slashDraw {
+  0% { clip-path: polygon(0 100%, 0 100%, 0 100%, 0 100%); }
+  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+}
+
+/* 2. Combining constant terms loop */
+.whiteboard-combine {
+  position: relative;
+  border-bottom: 2px dashed #dc2626;
+  border-radius: 0 0 6px 6px;
+  padding-bottom: 2px;
+  display: inline-flex;
+  gap: 0.15rem;
+  animation: combineDraw 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: left;
+}
+
+@keyframes combineDraw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* 3. Distribution Overlay SVG */
+.distribution-container {
+  position: relative;
+  display: inline-block;
+  padding-top: 15px; /* Leaves space above the expression for drawing curves */
+}
+
+.distribution-svg {
+  position: absolute;
+  top: -6px;
+  left: 0;
+  width: 100%;
+  height: 24px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.distribution-arrow-path {
+  fill: none;
+  stroke: #dc2626;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: drawArrow 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.arrow-delay-1 {
+  animation-delay: 0.2s;
+}
+
+.arrow-delay-2 {
+  animation-delay: 0.6s;
+}
+
+@keyframes drawArrow {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
