@@ -116,11 +116,13 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
         <style>
           @page {
             margin: 0;
+            size: letter portrait;
           }
-          body {
-            font-family: 'Courier New', Courier, monospace;
+          html, body {
+            height: 100%;
             margin: 0;
             padding: 0;
+            font-family: 'Courier New', Courier, monospace;
             color: #000000;
             line-height: 1.6;
             background-color: #ffffff;
@@ -128,9 +130,12 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           .print-page {
             position: relative;
             box-sizing: border-box;
-            padding: 20mm 15mm 25mm 15mm;
+            padding: 15mm 15mm 25mm 15mm;
             width: 100%;
-            min-height: 297mm; /* Fits A4 and Letter standards */
+            height: 100%;
+            page-break-after: always;
+            break-after: page;
+            overflow: hidden;
           }
           .header {
             text-align: center;
