@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search, BookOpen, Clock, AlertCircle, ArrowLeft, CheckCircle, XCircle, FileText, ClipboardCheck, Sparkles } from "lucide-react";
 import { curriculumLevels, sampleLessons, testPrepMappings, getLessonById } from "../data/curriculumData";
 import AdsSlot from "../components/AdsSlot";
@@ -10,7 +10,8 @@ export default function Curriculum() {
   const [activeTab, setActiveTab] = useState("library"); // "library" | "testprep"
   const [activeLevel, setActiveLevel] = useState("hs-alg"); // Default to High School Algebra
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLessonId, setSelectedLessonId] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedLessonId = searchParams.get("lesson");
   
   // Test Prep state
   const [selectedTest, setSelectedTest] = useState("sat"); // "sat" | "act" | "psat" | "tsi"
@@ -35,7 +36,11 @@ export default function Curriculum() {
   }).filter(level => level.topics.length > 0);
 
   const handleLessonSelect = (lessonId, diagInfo = null) => {
-    setSelectedLessonId(lessonId);
+    if (lessonId) {
+      setSearchParams({ lesson: lessonId });
+    } else {
+      setSearchParams({});
+    }
     setSelectedDiagnosticInfo(diagInfo);
     setQuizAnswers({});
     setQuizSubmitted(false);
@@ -258,7 +263,7 @@ export default function Curriculum() {
           <div className="lesson-view-container">
             {/* Back to list */}
             <button
-              onClick={() => setSelectedLessonId(null)}
+              onClick={() => handleLessonSelect(null)}
               className="btn-back"
             >
               <ArrowLeft size={16} /> Back to Directory
@@ -458,7 +463,7 @@ export default function Curriculum() {
                   <Link to="/contact" className="btn-primary">
                     Request Tutoring on this Topic
                   </Link>
-                  <button onClick={() => setSelectedLessonId(null)} className="btn-secondary">
+                  <button onClick={() => handleLessonSelect(null)} className="btn-secondary">
                     Go Back to Directory
                   </button>
                 </div>

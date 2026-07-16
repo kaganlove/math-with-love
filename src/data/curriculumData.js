@@ -866,8 +866,8 @@ export const testPrepMappings = {
 };
 
 export const sampleLessons = {
-  "linear-equations": {
-    id: "linear-equations",
+  "hsa-rei-3": {
+    id: "hsa-rei-3",
     title: "Solving Multi-Step Linear Equations",
     subtitle: "Algebra 1 Foundations",
     duration: "30 mins",
@@ -1096,8 +1096,8 @@ export const sampleLessons = {
       }
     ]
   },
-  "hsa-sse-1": {
-    id: "hsa-sse-1",
+  "hsa-sse-1a": {
+    id: "hsa-sse-1a",
     title: "Interpret Parts of an Expression",
     subtitle: "Algebra 1 Expressions",
     duration: "25 mins",
@@ -1184,14 +1184,14 @@ export const sampleLessons = {
       }
     ]
   },
-  "factoring-quadratics": {
-    id: "factoring-quadratics",
-    title: "Factoring Quadratic Trinomials (x² + bx + c)",
+  "hsa-sse-3a": {
+    id: "hsa-sse-3a",
+    title: "Factor Quadratics to Reveal Zeros",
     subtitle: "Algebra 1 Quadratics",
     duration: "40 mins",
     level: "High School Math",
     topic: "Algebra 1",
-    ccss: "HSA-SSE.A.2",
+    ccss: "HSA-SSE.B.3.a",
     prerequisites: [
       { id: "distributive-property", title: "Distributive Property (7.EE.A.1)" },
       { id: "greatest-common-factor", title: "Greatest Common Factor (6.NS.B.4)" }
@@ -1272,8 +1272,8 @@ export const sampleLessons = {
       }
     ]
   },
-  "systems-substitution": {
-    id: "systems-substitution",
+  "hsa-rei-6": {
+    id: "hsa-rei-6",
     title: "Systems of Equations: Substitution Method",
     subtitle: "Algebra 1 Systems",
     duration: "35 mins",

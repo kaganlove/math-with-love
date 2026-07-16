@@ -42,7 +42,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             `Subtract ${min} from ${max}: x = ${max - min}`
           ];
         }
-      } else if (lessonId === "factoring-quadratics") {
+      } else if (lessonId === "hsa-sse-3a") {
         const p = Math.floor(Math.random() * 8) - 4 || 2; // -4 to 4, non-zero
         const q = Math.floor(Math.random() * 8) - 4 || 3; // -4 to 4, non-zero
         const b = p + q;
@@ -58,7 +58,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           `Find numbers that multiply to ${c} and add to ${b}: ${p} and ${q}`,
           `Rewrite as binomial product: ${solutionText}`
         ];
-      } else if (lessonId === "systems-substitution") {
+      } else if (lessonId === "hsa-rei-6") {
         const xVal = Math.floor(Math.random() * 6) - 3 || 2; // -3 to 3
         const a = Math.floor(Math.random() * 3) + 1; // 1 to 3
         const b = Math.floor(Math.random() * 8) - 4; // -4 to 4
@@ -78,7 +78,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           `Combine and simplify: ${c + a}x = ${d - b} => x = ${xVal}`,
           `Substitute x back: y = ${a}(${xVal}) ${bSign} => y = ${yVal}`
         ];
-      } else if (lessonId === "hsa-sse-1") {
+      } else if (lessonId === "hsa-sse-1a") {
         const types = ["coeff", "constant", "terms", "factor"];
         const qType = types[i % types.length];
         
@@ -168,7 +168,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
 
       list.push({
         num: i + 1,
-        question: lessonId === "hsa-sse-1" || lessonId === "factoring-quadratics" || lessonId === "systems-substitution" ? `${equationText}` : `Solve for x:\n${equationText}`,
+        question: lessonId === "hsa-sse-1a" || lessonId === "hsa-sse-3a" || lessonId === "hsa-rei-6" ? `${equationText}` : `Solve for x:\n${equationText}`,
         solution: solutionText,
         steps: stepsText
       });
