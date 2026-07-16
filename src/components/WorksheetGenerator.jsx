@@ -93,11 +93,47 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
       problemChunks.push(problems.slice(i, i + 6));
     }
 
-    // Chunk answers by 3 per page to guarantee zero margin overflows
+    // Chunk answers dynamically based on their vertical height to maximize space and avoid overlap
     const answerChunks = [];
     if (includeAnswers) {
-      for (let i = 0; i < problems.length; i += 3) {
-        answerChunks.push(problems.slice(i, i + 3));
+      const PAGE_HEIGHT = 1056; // Letter height in pixels (96dpi)
+      const PADDING_BUFFER = 160; // 15mm top + 25mm bottom padding
+      const HEADER_HEIGHT = 110; // Answer key header height
+      const SPACER_HEIGHT = 20; // Top margin spacer on pages 2+
+      const FOOTER_BUFFER = 50; // Extra boundary space above page footer
+      
+      const limitPage1 = PAGE_HEIGHT - PADDING_BUFFER - HEADER_HEIGHT - FOOTER_BUFFER; // ~736px available
+      const limitPageN = PAGE_HEIGHT - PADDING_BUFFER - SPACER_HEIGHT - FOOTER_BUFFER; // ~826px available
+
+      const getAnswerCardHeight = (p) => {
+        const titleH = 25; // Problem number and solution text height
+        const stepsH = p.steps.length * 20; // Each step step line takes ~20px
+        const borderMarginH = 25; // Bottom margins and border padding
+        return titleH + stepsH + borderMarginH;
+      };
+
+      let currentPageList = [];
+      let currentAccumulatedHeight = 0;
+      let isFirstPage = true;
+
+      for (let i = 0; i < problems.length; i++) {
+        const p = problems[i];
+        const h = getAnswerCardHeight(p);
+        const limit = isFirstPage ? limitPage1 : limitPageN;
+
+        if (currentAccumulatedHeight + h > limit && currentPageList.length > 0) {
+          answerChunks.push(currentPageList);
+          currentPageList = [p];
+          currentAccumulatedHeight = h;
+          isFirstPage = false;
+        } else {
+          currentPageList.push(p);
+          currentAccumulatedHeight += h;
+        }
+      }
+
+      if (currentPageList.length > 0) {
+        answerChunks.push(currentPageList);
       }
     }
 
