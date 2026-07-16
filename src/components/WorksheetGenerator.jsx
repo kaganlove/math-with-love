@@ -99,12 +99,14 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
       <head>
         <title>${customTitle}</title>
         <style>
+          @page {
+            margin: 0;
+          }
           body {
             font-family: 'Courier New', Courier, monospace;
-            padding: 40px;
+            margin: 20mm 15mm 22mm 15mm;
             color: #000000;
             line-height: 1.6;
-            margin-bottom: 60px;
           }
           .header {
             text-align: center;
@@ -183,14 +185,10 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           }
           .footer-note {
             position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 9pt;
-            color: #777777;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 5px;
+            bottom: 10mm;
+            left: 15mm;
+            font-size: 10px;
+            color: #64748b;
             font-family: Arial, sans-serif;
           }
         </style>
@@ -221,7 +219,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
         </div>
 
         <div class="footer-note">
-          Generated on mathwlove.com
+          mathwlove.com
         </div>
 
         ${
@@ -249,7 +247,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           </div>
           
           <div class="footer-note">
-            Generated on mathwlove.com
+            mathwlove.com
           </div>
         `
             : ""
