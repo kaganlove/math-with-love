@@ -93,6 +93,18 @@ export default function ExpressionPartsVisualizer() {
         </h3>
       </div>
 
+      {/* Standard Form Display */}
+      <div style={{
+        textAlign: "center",
+        marginTop: "-0.5rem",
+        marginBottom: "1rem",
+        color: "#94a3b8",
+        fontSize: "1rem",
+        fontFamily: "sans-serif"
+      }}>
+        Standard Expression: <code style={{ color: "#ffffff", fontSize: "1.15rem", fontWeight: "bold", marginLeft: "6px" }}>3(x + 4)² - 5x + 12</code>
+      </div>
+
       {/* Main Interactive Expression Row - Formatted to fit on one line */}
       <div style={{
         display: "flex",
