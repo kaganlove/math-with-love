@@ -100,11 +100,11 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
         <title>${customTitle}</title>
         <style>
           @page {
-            margin: 0;
+            margin: 20mm 15mm 25mm 15mm; /* Enforces browser page-breaking on grid rows */
           }
           body {
             font-family: 'Courier New', Courier, monospace;
-            margin: 20mm 15mm 28mm 15mm; /* 28mm bottom margin protects footers from overlap */
+            margin: 0;
             color: #000000;
             line-height: 1.6;
           }
@@ -185,22 +185,14 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           }
           .footer-note {
             position: fixed;
-            bottom: 10mm;
-            left: 15mm;
+            bottom: -18mm; /* Absolute position inside the bottom margin */
+            left: 0;
             font-size: 10px;
-            color: #64748b;
+            color: #555555;
             font-family: Arial, sans-serif;
-          }
-          .footer-page-number {
-            position: fixed;
-            bottom: 10mm;
-            right: 15mm;
-            font-size: 10px;
-            color: #64748b;
-            font-family: Arial, sans-serif;
-          }
-          .footer-page-number::after {
-            content: "Page " counter(page);
+            background-color: #ffffff; /* White background covers about:blank */
+            padding-right: 60px; /* Extends to hide any about:blank text */
+            white-space: nowrap;
           }
         </style>
       </head>
@@ -232,7 +224,6 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
         <div class="footer-note">
           mathwlove.com
         </div>
-        <div class="footer-page-number"></div>
 
         ${
           includeAnswers
@@ -261,7 +252,6 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           <div class="footer-note">
             mathwlove.com
           </div>
-          <div class="footer-page-number"></div>
         `
             : ""
         }
