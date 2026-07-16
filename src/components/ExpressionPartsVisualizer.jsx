@@ -10,7 +10,7 @@ export default function ExpressionPartsVisualizer() {
       color: "purple",
       text: "3",
       explanation: "A coefficient is a number multiplied by a variable, group, or term. It scales the value of the term it belongs to.",
-      context: "In this expression, 3 is the coefficient scaling the binomial factor group (x + 4)³."
+      context: "In this expression, 3 is the coefficient scaling the binomial factor group (x + 4)²."
     },
     {
       name: "Binomial Factor",
@@ -58,28 +58,28 @@ export default function ExpressionPartsVisualizer() {
   };
 
   return (
-    <div className="interactive-parts-card p-6 bg-slate-900 text-slate-100 rounded-2xl shadow-xl border border-slate-800">
-      <div className="text-center mb-6">
+    <div className="interactive-parts-card p-8 bg-slate-900 text-slate-100 rounded-2xl shadow-xl border border-slate-800">
+      <div className="text-center mb-8">
         <span className="text-xs text-primary bg-primary/10 px-3 py-1 rounded-full font-semibold uppercase tracking-wider">
           Interactive Expression Visualizer
         </span>
-        <h3 className="text-lg font-bold mt-2 text-white">Click parts of the expression below to explore!</h3>
+        <h3 className="text-xl font-bold mt-2 text-white">Click parts of the expression below to explore!</h3>
       </div>
 
-      {/* Main Interactive Expression Row */}
-      <div className="flex justify-center items-center gap-1 py-8 px-4 bg-slate-950/60 rounded-xl border border-slate-800/80 mb-6 font-mono text-2xl md:text-3xl select-none">
+      {/* Main Interactive Expression Row - Extra Large for Better Legibility */}
+      <div className="flex justify-center items-center gap-1 py-12 px-6 bg-slate-950/60 rounded-xl border border-slate-800/80 mb-8 font-mono text-3xl md:text-5xl select-none">
         {parts.map((part, idx) => {
           const isActive = idx === activeIndex;
           let colorStyle = {};
           
           if (isActive) {
             switch (part.color) {
-              case "purple": colorStyle = { color: "#c084fc", backgroundColor: "rgba(192, 132, 252, 0.2)", transform: "scale(1.1)", boxShadow: "0 10px 15px -3px rgba(192, 132, 252, 0.2)" }; break;
-              case "green": colorStyle = { color: "#34d399", backgroundColor: "rgba(52, 211, 153, 0.2)", transform: "scale(1.1)", boxShadow: "0 10px 15px -3px rgba(52, 211, 153, 0.2)" }; break;
-              case "orange": colorStyle = { color: "#fb923c", backgroundColor: "rgba(251, 146, 60, 0.2)", transform: "scale(1.1)", boxShadow: "0 10px 15px -3px rgba(251, 146, 60, 0.2)" }; break;
-              case "red": colorStyle = { color: "#f87171", backgroundColor: "rgba(248, 113, 113, 0.2)", transform: "scale(1.1)", boxShadow: "0 10px 15px -3px rgba(248, 113, 113, 0.2)" }; break;
-              case "blue": colorStyle = { color: "#38bdf8", backgroundColor: "rgba(56, 189, 248, 0.2)", transform: "scale(1.1)", boxShadow: "0 10px 15px -3px rgba(56, 189, 248, 0.2)" }; break;
-              case "amber": colorStyle = { color: "#fbbf24", backgroundColor: "rgba(251, 191, 36, 0.2)", transform: "scale(1.1)", boxShadow: "0 10px 15px -3px rgba(251, 191, 36, 0.2)" }; break;
+              case "purple": colorStyle = { color: "#c084fc", backgroundColor: "rgba(192, 132, 252, 0.2)", transform: "scale(1.15)", boxStyle: "0 12px 20px -3px rgba(192, 132, 252, 0.3)" }; break;
+              case "green": colorStyle = { color: "#34d399", backgroundColor: "rgba(52, 211, 153, 0.2)", transform: "scale(1.15)", boxStyle: "0 12px 20px -3px rgba(52, 211, 153, 0.3)" }; break;
+              case "orange": colorStyle = { color: "#fb923c", backgroundColor: "rgba(251, 146, 60, 0.2)", transform: "scale(1.15)", boxStyle: "0 12px 20px -3px rgba(251, 146, 60, 0.3)" }; break;
+              case "red": colorStyle = { color: "#f87171", backgroundColor: "rgba(248, 113, 113, 0.2)", transform: "scale(1.15)", boxStyle: "0 12px 20px -3px rgba(248, 113, 113, 0.3)" }; break;
+              case "blue": colorStyle = { color: "#38bdf8", backgroundColor: "rgba(56, 189, 248, 0.2)", transform: "scale(1.15)", boxStyle: "0 12px 20px -3px rgba(56, 189, 248, 0.3)" }; break;
+              case "amber": colorStyle = { color: "#fbbf24", backgroundColor: "rgba(251, 191, 36, 0.2)", transform: "scale(1.15)", boxStyle: "0 12px 20px -3px rgba(251, 191, 36, 0.3)" }; break;
             }
           } else {
             switch (part.color) {
@@ -98,13 +98,13 @@ export default function ExpressionPartsVisualizer() {
               onClick={() => setActiveIndex(idx)}
               style={{
                 cursor: "pointer",
-                padding: "0.25rem 0.5rem",
-                borderRadius: "0.375rem",
-                transition: "all 0.3s ease",
+                padding: "0.5rem 0.75rem",
+                borderRadius: "0.5rem",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 display: "inline-block",
                 ...colorStyle
               }}
-              className={isActive ? "ring-2 ring-white/20 font-bold" : "hover:bg-white/5"}
+              className={isActive ? "ring-2 ring-white/30 font-bold" : "hover:bg-white/5"}
             >
               {part.text}
             </span>
@@ -112,36 +112,50 @@ export default function ExpressionPartsVisualizer() {
         })}
       </div>
 
-      {/* Stepper Navigation */}
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={handlePrev}
-          className="flex items-center gap-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-lg text-sm transition-colors border border-slate-700"
-        >
-          <ArrowLeft size={16} /> Prev Part
-        </button>
-        <span className="text-sm font-semibold text-slate-400 font-mono">
-          Part {activeIndex + 1} of {parts.length}
-        </span>
-        <button
-          onClick={handleNext}
-          className="flex items-center gap-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-lg text-sm transition-colors border border-slate-700"
-        >
-          Next Part <ArrowRight size={16} />
-        </button>
+      {/* Stepper Navigation - Centered, Spaced Out, and Blue */}
+      <div className="flex flex-col items-center gap-4 mt-8 mb-8">
+        <div className="flex justify-center items-center gap-6">
+          <button
+            onClick={handlePrev}
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white shadow-lg hover:scale-105 transition-all active:scale-95"
+            style={{
+              backgroundColor: "var(--primary, #1e40af)",
+              border: "none",
+              minWidth: "150px"
+            }}
+          >
+            <ArrowLeft size={18} /> Prev Part
+          </button>
+          
+          <span className="text-sm font-semibold text-slate-300 font-mono px-4 py-2 bg-slate-950/80 rounded-full border border-slate-800">
+            Part {activeIndex + 1} of {parts.length}
+          </span>
+
+          <button
+            onClick={handleNext}
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white shadow-lg hover:scale-105 transition-all active:scale-95"
+            style={{
+              backgroundColor: "var(--primary, #1e40af)",
+              border: "none",
+              minWidth: "150px"
+            }}
+          >
+            Next Part <ArrowRight size={18} />
+          </button>
+        </div>
       </div>
 
       {/* active Info Card */}
-      <div className="info-card p-5 rounded-xl border border-slate-800/80 bg-slate-900/60 relative overflow-hidden transition-all duration-300">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.02] rounded-full blur-2xl transform translate-x-12 -translate-y-12"></div>
-        <div className="flex items-start gap-3">
-          <div className="p-2 bg-white/5 rounded-lg text-primary">
-            <Sparkles size={18} />
+      <div className="info-card p-6 rounded-2xl border border-slate-800 bg-slate-900/80 relative overflow-hidden transition-all duration-300 shadow-inner mt-4">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full blur-3xl transform translate-x-12 -translate-y-12"></div>
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-white/5 rounded-xl text-primary mt-1">
+            <Sparkles size={20} />
           </div>
           <div>
-            <h4 className="text-md font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <h4 className="text-lg font-bold text-white uppercase tracking-wider flex items-center gap-2">
               {parts[activeIndex].name}
-              <span className="inline-block w-2.5 h-2.5 rounded-full" style={{
+              <span className="inline-block w-3 h-3 rounded-full" style={{
                 backgroundColor: 
                   parts[activeIndex].color === "purple" ? "#c084fc" :
                   parts[activeIndex].color === "green" ? "#34d399" :
@@ -150,10 +164,10 @@ export default function ExpressionPartsVisualizer() {
                   parts[activeIndex].color === "blue" ? "#38bdf8" : "#fbbf24"
               }}></span>
             </h4>
-            <p className="text-slate-300 text-sm mt-2 leading-relaxed">
+            <p className="text-slate-200 text-sm mt-3 leading-relaxed">
               {parts[activeIndex].explanation}
             </p>
-            <div className="mt-4 p-3 bg-white/[0.02] border border-white/5 rounded-lg text-xs text-slate-400 italic font-sans leading-relaxed">
+            <div className="mt-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl text-xs text-slate-400 italic font-sans leading-relaxed">
               <strong>Context: </strong>{parts[activeIndex].context}
             </div>
           </div>

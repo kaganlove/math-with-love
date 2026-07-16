@@ -1182,7 +1182,7 @@ export const sampleLessons = {
       },
       {
         title: "Constants",
-        content: "A constant term is a number with a fixed value that does not contain any variables.\n• Example 1: In 2x + 9, the constant is 9.\n• Example 2: In x² - 15, the constant is -15.\n• Example 3: In P(1 + r)^t, if initial principal P and annual rate r are fixed numbers, they are constants."
+        content: "A constant term is a number with a fixed value that does not contain any variables.\n• Example 1: In 2x + 9, the constant is 9.\n• Example 2: In x² - 15, the constant is -15.\n• Example 3: In P(1 + r)ᵗ, if initial principal P and annual rate r are fixed numbers, they are constants."
       },
       {
         title: "Factors",
@@ -1237,7 +1237,7 @@ export const sampleLessons = {
         explanation: "The constant term is 9 because it is a fixed number and not associated with a variable."
       },
       {
-        question: "In the expression P(1 + r)^t, what does (1 + r) represent?",
+        question: "In the expression P(1 + r)ᵗ, what does (1 + r) represent?",
         options: ["A single constant", "A binomial factor", "A coefficient", "An exponent"],
         correctIndex: 1,
         explanation: "The quantity (1 + r) is a factor consisting of two terms, making it a binomial factor in the expression."
@@ -1261,7 +1261,7 @@ export const sampleLessons = {
     prerequisites: [
       { id: "hsa-sse-1a", title: "Interpret Parts of an Expression (HSA-SSE.A.1.a)" }
     ],
-    introduction: "In algebra, we can often simplify our understanding of a complicated expression by viewing one or more of its parts as a single variable or 'entity'. For example, in the expression P(1 + r)^t, we can treat (1 + r) as a single scale factor that determines growth.",
+    introduction: "In algebra, we can often simplify our understanding of a complicated expression by viewing one or more of its parts as a single variable or 'entity'. For example, in the expression P(1 + r)ᵗ, we can treat (1 + r) as a single scale factor that determines growth.",
     steps: [
       {
         title: "Step 1: Identify Nested Groupings",
@@ -1273,22 +1273,22 @@ export const sampleLessons = {
       },
       {
         title: "Step 3: Analyze the Overall Structure",
-        content: "Interpret what the simplified expression represents. The growth formula P(1 + r)^t is a simple exponential growth expression P * u^t, where u is the compounding growth factor."
+        content: "Interpret what the simplified expression represents. The growth formula P(1 + r)ᵗ is a simple exponential growth expression P · uᵗ, where u is the compounding growth factor."
       }
     ],
     mathBox: {
       title: "Group Substitution Guide",
       equations: [
-        { desc: "Original Compound Expression", formula: "P(1 + r)^t" },
+        { desc: "Original Compound Expression", formula: "P(1 + r)ᵗ" },
         { desc: "Let u represent the compound entity", formula: "u = (1 + r)" },
-        { desc: "Simplified Exponential Form", formula: "P * u^t" }
+        { desc: "Simplified Exponential Form", formula: "P · uᵗ" }
       ]
     },
     animationSteps: [
       {
-        equation: "P(1 + r)^t",
+        equation: "P(1 + r)ᵗ",
         desc: "Compound Form: This represents compound interest where r is the interest rate, but (1 + r) is a single multiplier.",
-        left: { type: "expression", action: null, terms: [{ val: "P", color: "slate" }, { val: "(1 + r)", color: "blue", active: true }, { val: "^t", color: "slate" }] },
+        left: { type: "expression", action: null, terms: [{ val: "P", color: "slate" }, { val: "(1 + r)", color: "blue", active: true }, { val: "ᵗ", color: "slate" }] },
         right: { type: "expression", action: null, terms: [{ val: "Compound rate group", color: "blue" }] }
       },
       {
@@ -1298,9 +1298,9 @@ export const sampleLessons = {
         right: { type: "expression", action: null, terms: [{ val: "1 + r", color: "blue" }] }
       },
       {
-        equation: "P * u^t",
+        equation: "P · uᵗ",
         desc: "Simplified Form: Replacing the group with u reveals a standard exponential growth function, making it easier to analyze.",
-        left: { type: "expression", action: null, terms: [{ val: "P", color: "slate" }, { val: "u", color: "green", active: true }, { val: "^t", color: "slate" }] },
+        left: { type: "expression", action: null, terms: [{ val: "P", color: "slate" }, { val: "u", color: "green", active: true }, { val: "ᵗ", color: "slate" }] },
         right: { type: "expression", action: null, terms: [{ val: "Standard Exponential", color: "green" }] }
       }
     ],
@@ -1312,10 +1312,10 @@ export const sampleLessons = {
         explanation: "Replacing every occurrence of (x + y) with u gives 4u² - 3u + 2."
       },
       {
-        question: "For the formula A = P(1 + r)^n, treating (1 + r) as a single entity helps us see it as:",
+        question: "For the formula A = P(1 + r)ⁿ, treating (1 + r) as a single entity helps us see it as:",
         options: ["A linear growth factor", "A constant exponent", "A single compounding base", "A variable coefficient"],
         correctIndex: 2,
-        explanation: "Treating (1 + r) as a single base u simplifies it to A = P(u)^n, which is a standard exponential base."
+        explanation: "Treating (1 + r) as a single base u simplifies it to A = P(u)ⁿ, which is a standard exponential base."
       },
       {
         question: "In the expression 3(2x + 1)³ - 7, what is the best choice of entity to simplify the expression?",
@@ -1593,42 +1593,42 @@ export const sampleLessons = {
       },
       {
         title: "Step 2: Apply Exponent Power of a Power Law",
-        content: "Rewrite base^t as base^(12 * m/12) = (base^(1/12))^(12t). This isolates the monthly scaling base."
+        content: "Rewrite baseᵗ as (base¹/¹²)¹²ᵗ. This isolates the monthly scaling base."
       },
       {
         title: "Step 3: Calculate the New Base",
-        content: "Compute the inner base decimal. For example, 1.15^(1/12) ≈ 1.0117. This reveals a monthly interest rate of approximately 1.17%."
+        content: "Compute the inner base decimal. For example, 1.15¹/¹² ≈ 1.0117. This reveals a monthly interest rate of approximately 1.17%."
       }
     ],
     mathBox: {
       title: "Exponent Scaling Rule",
       equations: [
-        { desc: "Annual Growth Form", formula: "(1 + r)^t" },
-        { desc: "Split Exponent", formula: "((1 + r)^(1/k))^(kt)" },
-        { desc: "New Growth Base", formula: "B^(kt) where B = (1+r)^(1/k)" }
+        { desc: "Annual Growth Form", formula: "(1 + r)ᵗ" },
+        { desc: "Split Exponent", formula: "((1 + r)¹/ᵏ)ᵏᵗ" },
+        { desc: "New Growth Base", formula: "Bᵏᵗ where B = (1 + r)¹/ᵏ" }
       ]
     },
     animationSteps: [
       {
-        equation: "1.15^t",
-        desc: "Annual Growth: 1.15^t represents a 15% annual growth rate. We want to find the monthly rate.",
-        left: { type: "expression", action: null, terms: [{ val: "1.15", color: "blue" }, { val: "^t", color: "slate" }] },
+        equation: "1.15ᵗ",
+        desc: "Annual Growth: 1.15ᵗ represents a 15% annual growth rate. We want to find the monthly rate.",
+        left: { type: "expression", action: null, terms: [{ val: "1.15", color: "blue" }, { val: "ᵗ", color: "slate" }] },
         right: { type: "expression", action: null, terms: [{ val: "15% annual rate", color: "slate" }] }
       },
       {
-        equation: "(1.15^(1/12))^(12t)",
+        equation: "(1.15¹/¹²)¹²ᵗ",
         desc: "Exponent Division: Rewrite the exponent t as 12 * (t / 12) to structure it for 12 compounding periods.",
-        left: { type: "expression", action: null, terms: [{ val: "(1.15^(1/12))", color: "blue", active: true }, { val: "^(12t)", color: "slate" }] },
+        left: { type: "expression", action: null, terms: [{ val: "(1.15¹/¹²)", color: "blue", active: true }, { val: "¹²ᵗ", color: "slate" }] },
         right: { type: "expression", action: null, terms: [{ val: "Power of power rule", color: "green" }] }
       },
       {
-        equation: "(1.0117)^(12t)",
-        desc: "Calculate Base: Evaluate 1.15^(1/12) ≈ 1.0117. This is the equivalent compounding monthly base.",
-        left: { type: "expression", action: null, terms: [{ val: "1.0117", color: "green", active: true }, { val: "^(12t)", color: "slate" }] },
+        equation: "(1.0117)¹²ᵗ",
+        desc: "Calculate Base: Evaluate 1.15¹/¹² ≈ 1.0117. This is the equivalent compounding monthly base.",
+        left: { type: "expression", action: null, terms: [{ val: "1.0117", color: "green", active: true }, { val: "¹²ᵗ", color: "slate" }] },
         right: { type: "expression", action: null, terms: [{ val: "Monthly growth base", color: "green" }] }
       },
       {
-        equation: "(1 + 0.0117)^(12t)",
+        equation: "(1 + 0.0117)¹²ᵗ",
         desc: "Interpret Rate: The decimal 0.0117 reveals an equivalent monthly growth rate of approximately 1.17%.",
         left: { type: "expression", action: null, terms: [{ val: "1 + 0.0117", color: "green" }] },
         right: { type: "expression", action: null, terms: [{ val: "1.17% monthly rate", color: "green" }] }
@@ -1636,22 +1636,22 @@ export const sampleLessons = {
     ],
     practiceQuestions: [
       {
-        question: "Which of the following is equivalent to (3^2t)?",
-        options: ["9^t", "6^t", "3^t", "5^t"],
+        question: "Which of the following is equivalent to (3²ᵗ)?",
+        options: ["9ᵗ", "6ᵗ", "3ᵗ", "5ᵗ"],
         correctIndex: 0,
-        explanation: "By exponent rules, 3^(2t) = (3²)^t = 9^t."
+        explanation: "By exponent rules, 3²ᵗ = (3²)ᵗ = 9ᵗ."
       },
       {
-        question: "If an investment grows by 12% annually (1.12^t), what calculation gives the monthly factor?",
-        options: ["1.12 / 12", "1.12 * 12", "1.12^(1/12)", "1.12^12"],
+        question: "If an investment grows by 12% annually (1.12ᵗ), what calculation gives the monthly factor?",
+        options: ["1.12 ÷ 12", "1.12 · 12", "1.12¹/¹²", "1.12¹²"],
         correctIndex: 2,
-        explanation: "To find the monthly multiplier, we take the 12th root of the annual multiplier, which is 1.12^(1/12)."
+        explanation: "To find the monthly multiplier, we take the 12th root of the annual multiplier, which is 1.12¹/¹²."
       },
       {
-        question: "Simplify the expression (2^4t) * (2^t) into a single power of 2.",
-        options: ["2^5t", "4^5t", "2^4t²", "2^3t"],
+        question: "Simplify the expression (2⁴ᵗ) · (2ᵗ) into a single power of 2.",
+        options: ["2⁵ᵗ", "4⁵ᵗ", "2⁴ᵗ", "2³ᵗ"],
         correctIndex: 0,
-        explanation: "Add exponents when multiplying like bases: 4t + t = 5t, giving 2^(5t)."
+        explanation: "Add exponents when multiplying like bases: 4t + t = 5t, giving 2⁵ᵗ."
       }
     ]
   },
@@ -1666,52 +1666,52 @@ export const sampleLessons = {
     prerequisites: [
       { id: "hsa-sse-1a", title: "Interpret Parts of an Expression (HSA-SSE.A.1.a)" }
     ],
-    introduction: "A geometric series is the sum of terms that have a constant ratio. The sum of the first n terms of a geometric series Sn = a + ar + ar² + ... + ar^(n-1) can be derived by multiplying the series by the ratio and subtracting it.",
+    introduction: "A geometric series is the sum of terms that have a constant ratio. The sum of the first n terms of a geometric series Sn = a + ar + ar² + ... + arⁿ⁻¹ can be derived by multiplying the series by the ratio and subtracting it.",
     steps: [
       {
         title: "Step 1: Write the Sum Equation",
-        content: "Express the sum of the series: Sn = a + ar + ar² + ... + ar^(n-1)."
+        content: "Express the sum of the series: Sn = a + ar + ar² + ... + arⁿ⁻¹."
       },
       {
         title: "Step 2: Multiply by r",
-        content: "Multiply every term in the equation by the common ratio r: r * Sn = ar + ar² + ar³ + ... + ar^n."
+        content: "Multiply every term in the equation by the common ratio r: r · Sn = ar + ar² + ar³ + ... + arⁿ."
       },
       {
         title: "Step 3: Subtract and Factor",
-        content: "Subtract the two equations: Sn - r * Sn = a - ar^n. Factor both sides: Sn(1 - r) = a(1 - r^n). Divide by (1 - r) to get Sn = a(1 - r^n) / (1 - r)."
+        content: "Subtract the two equations: Sn - r · Sn = a - arⁿ. Factor both sides: Sn(1 - r) = a(1 - rⁿ). Divide by (1 - r) to get Sn = a(1 - rⁿ) ÷ (1 - r)."
       }
     ],
     mathBox: {
       title: "Geometric Series Formula",
       equations: [
-        { desc: "Geometric Series Sum", formula: "Sn = a + ar + ar² + ... + ar^(n-1)" },
-        { desc: "Derived Sum Formula", formula: "Sn = a * (1 - r^n) / (1 - r)" }
+        { desc: "Geometric Series Sum", formula: "Sn = a + ar + ar² + ... + arⁿ⁻¹" },
+        { desc: "Derived Sum Formula", formula: "Sn = a · (1 - rⁿ) ÷ (1 - r)" }
       ]
     },
     animationSteps: [
       {
-        equation: "Sn = a + ar + ar² + ... + ar^(n-1)",
+        equation: "Sn = a + ar + ar² + ... + arⁿ⁻¹",
         desc: "Original Sum: The sum of the first n terms of a geometric series with first term a and ratio r.",
         left: { type: "expression", action: null, terms: [{ val: "Sn", color: "blue" }] },
-        right: { type: "expression", action: null, terms: [{ val: "a + ar + ... + ar^(n-1)", color: "slate" }] }
+        right: { type: "expression", action: null, terms: [{ val: "a + ar + ... + arⁿ⁻¹", color: "slate" }] }
       },
       {
-        equation: "r*Sn = ar + ar² + ar³ + ... + ar^n",
+        equation: "r · Sn = ar + ar² + ar³ + ... + arⁿ",
         desc: "Multiply by r: Scale the entire equation by the common ratio r. Every term shifts up one power of r.",
-        left: { type: "expression", action: null, terms: [{ val: "r*Sn", color: "blue", active: true }] },
-        right: { type: "expression", action: null, terms: [{ val: "ar + ar² + ... + ar^n", color: "slate" }] }
+        left: { type: "expression", action: null, terms: [{ val: "r · Sn", color: "blue", active: true }] },
+        right: { type: "expression", action: null, terms: [{ val: "ar + ar² + ... + arⁿ", color: "slate" }] }
       },
       {
-        equation: "Sn - r*Sn = a - ar^n",
-        desc: "Subtract Equations: Subtracting the second equation from the first cancels out all the intermediate terms (ar, ar², ..., ar^(n-1)), leaving only a and -ar^n.",
-        left: { type: "expression", action: null, terms: [{ val: "Sn - r*Sn", color: "blue" }] },
-        right: { type: "expression", action: null, terms: [{ val: "a - ar^n", color: "red", active: true }] }
+        equation: "Sn - r · Sn = a - arⁿ",
+        desc: "Subtract Equations: Subtracting the second equation from the first cancels out all the intermediate terms (ar, ar², ..., arⁿ⁻¹), leaving only a and -arⁿ.",
+        left: { type: "expression", action: null, terms: [{ val: "Sn - r · Sn", color: "blue" }] },
+        right: { type: "expression", action: null, terms: [{ val: "a - arⁿ", color: "red", active: true }] }
       },
       {
-        equation: "Sn = a(1 - r^n) / (1 - r)",
-        desc: "Factor and Solve: Factor out Sn on the left and a on the right: Sn(1 - r) = a(1 - r^n). Divide by (1 - r) to complete the proof.",
+        equation: "Sn = a(1 - rⁿ) ÷ (1 - r)",
+        desc: "Factor and Solve: Factor out Sn on the left and a on the right: Sn(1 - r) = a(1 - rⁿ). Divide by (1 - r) to complete the proof.",
         left: { type: "expression", action: null, terms: [{ val: "Sn", color: "blue" }] },
-        right: { type: "expression", action: null, terms: [{ val: "a(1 - r^n) / (1 - r)", color: "green", active: true }] }
+        right: { type: "expression", action: null, terms: [{ val: "a(1 - rⁿ) ÷ (1 - r)", color: "green", active: true }] }
       }
     ],
     practiceQuestions: [
@@ -1719,7 +1719,7 @@ export const sampleLessons = {
         question: "Find the sum of the first 4 terms of the series: 3 + 6 + 12 + 24",
         options: ["45", "48", "30", "42"],
         correctIndex: 0,
-        explanation: "Here, a = 3, r = 2, n = 4. Sn = 3(1 - 2⁴)/(1 - 2) = 3(-15)/(-1) = 45."
+        explanation: "Here, a = 3, r = 2, n = 4. Sn = 3 · (1 - 2⁴) ÷ (1 - 2) = 3 · (-15) ÷ (-1) = 45."
       },
       {
         question: "What is the common ratio r in the geometric series: 5 - 15 + 45 - 135?",
@@ -1728,10 +1728,10 @@ export const sampleLessons = {
         explanation: "Divide the second term by the first: -15 / 5 = -3."
       },
       {
-        question: "If Sn = a(1 - r^n)/(1 - r), what happens to the sum as n gets very large if |r| < 1?",
-        options: ["It approaches infinity", "It approaches zero", "It approaches a / (1 - r)", "It approaches a"],
+        question: "If Sn = a(1 - rⁿ) ÷ (1 - r), what happens to the sum as n gets very large if |r| < 1?",
+        options: ["It approaches infinity", "It approaches zero", "It approaches a ÷ (1 - r)", "It approaches a"],
         correctIndex: 2,
-        explanation: "If |r| < 1, then r^n approaches 0 as n goes to infinity, simplifying the formula to a / (1 - r)."
+        explanation: "If |r| < 1, then rⁿ approaches 0 as n goes to infinity, simplifying the formula to a ÷ (1 - r)."
       }
     ]
   },
@@ -2107,8 +2107,13 @@ export function generateDynamicLesson(id) {
 }
 
 export function getLessonById(id) {
-  if (sampleLessons[id]) {
-    return sampleLessons[id];
+  let mappedId = id;
+  if (id === "linear-equations") mappedId = "hsa-rei-3";
+  if (id === "factoring-quadratics") mappedId = "hsa-sse-3a";
+  if (id === "systems-substitution") mappedId = "hsa-rei-6";
+
+  if (sampleLessons[mappedId]) {
+    return sampleLessons[mappedId];
   }
-  return generateDynamicLesson(id);
+  return generateDynamicLesson(mappedId);
 }
