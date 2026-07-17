@@ -3493,10 +3493,38 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 0.5rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-block;
+  white-space: nowrap; /* Prevent spaces like (x + 4) from wrapping */
+  flex-shrink: 0;      /* Prevent tokens from squishing */
 }
 @media (max-width: 600px) {
   .expression-part-span {
     padding: 0.2rem 0.4rem !important; /* SNUG padding to prevent overflows */
+  }
+}
+
+.standard-expression-container {
+  text-align: center;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  color: #94a3b8;
+  font-size: 1rem;
+  font-family: sans-serif;
+  white-space: nowrap; /* Prevent standard expression wrapping */
+}
+
+.standard-expression-code {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: bold;
+  margin-left: 6px;
+}
+
+@media (max-width: 600px) {
+  .standard-expression-container {
+    font-size: 0.8rem !important;
+  }
+  .standard-expression-code {
+    font-size: 0.95rem !important;
   }
 }
 
