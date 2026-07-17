@@ -366,37 +366,99 @@ export default function Curriculum() {
             </button>
 
             {activeLesson ? (
-              <div className="lesson-layout">
-                {/* Main Lesson Content */}
-                <div className="lesson-main-card">
-                  {/* Alert banner if opened via diagnostic score matching */}
-                  {selectedDiagnosticInfo && (
-                    <div className="diagnostic-match-callout mb-6">
-                      <div className="callout-header flex-center gap-1">
-                        <Sparkles size={16} className="text-primary" />
-                        <span>Score Report Diagnostic Match</span>
-                      </div>
-                      <p className="callout-body">
-                        This lesson maps to feedback from your **{selectedDiagnosticInfo.testName}** report: 
-                        <br />
-                        <strong className="text-gradient">"{selectedDiagnosticInfo.feedback}"</strong> 
-                        <br />
-                        Aligned with Common Core Standard **{selectedDiagnosticInfo.ccss}**.
-                      </p>
+              <div className="lesson-main-card animate-slide-up" style={{ maxWidth: "900px", margin: "0 auto" }}>
+                {/* Alert banner if opened via diagnostic score matching */}
+                {selectedDiagnosticInfo && (
+                  <div className="diagnostic-match-callout mb-6">
+                    <div className="callout-header flex-center gap-1">
+                      <Sparkles size={16} className="text-primary" />
+                      <span>Score Report Diagnostic Match</span>
+                    </div>
+                    <p className="callout-body">
+                      This lesson maps to feedback from your **{selectedDiagnosticInfo.testName}** report: 
+                      <br />
+                      <strong className="text-gradient">"{selectedDiagnosticInfo.feedback}"</strong> 
+                      <br />
+                      Aligned with Common Core Standard **{selectedDiagnosticInfo.ccss}**.
+                    </p>
+                  </div>
+                )}
+
+                <div className="lesson-header-meta">
+                  <span className="lesson-level-badge">{activeLesson.level}</span>
+                  <span className="lesson-topic-badge">{activeLesson.topic}</span>
+                  {activeLesson.ccss && (
+                    <span className="lesson-ccss-badge">CCSS: {activeLesson.ccss}</span>
+                  )}
+                </div>
+                <h1 className="lesson-main-title">{activeLesson.title}</h1>
+
+                {/* Prerequisites & Worksheet Quick Actions */}
+                <div 
+                  className="lesson-quick-actions-grid" 
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: activeLesson.prerequisites || activeLesson.mathBox ? "1.2fr 1fr" : "1fr",
+                    gap: "1.5rem",
+                    marginTop: "1.5rem",
+                    marginBottom: "2.5rem"
+                  }}
+                >
+                  {/* Left Column: Prerequisites & Formula Cards */}
+                  {(activeLesson.prerequisites || activeLesson.mathBox) && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                      {/* Prerequisites Card */}
+                      {activeLesson.prerequisites && (
+                        <div className="sidebar-card prereq-card" style={{ margin: 0, padding: "1.25rem" }}>
+                          <h3 className="sidebar-card-title" style={{ fontSize: "1.1rem", marginBottom: "0.75rem", paddingBottom: "0.4rem" }}>Before You Begin</h3>
+                          <p className="text-xs text-muted mb-3">Make sure you are comfortable with these prerequisite topics:</p>
+                          <div className="prereq-list">
+                            {activeLesson.prerequisites.map((prereq, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => handleLessonSelect(prereq.id)}
+                                className="prereq-link-btn"
+                              >
+                                <span className="prereq-bullet">✓</span> {prereq.title}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Formula / Equations Card */}
+                      {activeLesson.mathBox && (
+                        <div className="sidebar-card formula-card" style={{ margin: 0, padding: "1.25rem" }}>
+                          <h3 className="sidebar-card-title" style={{ fontSize: "1.1rem", marginBottom: "0.75rem", paddingBottom: "0.4rem" }}>{activeLesson.mathBox.title}</h3>
+                          <div className="formulas-list">
+                            {activeLesson.mathBox.equations.map((eq, idx) => (
+                              <div key={idx} className="formula-item" style={{ marginBottom: idx === activeLesson.mathBox.equations.length - 1 ? 0 : "0.75rem" }}>
+                                <span className="formula-desc" style={{ fontSize: "0.8rem", marginBottom: "0.2rem" }}>{eq.desc}</span>
+                                <div className="formula-math-display" style={{ padding: "0.35rem 0.5rem" }}>
+                                  <code style={{ fontSize: "0.85rem" }}>{eq.formula}</code>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  <div className="lesson-header-meta">
-                    <span className="lesson-level-badge">{activeLesson.level}</span>
-                    <span className="lesson-topic-badge">{activeLesson.topic}</span>
-                    {activeLesson.ccss && (
-                      <span className="lesson-ccss-badge">CCSS: {activeLesson.ccss}</span>
-                    )}
+                  {/* Right Column: Generate Practice Worksheet Box */}
+                  <div className="worksheet-quick-box" style={{ height: "100%" }}>
+                    <WorksheetGenerator
+                      lessonId={activeLesson.id}
+                      lessonTitle={activeLesson.title}
+                      ccss={activeLesson.ccss}
+                      fullWidth={true}
+                    />
                   </div>
-                  <h1 className="lesson-main-title">{activeLesson.title}</h1>
-                  <div className="lesson-intro">
-                    <p>{activeLesson.introduction}</p>
-                  </div>
+                </div>
+
+                <div className="lesson-intro">
+                  <p>{activeLesson.introduction}</p>
+                </div>
 
                   {activeLesson.id === "hsa-sse-1a" ? (
                     <div className="my-6">
@@ -491,60 +553,18 @@ export default function Curriculum() {
                       )}
                     </div>
                   </div>
-                </div>
-
-                {/* Sidebar Cards */}
-                <div className="lesson-sidebar">
-                  <WorksheetGenerator
-                    lessonId={activeLesson.id}
-                    lessonTitle={activeLesson.title}
-                    ccss={activeLesson.ccss}
-                    fullWidth={true}
-                  />
-                  {/* Prerequisites Card */}
-                  {activeLesson.prerequisites && (
-                    <div className="sidebar-card prereq-card">
-                      <h3 className="sidebar-card-title">Before You Begin</h3>
-                      <p className="text-xs text-muted mb-3">Make sure you are comfortable with these prerequisite topics:</p>
-                      <div className="prereq-list">
-                        {activeLesson.prerequisites.map((prereq, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => handleLessonSelect(prereq.id)}
-                            className="prereq-link-btn"
-                          >
-                            <span className="prereq-bullet">✓</span> {prereq.title}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {/* Formula / Equations Card */}
-                  <div className="sidebar-card formula-card">
-                    <h3 className="sidebar-card-title">{activeLesson.mathBox.title}</h3>
-                    <div className="formulas-list">
-                      {activeLesson.mathBox.equations.map((eq, idx) => (
-                        <div key={idx} className="formula-item">
-                          <span className="formula-desc">{eq.desc}</span>
-                          <div className="formula-math-display">
-                            <code>{eq.formula}</code>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  {/* Ads Slot at the bottom */}
+                  <div className="mt-12" style={{ borderTop: "1.5px solid var(--border-color)", paddingTop: "2rem" }}>
+                    <AdsSlot format="horizontal" fallbackText="Need help solving math problems step by step? Get personalized 1-on-1 tutoring sessions with Kagan Love!" />
                   </div>
 
-                  {/* Ads Slot */}
-                  <AdsSlot format="vertical" fallbackText="Need help solving math problems step by step? Get personalized 1-on-1 tutoring sessions with Kagan Love!" />
-
-                  {/* Call to Tutoring */}
-                  <div className="sidebar-card promo-card text-center">
-                    <h3 className="promo-title">Stuck on a concept?</h3>
-                    <p className="promo-desc">Get personalized, live 1-on-1 tutoring to work through homework and difficult math concepts.</p>
-                    <Link to="/tutoring" className="btn-primary w-full block">Book Tutoring Session</Link>
+                  {/* Promo Callout at the bottom */}
+                  <div className="sidebar-card promo-card text-center mt-6" style={{ margin: "1.5rem 0 0", padding: "1.5rem" }}>
+                    <h3 className="promo-title" style={{ fontSize: "1.3rem", marginBottom: "0.5rem" }}>Stuck on a concept?</h3>
+                    <p className="promo-desc" style={{ fontSize: "0.9rem", marginBottom: "1rem" }}>Get personalized, live 1-on-1 tutoring to work through homework and difficult math concepts.</p>
+                    <Link to="/tutoring" className="btn-primary" style={{ display: "inline-block", width: "auto", minWidth: "220px" }}>Book Tutoring Session</Link>
                   </div>
                 </div>
-              </div>
             ) : (
               /* If clicked a soon-to-come lesson */
               <div className="soon-lesson-card text-center animate-fade-in">

@@ -3569,3 +3569,20 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ==========================================================================
+   Quick Actions Row (Prerequisites & Worksheet Box) Responsive Styling
+   ========================================================================== */
+.lesson-quick-actions-grid {
+  display: grid;
+  grid-gap: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+@media (max-width: 768px) {
+  .lesson-quick-actions-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+}
+
