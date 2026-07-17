@@ -3332,3 +3332,212 @@ h1, h2, h3, h4, h5, h6 {
     stroke-dashoffset: 0;
   }
 }
+
+/* ==========================================================================
+   Mobile Responsive Optimizations (Scaling, Ratios, Visualizer, Cards)
+   ========================================================================== */
+
+@media (max-width: 600px) {
+  /* Page header reductions to keep ratio balanced */
+  .page-title {
+    font-size: 2rem !important;
+  }
+  .page-desc {
+    font-size: 1rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+  .curriculum-header {
+    padding: 2rem 0 0.5rem !important;
+  }
+
+  /* Search input snugger on mobile */
+  .search-input {
+    padding: 0.85rem 1rem 0.85rem 2.75rem !important;
+    font-size: 0.95rem !important;
+  }
+  .search-icon {
+    left: 1rem !important;
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  /* Stack tab switcher buttons on tiny mobile screens if needed, otherwise reduce padding */
+  .curriculum-mode-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem !important;
+  }
+  .btn-mode-tab {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+    gap: 0.35rem !important;
+  }
+
+  /* Level Tabs sidebar selection */
+  .level-tabs {
+    flex-direction: row !important;
+    flex-wrap: wrap;
+    gap: 0.35rem !important;
+    margin-bottom: 1rem;
+  }
+  .level-tab-btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
+    flex: 1 1 auto;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  /* Stack lesson list items vertically instead of horizontal flex row to prevent metadata wrapping */
+  .lesson-item-btn {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.75rem !important;
+    padding: 1rem !important;
+  }
+  .lesson-info {
+    width: 100% !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+  .lesson-title-text {
+    font-size: 0.9rem !important;
+  }
+  .lesson-meta {
+    width: 100% !important;
+    justify-content: flex-end !important;
+    margin-top: 0.25rem !important;
+    gap: 0.5rem !important;
+  }
+  .lesson-meta span {
+    font-size: 0.75rem !important;
+  }
+
+  /* Accordion indent and arrows */
+  .sub-lessons-container {
+    padding-left: 1rem !important;
+    margin-top: 0.35rem !important;
+    gap: 0.35rem !important;
+  }
+  .sub-lesson-item {
+    padding: 0.75rem 1rem !important;
+  }
+
+  /* Content widths and layouts wrapper spacing */
+  .content-width {
+    padding: 0 1rem !important;
+  }
+  .curriculum-layout-wrapper {
+    margin-top: 1.5rem !important;
+  }
+  .curriculum-layout {
+    margin-top: 1.5rem !important;
+    gap: 1.5rem !important;
+  }
+}
+
+/* ==========================================================================
+   Interactive Expression Visualizer Responsive Classes
+   ========================================================================== */
+.interactive-parts-card {
+  padding: 2rem;
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-radius: 1rem;
+  border: 1.5px solid #1e293b;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.5rem;
+}
+@media (max-width: 600px) {
+  .interactive-parts-card {
+    padding: 1rem !important;
+    gap: 1rem !important;
+  }
+}
+
+.expression-row-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.15rem;
+  padding: 2rem 1.5rem;
+  background-color: rgba(2, 6, 23, 0.6);
+  border-radius: 0.75rem;
+  border: 1.5px solid rgba(30, 41, 59, 0.8);
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-family: monospace;
+  font-size: 2.25rem;
+  user-select: none;
+  overflow-x: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  .expression-row-container {
+    font-size: 1.35rem !important; /* Scale expression font size to fit without line breaks */
+    padding: 1rem 0.5rem !important;
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+}
+
+.expression-part-span {
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
+@media (max-width: 600px) {
+  .expression-part-span {
+    padding: 0.2rem 0.4rem !important; /* SNUG padding to prevent overflows */
+  }
+}
+
+.stepper-nav-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 2.5rem;
+  width: 100%;
+}
+.stepper-nav-row button {
+  min-width: 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.stepper-part-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  font-family: monospace;
+  padding: 0.375rem 1rem;
+  background-color: rgba(2, 6, 23, 0.8);
+  border-radius: 0.5rem;
+  border: 1.5px solid #1e293b;
+  display: inline-block;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .stepper-nav-row {
+    gap: 0.5rem !important; /* snug gap on mobile */
+  }
+  .stepper-nav-row button {
+    min-width: 85px !important;
+    font-size: 0.7rem !important;
+    padding: 0.35rem 0.55rem !important;
+  }
+  .stepper-nav-row span {
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.4rem !important;
+  }
+}
+

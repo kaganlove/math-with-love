@@ -58,21 +58,7 @@ export default function ExpressionPartsVisualizer() {
   };
 
   return (
-    <div 
-      className="interactive-parts-card" 
-      style={{
-        padding: "2rem",
-        backgroundColor: "#0f172a",
-        color: "#f1f5f9",
-        borderRadius: "1rem",
-        border: "1.5px solid #1e293b",
-        boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "stretch",
-        gap: "1.5rem"
-      }}
-    >
+    <div className="interactive-parts-card">
       <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
         <span 
           style={{
@@ -106,23 +92,7 @@ export default function ExpressionPartsVisualizer() {
       </div>
 
       {/* Main Interactive Expression Row - Formatted to fit on one line */}
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        flexWrap: "nowrap",
-        gap: "0.15rem",
-        padding: "2rem 1.5rem",
-        backgroundColor: "rgba(2, 6, 23, 0.6)",
-        borderRadius: "0.75rem",
-        border: "1.5px solid rgba(30, 41, 59, 0.8)",
-        marginTop: "1.5rem",
-        marginBottom: "1.5rem",
-        fontFamily: "monospace",
-        fontSize: "2rem",
-        userSelect: "none",
-        overflowX: "auto"
-      }}>
+      <div className="expression-row-container">
         {parts.map((part, idx) => {
           const isActive = idx === activeIndex;
           let colorStyle = {};
@@ -151,15 +121,8 @@ export default function ExpressionPartsVisualizer() {
             <span
               key={idx}
               onClick={() => setActiveIndex(idx)}
-              style={{
-                cursor: "pointer",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "0.5rem",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                display: "inline-block",
-                ...colorStyle
-              }}
-              className={isActive ? "ring-2 ring-white/30 font-bold" : "hover:bg-white/5"}
+              style={colorStyle}
+              className={`expression-part-span ${isActive ? "ring-2 ring-white/30 font-bold" : "hover:bg-white/5"}`}
             >
               {part.text}
             </span>
@@ -176,51 +139,21 @@ export default function ExpressionPartsVisualizer() {
         marginBottom: "2rem",
         width: "100%"
       }}>
-        <div style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "2.5rem",
-          width: "100%"
-        }}>
+        <div className="stepper-nav-row">
           <button
             onClick={handlePrev}
             className="btn-primary btn-small flex-center gap-2"
-            style={{
-              minWidth: "120px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
           >
             <ArrowLeft size={14} /> <span>Prev Part</span>
           </button>
           
-          <span 
-            style={{
-              fontSize: "0.875rem",
-              fontWeight: "700",
-              color: "#cbd5e1",
-              fontFamily: "monospace",
-              padding: "0.375rem 1rem",
-              backgroundColor: "rgba(2, 6, 23, 0.8)",
-              borderRadius: "0.5rem",
-              border: "1.5px solid #1e293b"
-            }}
-          >
+          <span className="stepper-part-label">
             Part {activeIndex + 1} of {parts.length}
           </span>
 
           <button
             onClick={handleNext}
             className="btn-primary btn-small flex-center gap-2"
-            style={{
-              minWidth: "120px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center"
-            }}
           >
             <span>Next Part</span> <ArrowRight size={14} />
           </button>
