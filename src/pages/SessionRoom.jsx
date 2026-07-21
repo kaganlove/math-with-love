@@ -109,7 +109,7 @@ export default function SessionRoom() {
         {/* Left pane: Jitsi Meet Call */}
         <section className="session-video-pane">
           {inCall ? (
-            <div className="session-iframe-container">
+            <div className="session-iframe-container" style={isResizing ? { pointerEvents: "none" } : {}}>
               <iframe
                 src={jitsiUrl}
                 allow="camera; microphone; display-capture; autoplay; clipboard-write"
