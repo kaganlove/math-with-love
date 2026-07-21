@@ -440,7 +440,7 @@ export default function Curriculum() {
                     {activeLesson.steps.map((step, idx) => (
                       <div key={idx} className="lesson-step-card">
                         <h4 className="step-title">{step.title}</h4>
-                        <p className="step-content">{step.content}</p>
+                        <p className="step-content" dangerouslySetInnerHTML={{ __html: step.content.replace(/\n/g, '<br />') }} />
                       </div>
                     ))}
                   </div>
