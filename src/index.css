@@ -1725,6 +1725,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-session {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   padding: 0.45rem 1rem;
   font-family: var(--font-heading);
   font-weight: 750;
