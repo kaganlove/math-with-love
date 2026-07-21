@@ -32,6 +32,9 @@ export default function Whiteboard() {
   const [draggingElement, setDraggingElement] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
+  // PDF.js loading state indicator
+  const [pdfLoading, setPdfLoading] = useState(false);
+
   const colors = [
     { name: "Indigo", value: "#6366f1" },
     { name: "Red", value: "#ef4444" },
@@ -40,19 +43,21 @@ export default function Whiteboard() {
     { name: "Dark", value: "#0f172a" }
   ];
 
-  // Track parent element dimensions to resize canvas dynamically
+  // Track parent element dimensions to resize canvas dynamically (ResizeObserver handles panel splits)
   useEffect(() => {
-    const updateSize = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const parent = canvas.parentNode;
-      const rect = parent.getBoundingClientRect();
-      setCanvasSize({ width: rect.width, height: rect.height });
-    };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentNode;
 
-    updateSize();
-    window.addEventListener("resize", updateSize);
-    return () => window.removeEventListener("resize", updateSize);
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        setCanvasSize({ width, height });
+      }
+    });
+
+    resizeObserver.observe(parent);
+    return () => resizeObserver.disconnect();
   }, []);
 
   // Main drawing logic that clears and redraws all vector elements
@@ -154,6 +159,35 @@ export default function Whiteboard() {
 
     drawCanvas();
   }, [canvasSize, elements, currentPoints, tool, color, lineWidth]);
+
+  // Click outside textarea window listener to save typing
+  useEffect(() => {
+    if (!editingText) return;
+
+    const handleWindowClick = (e) => {
+      // If clicking anything other than the textarea box itself or toolbar buttons
+      if (
+        e.target.tagName !== "TEXTAREA" &&
+        !e.target.closest(".toolbar-btn") &&
+        !e.target.closest(".color-btn") &&
+        !e.target.closest(".thickness-btn")
+      ) {
+        finishEditingText();
+      }
+    };
+
+    // Delay binding to prevent immediate trigger on the pointerdown that opened it
+    const timeout = setTimeout(() => {
+      window.addEventListener("mousedown", handleWindowClick);
+      window.addEventListener("touchstart", handleWindowClick);
+    }, 100);
+
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener("mousedown", handleWindowClick);
+      window.removeEventListener("touchstart", handleWindowClick);
+    };
+  }, [editingText]);
 
   const getCoordinates = (e) => {
     const canvas = canvasRef.current;
@@ -337,13 +371,40 @@ export default function Whiteboard() {
     setTool(t);
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // PDF.js rendering pipeline: parses a PDF file dynamically on client and extracts the first page
+  const renderPdfFile = async (arrayBuffer) => {
+    setPdfLoading(true);
+    try {
+      let pdfjs = window["pdfjs-dist/build/pdf"];
+      if (!pdfjs) {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js";
+          script.onload = () => {
+            pdfjs = window["pdfjs-dist/build/pdf"];
+            pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+            resolve();
+          };
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+      } else {
+        pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js";
+      }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target.result;
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 1.5 });
+
+      // Render page content to a temporary scaling canvas
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+      const dataUrl = canvas.toDataURL("image/png");
       const img = new Image();
       img.src = dataUrl;
       img.onload = () => {
@@ -372,10 +433,64 @@ export default function Whiteboard() {
           height: h
         };
         setElements((prev) => [...prev, newEl]);
-        selectTool("select"); // switch to move tool so they can drag it immediately
+        setPdfLoading(false);
+        selectTool("select");
       };
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("PDF extraction error:", err);
+      alert("Failed to render PDF document. Attempting to run standard image fallback.");
+      setPdfLoading(false);
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type === "application/pdf") {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        renderPdfFile(event.target.result);
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      // standard image load
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target.result;
+        const img = new Image();
+        img.src = dataUrl;
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          const maxW = canvasSize.width * 0.7;
+          const maxH = canvasSize.height * 0.7;
+
+          if (w > maxW) {
+            h = (maxW / w) * h;
+            w = maxW;
+          }
+          if (h > maxH) {
+            w = (maxH / h) * w;
+            h = maxH;
+          }
+
+          const newEl = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            type: "image",
+            src: dataUrl,
+            img: img,
+            x: (canvasSize.width - w) / 2,
+            y: (canvasSize.height - h) / 2,
+            width: w,
+            height: h
+          };
+          setElements((prev) => [...prev, newEl]);
+          selectTool("select");
+        };
+      };
+      reader.readAsDataURL(file);
+    }
     e.target.value = "";
   };
 
@@ -475,17 +590,20 @@ export default function Whiteboard() {
           <button
             className="toolbar-btn"
             onClick={() => fileInputRef.current?.click()}
-            title="Upload Worksheet / Image"
-            style={{ width: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+            title="Upload PDF Worksheet or Image"
+            style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+            disabled={pdfLoading}
           >
             <Upload size={18} />
-            <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Upload Document</span>
+            <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>
+              {pdfLoading ? "Rendering PDF..." : "Upload Document"}
+            </span>
           </button>
           <input
             type="file"
             ref={fileInputRef}
-            onChange={handleImageUpload}
-            accept="image/*"
+            onChange={handleFileUpload}
+            accept="image/*,application/pdf"
             style={{ display: "none" }}
           />
         </div>
@@ -517,10 +635,9 @@ export default function Whiteboard() {
         {editingText && (
           <textarea
             autoFocus
-            placeholder="Type text..."
+            placeholder="Type here..."
             value={editingText.value}
             onChange={(e) => setEditingText({ ...editingText, value: e.target.value })}
-            onBlur={finishEditingText}
             onKeyDown={handleTextareaKeyDown}
             style={{
               position: "absolute",

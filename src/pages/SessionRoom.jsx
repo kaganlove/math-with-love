@@ -10,6 +10,10 @@ export default function SessionRoom() {
   const [copied, setCopied] = useState(false);
   const [inCall, setInCall] = useState(true); // Start in call immediately
 
+  // resizable layout split states
+  const [videoWidthPercent, setVideoWidthPercent] = useState(40); // default 40% Jitsi
+  const [isResizing, setIsResizing] = useState(false);
+
   useEffect(() => {
     const room = searchParams.get("room");
     if (!room) {
@@ -32,6 +36,43 @@ export default function SessionRoom() {
       navigate("/classroom");
     }
   };
+
+  const startResizing = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing) return;
+      const clientX = e.clientX || e.touches?.[0]?.clientX;
+      if (!clientX) return;
+
+      const percentage = (clientX / window.innerWidth) * 100;
+      // Constraint Jitsi pane width to between 15% and 75%
+      if (percentage >= 15 && percentage <= 75) {
+        setVideoWidthPercent(percentage);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+      window.addEventListener("touchmove", handleMouseMove);
+      window.addEventListener("touchend", handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleMouseMove);
+      window.removeEventListener("touchend", handleMouseUp);
+    };
+  }, [isResizing]);
 
   const jitsiUrl = `https://meet.jit.si/MathWithLove_${roomName}#config.prejoinPageEnabled=false&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.MOBILE_APP_PROMO=false`;
 
@@ -60,8 +101,11 @@ export default function SessionRoom() {
         </div>
       </header>
 
-      {/* Main workspace filling the window height below the bar */}
-      <div className="session-workspace-split">
+      {/* Main workspace filling the window height below the bar with drag divider */}
+      <div 
+        className="session-workspace-split"
+        style={{ gridTemplateColumns: `${videoWidthPercent}% 8px 1fr` }}
+      >
         {/* Left pane: Jitsi Meet Call */}
         <section className="session-video-pane">
           {inCall ? (
@@ -83,6 +127,13 @@ export default function SessionRoom() {
             </div>
           )}
         </section>
+
+        {/* Resizable Divider */}
+        <div 
+          className={`session-divider ${isResizing ? "resizing" : ""}`}
+          onMouseDown={startResizing}
+          onTouchStart={startResizing}
+        />
 
         {/* Right pane: Custom Interactive whiteboard */}
         <section className="session-whiteboard-pane">
