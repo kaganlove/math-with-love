@@ -413,7 +413,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             text-align: center;
             border-bottom: 2px solid #000000;
             padding-bottom: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
           }
           .header h1 {
             margin: 0;
@@ -435,13 +435,13 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           .meta-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             font-weight: bold;
           }
           .problems-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            row-gap: 120px; /* Large space for writing solutions */
+            row-gap: 95px; /* Slightly reduced space so it fits without running into the footer */
             column-gap: 50px;
           }
           .problem-card {
