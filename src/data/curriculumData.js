@@ -1340,15 +1340,15 @@ export const sampleLessons = {
     steps: [
       {
         title: "Step 1: Look for Difference of Squares",
-        content: "Recognize the difference of two perfect squares: a² - b² = (a - b)(a + b). For example, x² - 9 = (x - 3)(x + 3)."
+        content: "Recognize the difference of two perfect squares: $a^2 - b^2 = (a - b)(a + b)$.\n\n<u><strong>Example</strong></u>:<br />Factor the binomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² - 9</div>\nIdentifying $a = x$ and $b = 3$ gives us:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x - 3)(x + 3)</div>"
       },
       {
         title: "Step 2: Group Terms to Factor",
-        content: "For four-term polynomials, group the first two terms and the last two terms to extract common factors: x³ + x² + 2x + 2 = x²(x + 1) + 2(x + 1) = (x² + 2)(x + 1)."
+        content: "For four-term polynomials, group the first two terms and the last two terms to extract their respective Greatest Common Factors.\n\n<u><strong>Example</strong></u>:<br />Factor the polynomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x³ + 2x² + 3x + 6</div>\nGroup and factor out $x^2$ and $3$:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x²(x + 2) + 3(x + 2)</div>\nThen factor out the common binomial factor $(x + 2)$:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x² + 3)(x + 2)</div>"
       },
       {
         title: "Step 3: Factor Higher-Order Powers",
-        content: "Rewrite higher powers using square patterns: x⁴ - y⁴ = (x²)² - (y²)² = (x² - y²)(x² + y²)."
+        content: "Rewrite higher powers as nested squares, then apply the Difference of Squares multiple times.\n\n<u><strong>Example</strong></u>:<br />Factor the fourth-power binomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x⁴ - y⁴</div>\nRewrite as squares of squares:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x²)² - (y²)²</div>\nApply difference of squares to reveal the intermediate factored form:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x² - y²)(x² + y²)</div>\nFactor the remaining difference of squares $(x^2 - y^2)$ to get the fully factored expression:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x - y)(x + y)(x² + y²)</div>"
       }
     ],
     mathBox: {
