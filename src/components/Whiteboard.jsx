@@ -12,7 +12,8 @@ const distanceToSegment = (p, v, w) => {
   );
 };
 
-// Helper function to split text into wrapped lines based on container width and styles (supporting manual linebreaks too)
+// Helper function to split text into wrapped lines based on container width and styles
+// This version supports manual linebreaks and dynamically breaks ultra-long continuous strings (without spaces) character-by-character
 const getTextLines = (ctx, text, fontStyle, maxWidth) => {
   if (!ctx) return text.split("\n");
   ctx.save();
@@ -22,20 +23,54 @@ const getTextLines = (ctx, text, fontStyle, maxWidth) => {
   const lines = [];
   
   paragraphs.forEach((para) => {
-    const words = para.split(" ");
-    let line = "";
+    // If paragraph is empty, push an empty line
+    if (para.trim() === "") {
+      lines.push("");
+      return;
+    }
     
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + " ";
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && n > 0) {
-        lines.push(line.trim());
-        line = words[n] + " ";
+    const words = para.split(" ");
+    let currentLine = "";
+    
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const wordWidth = ctx.measureText(word).width;
+      
+      // If a single word itself exceeds maxWidth, break it character-by-character
+      if (wordWidth > maxWidth) {
+        if (currentLine) {
+          lines.push(currentLine.trim());
+          currentLine = "";
+        }
+        
+        let charLine = "";
+        for (let j = 0; j < word.length; j++) {
+          const char = word[j];
+          const testCharLine = charLine + char;
+          const testCharWidth = ctx.measureText(testCharLine).width;
+          if (testCharWidth > maxWidth) {
+            lines.push(charLine);
+            charLine = char;
+          } else {
+            charLine = testCharLine;
+          }
+        }
+        currentLine = charLine + " ";
       } else {
-        line = testLine;
+        const testLine = currentLine + word + " ";
+        const testWidth = ctx.measureText(testLine).width;
+        if (testWidth > maxWidth && i > 0) {
+          lines.push(currentLine.trim());
+          currentLine = word + " ";
+        } else {
+          currentLine = testLine;
+        }
       }
     }
-    lines.push(line.trim());
+    
+    if (currentLine) {
+      lines.push(currentLine.trim());
+    }
   });
   
   ctx.restore();
@@ -61,7 +96,6 @@ export default function Whiteboard() {
   
   // Text element state (supporting rich editing variables)
   const [editingText, setEditingText] = useState(null); // { id, x, y, value, width, fontSize, bold, italic, underline }
-  const [lastClickTime, setLastClickTime] = useState(0);
 
   // Dragging states
   const [draggingElement, setDraggingElement] = useState(null);
@@ -237,7 +271,7 @@ export default function Whiteboard() {
     if (!editingText) return;
 
     const handleWindowClick = (e) => {
-      // If clicking anything other than the textarea box, format buttons, or toolbar buttons
+      // If clicking anything other than the textarea box itself, format buttons, or toolbar buttons
       if (
         e.target.tagName !== "TEXTAREA" &&
         !e.target.closest(".toolbar-btn") &&
@@ -331,11 +365,6 @@ export default function Whiteboard() {
   const handlePointerDown = (e) => {
     const { x, y } = getCoordinates(e);
 
-    // Double-click detection for editing text box
-    const now = Date.now();
-    const isDoubleClick = now - lastClickTime < 300;
-    setLastClickTime(now);
-
     if (tool === "pen") {
       setIsDrawing(true);
       setCurrentPoints([{ x, y }]);
@@ -343,43 +372,7 @@ export default function Whiteboard() {
       setIsErasing(true);
       eraseAt(x, y);
     } else if (tool === "select") {
-      // 1. Double click text element to edit
-      if (isDoubleClick) {
-        let textEl = null;
-        for (let i = elements.length - 1; i >= 0; i--) {
-          const el = elements[i];
-          if (el.type === "text") {
-            const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
-            const lines = getTextLines(contextRef.current, el.text, fontStyle, el.width);
-            const textHeight = lines.length * (el.fontSize * 1.2);
-            if (
-              x >= el.x - 4 &&
-              x <= el.x + el.width + 4 &&
-              y >= el.y - el.fontSize - 2 &&
-              y <= el.y - el.fontSize - 2 + textHeight + 4
-            ) {
-              textEl = el;
-              break;
-            }
-          }
-        }
-        if (textEl) {
-          setEditingText({
-            id: textEl.id,
-            x: textEl.x,
-            y: textEl.y,
-            value: textEl.text,
-            width: textEl.width,
-            fontSize: textEl.fontSize,
-            bold: textEl.bold,
-            italic: textEl.italic,
-            underline: textEl.underline
-          });
-          return;
-        }
-      }
-
-      // 2. Check if we clicked on any element's resize handle first
+      // 1. Check if we clicked on any element's resize handle first
       let handleFound = null;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
@@ -413,7 +406,7 @@ export default function Whiteboard() {
         return; // prevent dragging trigger
       }
 
-      // 3. Check for draggable text or image elements
+      // 2. Check for draggable text or image elements
       let found = null;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
@@ -551,6 +544,47 @@ export default function Whiteboard() {
     setIsErasing(false);
     setDraggingElement(null);
     setResizingElement(null);
+  };
+
+  // Native double click handler for editing text box (100% reliable)
+  const handleDoubleClick = (e) => {
+    if (tool !== "select") return;
+    const { x, y } = getCoordinates(e);
+
+    let textEl = null;
+    for (let i = elements.length - 1; i >= 0; i--) {
+      const el = elements[i];
+      if (el.type === "text") {
+        const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
+        const lines = getTextLines(contextRef.current, el.text, fontStyle, el.width);
+        const textHeight = lines.length * (el.fontSize * 1.2);
+        
+        if (
+          x >= el.x - 10 &&
+          x <= el.x + el.width + 10 &&
+          y >= el.y - el.fontSize - 10 &&
+          y <= el.y - el.fontSize + textHeight + 10
+        ) {
+          textEl = el;
+          break;
+        }
+      }
+    }
+
+    if (textEl) {
+      setDraggingElement(null);
+      setEditingText({
+        id: textEl.id,
+        x: textEl.x,
+        y: textEl.y,
+        value: textEl.text,
+        width: textEl.width,
+        fontSize: textEl.fontSize,
+        bold: textEl.bold,
+        italic: textEl.italic,
+        underline: textEl.underline
+      });
+    }
   };
 
   const finishEditingText = () => {
@@ -1028,6 +1062,7 @@ export default function Whiteboard() {
           onMouseMove={handlePointerMove}
           onMouseUp={handlePointerUp}
           onMouseLeave={handlePointerUp}
+          onDoubleClick={handleDoubleClick}
           onTouchStart={handlePointerDown}
           onTouchMove={handlePointerMove}
           onTouchEnd={handlePointerUp}
