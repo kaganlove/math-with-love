@@ -441,7 +441,7 @@ export default function Curriculum() {
                   ) : null}
 
                   <div className="lesson-steps">
-                    <h3 className="section-divider-title">Step-by-Step Explanation</h3>
+                    <h3 className="section-divider-title">Explanation</h3>
                     {activeLesson.steps.map((step, idx) => (
                       <div key={idx} className="lesson-step-card">
                         <h4 className="step-title">{step.title}</h4>
