@@ -32,6 +32,12 @@ export default function Whiteboard() {
   const [draggingElement, setDraggingElement] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
+  // Resizing states
+  const [resizingElement, setResizingElement] = useState(null);
+  const [resizeStartSize, setResizeStartSize] = useState({ width: 0, height: 0, fontSize: 16 });
+  const [resizeStartPos, setResizeStartPos] = useState({ x: 0, y: 0 });
+  const [hoveringHandle, setHoveringHandle] = useState(false);
+
   // PDF.js loading state indicator
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -107,7 +113,7 @@ export default function Whiteboard() {
       }
     });
 
-    // Render selection indicators/bounding boxes in select mode
+    // Render selection indicators/bounding boxes and resize handles in select mode
     if (tool === "select") {
       elements.forEach((el) => {
         if (el.type === "text") {
@@ -118,6 +124,10 @@ export default function Whiteboard() {
           ctx.setLineDash([4, 4]);
           ctx.strokeRect(el.x - 4, el.y - textHeight - 2, textWidth + 8, textHeight + 8);
           ctx.setLineDash([]);
+
+          // Draw small solid blue square resize handle at bottom-right corner of textbox
+          ctx.fillStyle = "#6366f1";
+          ctx.fillRect(el.x + textWidth - 4, el.y - 4, 8, 8);
         } else if (el.type === "image") {
           ctx.strokeStyle = "rgba(99, 102, 241, 0.45)";
           ctx.lineWidth = 1;
@@ -125,7 +135,7 @@ export default function Whiteboard() {
           ctx.strokeRect(el.x - 2, el.y - 2, el.width + 4, el.height + 4);
           ctx.setLineDash([]);
 
-          // Resize/drag indicator in bottom-right corner
+          // Draw small solid blue square resize handle at bottom-right corner of image
           ctx.fillStyle = "#6366f1";
           ctx.fillRect(el.x + el.width - 4, el.y + el.height - 4, 8, 8);
         }
@@ -264,7 +274,40 @@ export default function Whiteboard() {
       setIsErasing(true);
       eraseAt(x, y);
     } else if (tool === "select") {
-      // Find draggable text or image elements
+      // 1. Check if we clicked on any element's resize handle first
+      let handleFound = null;
+      for (let i = elements.length - 1; i >= 0; i--) {
+        const el = elements[i];
+        if (el.type === "image") {
+          const rx = el.x + el.width;
+          const ry = el.y + el.height;
+          if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
+            handleFound = { element: el, type: "image" };
+            break;
+          }
+        } else if (el.type === "text") {
+          const textWidth = el.text.length * (el.fontSize * 0.55);
+          const rx = el.x + textWidth;
+          const ry = el.y;
+          if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
+            handleFound = { element: el, type: "text" };
+            break;
+          }
+        }
+      }
+
+      if (handleFound) {
+        setResizingElement(handleFound.element);
+        setResizeStartPos({ x, y });
+        setResizeStartSize({
+          width: handleFound.element.width || 0,
+          height: handleFound.element.height || 0,
+          fontSize: handleFound.element.fontSize || 16
+        });
+        return; // prevent dragging trigger
+      }
+
+      // 2. Otherwise check for draggable text or image elements
       let found = null;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
@@ -312,6 +355,29 @@ export default function Whiteboard() {
       setCurrentPoints((prev) => [...prev, { x, y }]);
     } else if (tool === "eraser" && isErasing) {
       eraseAt(x, y);
+    } else if (tool === "select" && resizingElement) {
+      // Handle resizing calculations
+      const dx = x - resizeStartPos.x;
+      const dy = y - resizeStartPos.y;
+
+      setElements((prev) =>
+        prev.map((el) => {
+          if (el.id === resizingElement.id) {
+            if (el.type === "image") {
+              const newW = Math.max(30, resizeStartSize.width + dx);
+              const newH = Math.max(30, resizeStartSize.height + dy);
+              return { ...el, width: newW, height: newH };
+            } else if (el.type === "text") {
+              const textWidth = el.text.length * (resizeStartSize.fontSize * 0.55);
+              const newW = Math.max(30, textWidth + dx);
+              const ratio = newW / textWidth;
+              const newFontSize = Math.max(10, Math.min(100, Math.round(resizeStartSize.fontSize * ratio)));
+              return { ...el, fontSize: newFontSize };
+            }
+          }
+          return el;
+        })
+      );
     } else if (tool === "select" && draggingElement) {
       setElements((prev) =>
         prev.map((el) => {
@@ -321,6 +387,35 @@ export default function Whiteboard() {
           return el;
         })
       );
+    }
+
+    // Dynamic cursor feedback: sets cursor to resize arrow when hovering over handle in select mode
+    if (tool === "select" && !isDrawing && !isErasing && !draggingElement && !resizingElement) {
+      let overHandle = false;
+      for (let i = elements.length - 1; i >= 0; i--) {
+        const el = elements[i];
+        if (el.type === "image") {
+          const rx = el.x + el.width;
+          const ry = el.y + el.height;
+          if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
+            overHandle = true;
+            break;
+          }
+        } else if (el.type === "text") {
+          const textWidth = el.text.length * (el.fontSize * 0.55);
+          const rx = el.x + textWidth;
+          const ry = el.y;
+          if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
+            overHandle = true;
+            break;
+          }
+        }
+      }
+      setHoveringHandle(overHandle);
+    } else if (resizingElement) {
+      setHoveringHandle(true);
+    } else {
+      setHoveringHandle(false);
     }
   };
 
@@ -339,6 +434,7 @@ export default function Whiteboard() {
     setIsDrawing(false);
     setIsErasing(false);
     setDraggingElement(null);
+    setResizingElement(null);
   };
 
   const finishEditingText = () => {
@@ -525,11 +621,11 @@ export default function Whiteboard() {
             <Paintbrush size={18} />
           </button>
           
-          {/* Select / Move Tool */}
+          {/* Select / Move / Resize Tool */}
           <button
             className={`toolbar-btn ${tool === "select" ? "active" : ""}`}
             onClick={() => selectTool("select")}
-            title="Select & Move Objects"
+            title="Select, Move & Resize Objects"
           >
             <Move size={18} />
           </button>
@@ -663,7 +759,11 @@ export default function Whiteboard() {
           ref={canvasRef}
           width={canvasSize.width * 2}
           height={canvasSize.height * 2}
-          style={{ width: `${canvasSize.width}px`, height: `${canvasSize.height}px` }}
+          style={{
+            width: `${canvasSize.width}px`,
+            height: `${canvasSize.height}px`,
+            cursor: hoveringHandle ? "se-resize" : tool === "select" ? "default" : "crosshair"
+          }}
           onMouseDown={handlePointerDown}
           onMouseMove={handlePointerMove}
           onMouseUp={handlePointerUp}
