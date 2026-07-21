@@ -444,7 +444,7 @@ export default function Curriculum() {
                     <h3 className="section-divider-title">Explanation</h3>
                     {activeLesson.steps.map((step, idx) => (
                       <div key={idx} className="lesson-step-card">
-                        <h4 className="step-title">{step.title}</h4>
+                        <h4 className="step-title">{step.title.replace(/^Step\s+\d+:\s*/i, "")}</h4>
                         <p className="step-content" dangerouslySetInnerHTML={{ __html: step.content.replace(/\n/g, '<br />') }} />
                       </div>
                     ))}
