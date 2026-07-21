@@ -1265,15 +1265,15 @@ export const sampleLessons = {
     steps: [
       {
         title: "Step 1: Identify Nested Groupings",
-        content: "Locate parentheses containing operations. In 5(x + 3)² - 4, the nested group is (x + 3)."
+        content: "Locate parentheses containing operations that act as a single term.\n\n<u><strong>Example</strong></u>:<br />In the expression:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">5(x + 3)² - 4</div>\nthe nested grouping is <strong>(x + 3)</strong>, which is squared and scaled by 5."
       },
       {
         title: "Step 2: Substitute with a Single Variable",
-        content: "Temporarily replace the grouping with a letter like 'u'. The expression 5(x + 3)² - 4 becomes 5u² - 4, which is a simple quadratic expression."
+        content: "Temporarily replace the compound grouping with a single variable (like 'u') to simplify the expression's overall structure.\n\n<u><strong>Example</strong></u>:<br />Substituting <strong>u = (x + 3)</strong>, the expression:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">5(x + 3)² - 4</div>\nbecomes the much simpler quadratic form:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">5u² - 4</div>"
       },
       {
         title: "Step 3: Analyze the Overall Structure",
-        content: "Interpret what the simplified expression represents. The growth formula P(1 + r)ᵗ is a simple exponential growth expression P · uᵗ, where u is the compounding growth factor."
+        content: "Analyze the simplified structure to interpret real-world formulas and growth rates.\n\n<u><strong>Example</strong></u>:<br />In the exponential growth formula:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">P(1 + r)ᵗ</div>\nwe can substitute <strong>u = (1 + r)</strong> to reveal a simple exponential form:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">P · uᵗ</div>\nwhere <strong>u</strong> acts as the single compounding growth factor."
       }
     ],
     mathBox: {

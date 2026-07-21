@@ -6,6 +6,7 @@ import AdsSlot from "../components/AdsSlot";
 import EquationVisualizer from "../components/EquationVisualizer";
 import ExpressionPartsVisualizer from "../components/ExpressionPartsVisualizer";
 import WorksheetGenerator from "../components/WorksheetGenerator";
+import ExpressionCompoundVisualizer from "../components/ExpressionCompoundVisualizer";
 
 export default function Curriculum() {
 
@@ -428,6 +429,10 @@ export default function Curriculum() {
                   {activeLesson.id === "hsa-sse-1a" ? (
                     <div className="my-6">
                       <ExpressionPartsVisualizer />
+                    </div>
+                  ) : activeLesson.id === "hsa-sse-1b" ? (
+                    <div className="my-6">
+                      <ExpressionCompoundVisualizer />
                     </div>
                   ) : activeLesson.animationSteps ? (
                     <div className="my-6">
