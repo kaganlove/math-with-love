@@ -1340,19 +1340,19 @@ export const sampleLessons = {
     pages: [
       {
         title: "Factoring Perfect Squares",
-        introduction: "A perfect square trinomial is an algebraic expression that is the result of squaring a binomial, matching either $a^2 + 2ab + b^2 = (a + b)^2$ or $a^2 - 2ab + b^2 = (a - b)^2$.",
+        introduction: "A perfect square trinomial is an algebraic expression that is the result of squaring a binomial, matching either <span style=\"color: var(--primary); font-weight: bold;\">a² + 2ab + b² = (a + b)²</span> or <span style=\"color: var(--primary); font-weight: bold;\">a² - 2ab + b² = (a - b)²</span>.",
         steps: [
           {
             title: "Identify Perfect Square Terms",
-            content: "Check if the first term and the last term of the trinomial are perfect squares.\n\n<u><strong>Example</strong></u>:<br />For the trinomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² + 6x + 9</div>\nthe first term is $x^2 = (x)^2$ and the last term is $9 = (3)^2$, giving us $a = x$ and $b = 3$."
+            content: "Check if the first term and the last term of the trinomial are perfect squares.\n\n<u><strong>Example</strong></u>:<br />For the trinomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² + 6x + 9</div>\nthe first term is <span style=\"color: var(--primary); font-weight: bold;\">x² = (x)²</span> and the last term is <span style=\"color: var(--primary); font-weight: bold;\">9 = (3)²</span>, giving us <span style=\"color: var(--primary); font-weight: bold;\">a = x</span> and <span style=\"color: var(--primary); font-weight: bold;\">b = 3</span>."
           },
           {
             title: "Check the Middle Term",
-            content: "The middle term must be exactly twice the product of the square roots ($2ab$).\n\n<u><strong>Example</strong></u>:<br />Verify that:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2 · (x) · (3) = 6x</div>\nSince it matches, this is a perfect square trinomial."
+            content: "The middle term must be exactly twice the product of the square roots (<span style=\"color: var(--primary); font-weight: bold;\">2ab</span>).\n\n<u><strong>Example</strong></u>:<br />Verify that:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2 · (x) · (3) = 6x</div>\nSince it matches, this is a perfect square trinomial."
           },
           {
             title: "Apply the Square Binomial Rule",
-            content: "Write the factored form as $(a + b)^2$ (or $(a - b)^2$ if the middle term is negative).\n\n<u><strong>Example</strong></u>:<br />Substituting $a = x$ and $b = 3$ yields:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 3)²</div>"
+            content: "Write the factored form as <span style=\"color: var(--primary); font-weight: bold;\">(a + b)²</span> (or <span style=\"color: var(--primary); font-weight: bold;\">(a - b)²</span> if the middle term is negative).\n\n<u><strong>Example</strong></u>:<br />Substituting <span style=\"color: var(--primary); font-weight: bold;\">a = x</span> and <span style=\"color: var(--primary); font-weight: bold;\">b = 3</span> yields:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 3)²</div>"
           }
         ],
         practiceQuestions: [
@@ -1366,15 +1366,15 @@ export const sampleLessons = {
       },
       {
         title: "Difference of Squares",
-        introduction: "A difference of squares is a binomial of the form $a^2 - b^2$, which factors cleanly into $(a - b)(a + b)$.",
+        introduction: "A difference of squares is a binomial of the form <span style=\"color: var(--primary); font-weight: bold;\">a² - b²</span>, which factors cleanly into <span style=\"color: var(--primary); font-weight: bold;\">(a - b)(a + b)</span>.",
         steps: [
           {
             title: "Recognize Perfect Square Bases",
-            content: "Ensure the two terms are perfect squares and are separated by a subtraction sign.\n\n<u><strong>Example</strong></u>:<br />For the binomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² - 16</div>\nthe bases are $x$ and $4$, meaning $a = x$ and $b = 4$."
+            content: "Ensure the two terms are perfect squares and are separated by a subtraction sign.\n\n<u><strong>Example</strong></u>:<br />For the binomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² - 16</div>\nthe bases are <span style=\"color: var(--primary); font-weight: bold;\">x</span> and <span style=\"color: var(--primary); font-weight: bold;\">4</span>, meaning <span style=\"color: var(--primary); font-weight: bold;\">a = x</span> and <span style=\"color: var(--primary); font-weight: bold;\">b = 4</span>."
           },
           {
             title: "Apply the Factoring Template",
-            content: "Plug the bases into $(a - b)(a + b)$.\n\n<u><strong>Example</strong></u>:<br />Factoring $x^2 - 16$ gives:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x - 4)(x + 4)</div>"
+            content: "Plug the bases into <span style=\"color: var(--primary); font-weight: bold;\">(a - b)(a + b)</span>.\n\n<u><strong>Example</strong></u>:<br />Factoring <span style=\"color: var(--primary); font-weight: bold;\">x² - 16</span> gives:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x - 4)(x + 4)</div>"
           }
         ],
         practiceQuestions: [
@@ -1388,15 +1388,15 @@ export const sampleLessons = {
       },
       {
         title: "Factoring Trinomials (a = 1)",
-        introduction: "For trinomials in the form $x^2 + bx + c$, we look for two numbers that multiply to $c$ and add to $b$.",
+        introduction: "For trinomials in the form <span style=\"color: var(--primary); font-weight: bold;\">x² + bx + c</span>, we look for two numbers that multiply to <span style=\"color: var(--primary); font-weight: bold;\">c</span> and add to <span style=\"color: var(--primary); font-weight: bold;\">b</span>.",
         steps: [
           {
             title: "List Factor Pairs",
-            content: "Identify factor pairs of the constant term $c$ and find the pair that sums to $b$.\n\n<u><strong>Example</strong></u>:<br />For the trinomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² + 5x + 6</div>\nwe need numbers that multiply to $6$ and add to $5$. The pair is $2$ and $3$."
+            content: "Identify factor pairs of the constant term <span style=\"color: var(--primary); font-weight: bold;\">c</span> and find the pair that sums to <span style=\"color: var(--primary); font-weight: bold;\">b</span>.\n\n<u><strong>Example</strong></u>:<br />For the trinomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² + 5x + 6</div>\nwe need numbers that multiply to <span style=\"color: var(--primary); font-weight: bold;\">6</span> and add to <span style=\"color: var(--primary); font-weight: bold;\">5</span>. The pair is <span style=\"color: var(--primary); font-weight: bold;\">2</span> and <span style=\"color: var(--primary); font-weight: bold;\">3</span>."
           },
           {
             title: "Write Binomial Factors",
-            content: "Write the factors as $(x + p)(x + q)$ where $p$ and $q$ are the numbers found.\n\n<u><strong>Example</strong></u>:<br />Factoring yields:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 2)(x + 3)</div>"
+            content: "Write the factors as <span style=\"color: var(--primary); font-weight: bold;\">(x + p)(x + q)</span> where <span style=\"color: var(--primary); font-weight: bold;\">p</span> and <span style=\"color: var(--primary); font-weight: bold;\">q</span> are the numbers found.\n\n<u><strong>Example</strong></u>:<br />Factoring yields:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 2)(x + 3)</div>"
           }
         ],
         practiceQuestions: [
@@ -1414,11 +1414,11 @@ export const sampleLessons = {
         steps: [
           {
             title: "Group Terms and Extract GCF",
-            content: "Split the polynomial into two groups and factor out the Greatest Common Factor of each.\n\n<u><strong>Example</strong></u>:<br />For the expression:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2x² + 4x + 3x + 6</div>\nGroup into pairs and factor: $2x(x + 2) + 3(x + 2)$."
+            content: "Split the polynomial into two groups and factor out the Greatest Common Factor of each.\n\n<u><strong>Example</strong></u>:<br />For the expression:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2x² + 4x + 3x + 6</div>\nGroup into pairs and factor: <span style=\"color: var(--primary); font-weight: bold;\">2x(x + 2) + 3(x + 2)</span>."
           },
           {
             title: "Factor Out Common Binomial",
-            content: "Recognize that $(x + 2)$ is common to both terms and factor it out.\n\n<u><strong>Example</strong></u>:<br />Combining the remaining GCFs gives:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(2x + 3)(x + 2)</div>"
+            content: "Recognize that <span style=\"color: var(--primary); font-weight: bold;\">(x + 2)</span> is common to both terms and factor it out.\n\n<u><strong>Example</strong></u>:<br />Combining the remaining GCFs gives:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(2x + 3)(x + 2)</div>"
           }
         ],
         practiceQuestions: [
@@ -1432,19 +1432,19 @@ export const sampleLessons = {
       },
       {
         title: "Slip 'n Slide Method (a ≠ 1)",
-        introduction: "The Slip 'n Slide method is an easy algorithmic shortcut for factoring quadratic trinomials $ax^2 + bx + c$ when $a \\neq 1$.",
+        introduction: "The Slip 'n Slide method is an easy algorithmic shortcut for factoring quadratic trinomials <span style=\"color: var(--primary); font-weight: bold;\">ax² + bx + c</span> when <span style=\"color: var(--primary); font-weight: bold;\">a ≠ 1</span>.",
         steps: [
           {
             title: "Slip the Leading Coefficient",
-            content: "Multiply the leading coefficient $a$ by the constant $c$, and temporarily remove $a$ from the front.\n\n<u><strong>Example</strong></u>:<br />For the trinomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2x² + 5x + 3</div>\n'Slip' 2 to the end to get:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² + 5x + 6</div>"
+            content: "Multiply the leading coefficient <span style=\"color: var(--primary); font-weight: bold;\">a</span> by the constant <span style=\"color: var(--primary); font-weight: bold;\">c</span>, and temporarily remove <span style=\"color: var(--primary); font-weight: bold;\">a</span> from the front.\n\n<u><strong>Example</strong></u>:<br />For the trinomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2x² + 5x + 3</div>\n'Slip' 2 to the end to get:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² + 5x + 6</div>"
           },
           {
             title: "Factor and Slide Back",
-            content: "Factor the new trinomial, then divide the constant numbers by the original coefficient $a$ (2).\n\n<u><strong>Example</strong></u>:<br />Factor $x^2 + 5x + 6$ into $(x + 2)(x + 3)$. Then divide constants by 2:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 2/2)(x + 3/2)</div>"
+            content: "Factor the new trinomial, then divide the constant numbers by the original coefficient <span style=\"color: var(--primary); font-weight: bold;\">a</span> (2).\n\n<u><strong>Example</strong></u>:<br />Factor <span style=\"color: var(--primary); font-weight: bold;\">x² + 5x + 6</span> into <span style=\"color: var(--primary); font-weight: bold;\">(x + 2)(x + 3)</span>. Then divide constants by 2:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 2/2)(x + 3/2)</div>"
           },
           {
             title: "Simplify Fractions",
-            content: "Simplify any fractions. If a denominator remains, slide it in front of the $x$ variable.\n\n<u><strong>Example</strong></u>:<br />$(x + 2/2)$ becomes $(x + 1)$. For $(x + 3/2)$, slide the denominator 2 in front of $x$ to get $(2x + 3)$. The final factors are:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 1)(2x + 3)</div>"
+            content: "Simplify any fractions. If a denominator remains, slide it in front of the <span style=\"color: var(--primary); font-weight: bold;\">x</span> variable.\n\n<u><strong>Example</strong></u>:<br /><span style=\"color: var(--primary); font-weight: bold;\">(x + 2/2)</span> becomes <span style=\"color: var(--primary); font-weight: bold;\">(x + 1)</span>. For <span style=\"color: var(--primary); font-weight: bold;\">(x + 3/2)</span>, slide the denominator 2 in front of <span style=\"color: var(--primary); font-weight: bold;\">x</span> to get <span style=\"color: var(--primary); font-weight: bold;\">(2x + 3)</span>. The final factors are:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 1)(2x + 3)</div>"
           }
         ],
         practiceQuestions: [
@@ -1458,19 +1458,19 @@ export const sampleLessons = {
       },
       {
         title: "Completing the Square (a ≠ 1)",
-        introduction: "Completing the square allows us to rewrite any quadratic expression into vertex form $a(x - h)^2 + k$.",
+        introduction: "Completing the square allows us to rewrite any quadratic expression into vertex form <span style=\"color: var(--primary); font-weight: bold;\">a(x - h)² + k</span>.",
         steps: [
           {
             title: "Factor Out the Lead Coefficient",
-            content: "Factor the coefficient $a$ out of the variable terms ($x^2$ and $x$) only.\n\n<u><strong>Example</strong></u>:<br />For the quadratic:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2x² + 8x + 6</div>\nFactor out 2 from variable terms:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2(x² + 4x) + 6</div>"
+            content: "Factor the coefficient <span style=\"color: var(--primary); font-weight: bold;\">a</span> out of the variable terms (<span style=\"color: var(--primary); font-weight: bold;\">x²</span> and <span style=\"color: var(--primary); font-weight: bold;\">x</span>) only.\n\n<u><strong>Example</strong></u>:<br />For the quadratic:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2x² + 8x + 6</div>\nFactor out 2 from variable terms:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2(x² + 4x) + 6</div>"
           },
           {
             title: "Add and Subtract the Constant",
-            content: "Take half of the linear coefficient, square it, and both add and subtract it inside the parentheses.\n\n<u><strong>Example</strong></u>:<br />Half of 4 is 2; $2^2 = 4$. Add and subtract 4 inside:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2(x² + 4x + 4 - 4) + 6</div>"
+            content: "Take half of the linear coefficient, square it, and both add and subtract it inside the parentheses.\n\n<u><strong>Example</strong></u>:<br />Half of 4 is 2; <span style=\"color: var(--primary); font-weight: bold;\">2² = 4</span>. Add and subtract 4 inside:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2(x² + 4x + 4 - 4) + 6</div>"
           },
           {
             title: "Write in Vertex Form",
-            content: "Group the perfect square trinomial and move the subtracted constant out of the parentheses by multiplying it by $a$.\n\n<u><strong>Example</strong></u>:<br />$(x^2 + 4x + 4)$ becomes $(x + 2)^2$. Move $-4$ out by multiplying by 2 (giving $-8$):\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2(x + 2)² - 8 + 6 = 2(x + 2)² - 2</div>"
+            content: "Group the perfect square trinomial and move the subtracted constant out of the parentheses by multiplying it by <span style=\"color: var(--primary); font-weight: bold;\">a</span>.\n\n<u><strong>Example</strong></u>:<br /><span style=\"color: var(--primary); font-weight: bold;\">(x² + 4x + 4)</span> becomes <span style=\"color: var(--primary); font-weight: bold;\">(x + 2)²</span>. Move -4 out by multiplying by 2 (giving -8):\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2(x + 2)² - 8 + 6 = 2(x + 2)² - 2</div>"
           }
         ],
         practiceQuestions: [
