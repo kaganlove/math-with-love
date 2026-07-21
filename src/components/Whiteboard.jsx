@@ -12,6 +12,36 @@ const distanceToSegment = (p, v, w) => {
   );
 };
 
+// Helper function to split text into wrapped lines based on container width and styles (supporting manual linebreaks too)
+const getTextLines = (ctx, text, fontStyle, maxWidth) => {
+  if (!ctx) return text.split("\n");
+  ctx.save();
+  ctx.font = fontStyle;
+  
+  const paragraphs = text.split("\n");
+  const lines = [];
+  
+  paragraphs.forEach((para) => {
+    const words = para.split(" ");
+    let line = "";
+    
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + " ";
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        lines.push(line.trim());
+        line = words[n] + " ";
+      } else {
+        line = testLine;
+      }
+    }
+    lines.push(line.trim());
+  });
+  
+  ctx.restore();
+  return lines;
+};
+
 export default function Whiteboard() {
   const canvasRef = useRef(null);
   const contextRef = useRef(null);
@@ -28,7 +58,12 @@ export default function Whiteboard() {
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
-  const [editingText, setEditingText] = useState(null); // { x, y, value }
+  
+  // Text element state (supporting rich editing variables)
+  const [editingText, setEditingText] = useState(null); // { id, x, y, value, width, fontSize, bold, italic, underline }
+  const [lastClickTime, setLastClickTime] = useState(0);
+
+  // Dragging states
   const [draggingElement, setDraggingElement] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
@@ -79,6 +114,9 @@ export default function Whiteboard() {
 
     // Draw all active elements
     elements.forEach((el) => {
+      // Hide the element currently being edited to avoid duplicate text overlapping
+      if (editingText && el.id === editingText.id) return;
+
       if (el.type === "pencil") {
         if (el.points.length < 2) return;
         ctx.beginPath();
@@ -91,9 +129,29 @@ export default function Whiteboard() {
         ctx.stroke();
       } else if (el.type === "text") {
         ctx.fillStyle = el.color;
-        ctx.font = `bold ${el.fontSize}px Outfit, sans-serif`;
+        const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
+        ctx.font = fontStyle;
         ctx.textBaseline = "alphabetic";
-        ctx.fillText(el.text, el.x, el.y);
+
+        const lines = getTextLines(ctx, el.text, fontStyle, el.width);
+        const lineHeight = el.fontSize * 1.2;
+
+        lines.forEach((line, idx) => {
+          const ly = el.y + idx * lineHeight;
+          ctx.fillText(line, el.x, ly);
+
+          if (el.underline) {
+            const textWidth = ctx.measureText(line).width;
+            ctx.save();
+            ctx.beginPath();
+            ctx.strokeStyle = el.color;
+            ctx.lineWidth = Math.max(1.5, el.fontSize / 10);
+            ctx.moveTo(el.x, ly + 2);
+            ctx.lineTo(el.x + textWidth, ly + 2);
+            ctx.stroke();
+            ctx.restore();
+          }
+        });
       } else if (el.type === "image") {
         if (el.img) {
           try {
@@ -117,17 +175,21 @@ export default function Whiteboard() {
     if (tool === "select") {
       elements.forEach((el) => {
         if (el.type === "text") {
-          const textWidth = el.text.length * (el.fontSize * 0.55);
-          const textHeight = el.fontSize;
+          const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
+          const lines = getTextLines(ctx, el.text, fontStyle, el.width);
+          const lineHeight = el.fontSize * 1.2;
+          const textHeight = lines.length * lineHeight;
+
           ctx.strokeStyle = "rgba(99, 102, 241, 0.45)";
           ctx.lineWidth = 1;
           ctx.setLineDash([4, 4]);
-          ctx.strokeRect(el.x - 4, el.y - textHeight - 2, textWidth + 8, textHeight + 8);
+          // Dashed border wraps entire block of text lines
+          ctx.strokeRect(el.x - 4, el.y - el.fontSize - 2, el.width + 8, textHeight + 4);
           ctx.setLineDash([]);
 
-          // Draw small solid blue square resize handle at bottom-right corner of textbox
+          // Resize handle controls width (causing text to wrap instead of scaling font)
           ctx.fillStyle = "#6366f1";
-          ctx.fillRect(el.x + textWidth - 4, el.y - 4, 8, 8);
+          ctx.fillRect(el.x + el.width - 4, el.y + (lines.length - 1) * lineHeight - 4, 8, 8);
         } else if (el.type === "image") {
           ctx.strokeStyle = "rgba(99, 102, 241, 0.45)";
           ctx.lineWidth = 1;
@@ -135,7 +197,7 @@ export default function Whiteboard() {
           ctx.strokeRect(el.x - 2, el.y - 2, el.width + 4, el.height + 4);
           ctx.setLineDash([]);
 
-          // Draw small solid blue square resize handle at bottom-right corner of image
+          // Bounding box resize handle
           ctx.fillStyle = "#6366f1";
           ctx.fillRect(el.x + el.width - 4, el.y + el.height - 4, 8, 8);
         }
@@ -168,19 +230,20 @@ export default function Whiteboard() {
     contextRef.current = context;
 
     drawCanvas();
-  }, [canvasSize, elements, currentPoints, tool, color, lineWidth]);
+  }, [canvasSize, elements, currentPoints, tool, color, lineWidth, editingText]);
 
   // Click outside textarea window listener to save typing
   useEffect(() => {
     if (!editingText) return;
 
     const handleWindowClick = (e) => {
-      // If clicking anything other than the textarea box itself or toolbar buttons
+      // If clicking anything other than the textarea box, format buttons, or toolbar buttons
       if (
         e.target.tagName !== "TEXTAREA" &&
         !e.target.closest(".toolbar-btn") &&
         !e.target.closest(".color-btn") &&
-        !e.target.closest(".thickness-btn")
+        !e.target.closest(".thickness-btn") &&
+        !e.target.closest(".text-format-btn")
       ) {
         finishEditingText();
       }
@@ -235,13 +298,14 @@ export default function Whiteboard() {
           break;
         }
       } else if (el.type === "text") {
-        const textWidth = el.text.length * (el.fontSize * 0.55);
-        const textHeight = el.fontSize;
+        const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
+        const lines = getTextLines(contextRef.current, el.text, fontStyle, el.width);
+        const textHeight = lines.length * (el.fontSize * 1.2);
         if (
           x >= el.x - 6 &&
-          x <= el.x + textWidth + 6 &&
-          y >= el.y - textHeight - 4 &&
-          y <= el.y + 6
+          x <= el.x + el.width + 6 &&
+          y >= el.y - el.fontSize - 4 &&
+          y <= el.y - el.fontSize + textHeight + 6
         ) {
           hitIndex = i;
           break;
@@ -267,6 +331,11 @@ export default function Whiteboard() {
   const handlePointerDown = (e) => {
     const { x, y } = getCoordinates(e);
 
+    // Double-click detection for editing text box
+    const now = Date.now();
+    const isDoubleClick = now - lastClickTime < 300;
+    setLastClickTime(now);
+
     if (tool === "pen") {
       setIsDrawing(true);
       setCurrentPoints([{ x, y }]);
@@ -274,7 +343,43 @@ export default function Whiteboard() {
       setIsErasing(true);
       eraseAt(x, y);
     } else if (tool === "select") {
-      // 1. Check if we clicked on any element's resize handle first
+      // 1. Double click text element to edit
+      if (isDoubleClick) {
+        let textEl = null;
+        for (let i = elements.length - 1; i >= 0; i--) {
+          const el = elements[i];
+          if (el.type === "text") {
+            const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
+            const lines = getTextLines(contextRef.current, el.text, fontStyle, el.width);
+            const textHeight = lines.length * (el.fontSize * 1.2);
+            if (
+              x >= el.x - 4 &&
+              x <= el.x + el.width + 4 &&
+              y >= el.y - el.fontSize - 2 &&
+              y <= el.y - el.fontSize - 2 + textHeight + 4
+            ) {
+              textEl = el;
+              break;
+            }
+          }
+        }
+        if (textEl) {
+          setEditingText({
+            id: textEl.id,
+            x: textEl.x,
+            y: textEl.y,
+            value: textEl.text,
+            width: textEl.width,
+            fontSize: textEl.fontSize,
+            bold: textEl.bold,
+            italic: textEl.italic,
+            underline: textEl.underline
+          });
+          return;
+        }
+      }
+
+      // 2. Check if we clicked on any element's resize handle first
       let handleFound = null;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
@@ -286,9 +391,10 @@ export default function Whiteboard() {
             break;
           }
         } else if (el.type === "text") {
-          const textWidth = el.text.length * (el.fontSize * 0.55);
-          const rx = el.x + textWidth;
-          const ry = el.y;
+          const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
+          const lines = getTextLines(contextRef.current, el.text, fontStyle, el.width);
+          const rx = el.x + el.width;
+          const ry = el.y + (lines.length - 1) * (el.fontSize * 1.2);
           if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
             handleFound = { element: el, type: "text" };
             break;
@@ -307,18 +413,19 @@ export default function Whiteboard() {
         return; // prevent dragging trigger
       }
 
-      // 2. Otherwise check for draggable text or image elements
+      // 3. Check for draggable text or image elements
       let found = null;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
         if (el.type === "text") {
-          const textWidth = el.text.length * (el.fontSize * 0.55);
-          const textHeight = el.fontSize;
+          const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
+          const lines = getTextLines(contextRef.current, el.text, fontStyle, el.width);
+          const textHeight = lines.length * (el.fontSize * 1.2);
           if (
             x >= el.x - 4 &&
-            x <= el.x + textWidth + 4 &&
-            y >= el.y - textHeight - 2 &&
-            y <= el.y + 4
+            x <= el.x + el.width + 4 &&
+            y >= el.y - el.fontSize - 2 &&
+            y <= el.y - el.fontSize + textHeight + 2
           ) {
             found = el;
             break;
@@ -343,7 +450,17 @@ export default function Whiteboard() {
       if (editingText) {
         finishEditingText();
       } else {
-        setEditingText({ x, y, value: "" });
+        setEditingText({
+          id: null,
+          x,
+          y,
+          value: "",
+          width: 200, // default width
+          fontSize: 16,
+          bold: false,
+          italic: false,
+          underline: false
+        });
       }
     }
   };
@@ -368,11 +485,9 @@ export default function Whiteboard() {
               const newH = Math.max(30, resizeStartSize.height + dy);
               return { ...el, width: newW, height: newH };
             } else if (el.type === "text") {
-              const textWidth = el.text.length * (resizeStartSize.fontSize * 0.55);
-              const newW = Math.max(30, textWidth + dx);
-              const ratio = newW / textWidth;
-              const newFontSize = Math.max(10, Math.min(100, Math.round(resizeStartSize.fontSize * ratio)));
-              return { ...el, fontSize: newFontSize };
+              // Resizing textbox changes width (causes text to wrap)
+              const newW = Math.max(80, resizeStartSize.width + dx);
+              return { ...el, width: newW };
             }
           }
           return el;
@@ -402,9 +517,10 @@ export default function Whiteboard() {
             break;
           }
         } else if (el.type === "text") {
-          const textWidth = el.text.length * (el.fontSize * 0.55);
-          const rx = el.x + textWidth;
-          const ry = el.y;
+          const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
+          const lines = getTextLines(contextRef.current, el.text, fontStyle, el.width);
+          const rx = el.x + el.width;
+          const ry = el.y + (lines.length - 1) * (el.fontSize * 1.2);
           if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
             overHandle = true;
             break;
@@ -438,17 +554,49 @@ export default function Whiteboard() {
   };
 
   const finishEditingText = () => {
-    if (editingText && editingText.value.trim() !== "") {
-      const newEl = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        type: "text",
-        text: editingText.value,
-        x: editingText.x,
-        y: editingText.y,
-        color: color,
-        fontSize: 16
-      };
-      setElements((prev) => [...prev, newEl]);
+    if (editingText) {
+      if (editingText.value.trim() !== "") {
+        if (editingText.id) {
+          // Update existing text element
+          setElements((prev) =>
+            prev.map((el) => {
+              if (el.id === editingText.id) {
+                return {
+                  ...el,
+                  text: editingText.value,
+                  fontSize: editingText.fontSize,
+                  width: editingText.width,
+                  bold: editingText.bold,
+                  italic: editingText.italic,
+                  underline: editingText.underline
+                };
+              }
+              return el;
+            })
+          );
+        } else {
+          // Create new text element
+          const newEl = {
+            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            type: "text",
+            text: editingText.value,
+            x: editingText.x,
+            y: editingText.y,
+            width: editingText.width || 200,
+            color: color,
+            fontSize: editingText.fontSize || 16,
+            bold: editingText.bold || false,
+            italic: editingText.italic || false,
+            underline: editingText.underline || false
+          };
+          setElements((prev) => [...prev, newEl]);
+        }
+      } else {
+        // If editing box is left empty, remove it
+        if (editingText.id) {
+          setElements((prev) => prev.filter((el) => el.id !== editingText.id));
+        }
+      }
     }
     setEditingText(null);
   };
@@ -728,6 +876,117 @@ export default function Whiteboard() {
 
       {/* Canvas Drawing Area */}
       <div className="canvas-wrapper">
+        {/* Floating Text Formatting Toolbar Bar (Above textarea when typing or double-clicking) */}
+        {editingText && (
+          <div
+            className="text-format-toolbar"
+            style={{
+              position: "absolute",
+              left: `${editingText.x}px`,
+              top: `${editingText.y - 48}px`,
+              display: "flex",
+              alignItems: "center",
+              gap: "0.3rem",
+              backgroundColor: "#1e293b",
+              border: "1px solid #475569",
+              borderRadius: "6px",
+              padding: "0.3rem 0.5rem",
+              zIndex: 100,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.25)"
+            }}
+          >
+            {/* Bold */}
+            <button
+              onClick={() => setEditingText({ ...editingText, bold: !editingText.bold })}
+              className="text-format-btn"
+              style={{
+                background: editingText.bold ? "#6366f1" : "none",
+                border: "none",
+                color: "#ffffff",
+                fontWeight: "bold",
+                width: "24px",
+                height: "24px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "0.8rem"
+              }}
+              title="Bold"
+            >
+              B
+            </button>
+            {/* Italic */}
+            <button
+              onClick={() => setEditingText({ ...editingText, italic: !editingText.italic })}
+              className="text-format-btn"
+              style={{
+                background: editingText.italic ? "#6366f1" : "none",
+                border: "none",
+                color: "#ffffff",
+                fontStyle: "italic",
+                width: "24px",
+                height: "24px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "0.8rem"
+              }}
+              title="Italic"
+            >
+              I
+            </button>
+            {/* Underline */}
+            <button
+              onClick={() => setEditingText({ ...editingText, underline: !editingText.underline })}
+              className="text-format-btn"
+              style={{
+                background: editingText.underline ? "#6366f1" : "none",
+                border: "none",
+                color: "#ffffff",
+                textDecoration: "underline",
+                width: "24px",
+                height: "24px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "0.8rem"
+              }}
+              title="Underline"
+            >
+              U
+            </button>
+            {/* Splitter */}
+            <div style={{ width: "1px", height: "16px", backgroundColor: "#475569", margin: "0 0.2rem" }} />
+            {/* Font Size decrease */}
+            <button
+              onClick={() => setEditingText({ ...editingText, fontSize: Math.max(10, editingText.fontSize - 2) })}
+              className="text-format-btn"
+              style={{ background: "none", border: "none", color: "#ffffff", cursor: "pointer", fontSize: "0.8rem" }}
+              title="Decrease Font Size"
+            >
+              A-
+            </button>
+            <span style={{ color: "#ffffff", fontSize: "0.75rem", fontWeight: 800 }}>
+              {editingText.fontSize}px
+            </span>
+            {/* Font Size increase */}
+            <button
+              onClick={() => setEditingText({ ...editingText, fontSize: Math.min(72, editingText.fontSize + 2) })}
+              className="text-format-btn"
+              style={{ background: "none", border: "none", color: "#ffffff", cursor: "pointer", fontSize: "0.8rem" }}
+              title="Increase Font Size"
+            >
+              A+
+            </button>
+          </div>
+        )}
+
         {editingText && (
           <textarea
             autoFocus
@@ -739,7 +998,9 @@ export default function Whiteboard() {
               position: "absolute",
               left: `${editingText.x}px`,
               top: `${editingText.y - 12}px`,
-              font: "bold 16px Outfit, sans-serif",
+              width: `${editingText.width}px`,
+              font: `${editingText.italic ? "italic" : "normal"} ${editingText.bold ? "bold" : "normal"} ${editingText.fontSize}px Outfit, sans-serif`,
+              textDecoration: editingText.underline ? "underline" : "none",
               color: color,
               border: "1.5px dashed var(--primary)",
               background: "#ffffff",
@@ -748,7 +1009,6 @@ export default function Whiteboard() {
               borderRadius: "4px",
               resize: "none",
               zIndex: 10,
-              minWidth: "150px",
               height: "auto",
               boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
             }}
