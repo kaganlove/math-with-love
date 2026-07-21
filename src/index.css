@@ -49,9 +49,9 @@
 /* Force light theme always, per user preference, overriding dark mode settings */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-primary: #f8fafc;
+    --bg-primary: #a0a7b0;
     --bg-secondary: #ffffff;
-    --bg-tertiary: #f1f5f9;
+    --bg-tertiary: #88909a;
     --text-primary: #090d16;
     --text-secondary: #1e293b;
     --text-muted: #475569;
@@ -74,6 +74,8 @@
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-primary);
+  background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255, 255, 255, 0.045)' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round' font-family='Outfit, Times New Roman, serif'%3E%3Cpath d='M 50,70 L 50,110 L 100,110 Z'/%3E%3Cpath d='M 50,105 L 55,105 L 55,110'/%3E%3Ctext x='40' y='93' font-size='10' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ea%3C/text%3E%3Ctext x='72' y='122' font-size='10' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Eb%3C/text%3E%3Ctext x='80' y='85' font-size='10' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ec%3C/text%3E%3Ctext x='115' y='98' font-size='15' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ea² + b² = c²%3C/text%3E%3Ctext x='30' y='228' font-size='14' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ex =%3C/text%3E%3Ctext x='58' y='215' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3E-b ± √b² - 4ac%3C/text%3E%3Cline x1='58' y1='221' x2='168' y2='221'/%3E%3Ctext x='100' y='235' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3E2a%3C/text%3E%3Ctext x='35' y='155' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Elim%3C/text%3E%3Ctext x='33' y='165' font-size='8' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3En→∞%3C/text%3E%3Ctext x='58' y='158' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3E%281 + 1/n%29ⁿ = e%3C/text%3E%3Cpath d='M 220,95 L 320,95 M 230,115 L 230,35'/%3E%3Cpath d='M 315,92 L 320,95 L 315,98 M 227,40 L 230,35 L 233,40'/%3E%3Cpath d='M 235,85 Q 260,25 290,75 T 315,35'/%3E%3Ctext x='290' y='30' font-size='11' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ey = f%28x%29%3C/text%3E%3Ctext x='245' y='195' font-size='28' font-family='Times New Roman, serif' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3E∫%3C/text%3E%3Ctext x='242' y='165' font-size='9' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Eb%3C/text%3E%3Ctext x='254' y='200' font-size='9' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ea%3C/text%3E%3Ctext x='260' y='185' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ef%28x%29dx%3C/text%3E%3Cpath d='M 245,260 Q 240,260 240,275 L 240,305 Q 240,320 245,320'/%3E%3Cpath d='M 305,260 Q 310,260 310,275 L 310,305 Q 310,320 305,320'/%3E%3Ctext x='252' y='283' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ea%3C/text%3E%3Ctext x='282' y='283' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Eb%3C/text%3E%3Ctext x='252' y='308' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ec%3C/text%3E%3Ctext x='282' y='308' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ed%3C/text%3E%3Cpath d='M 40,310 L 60,310 L 48,323 L 60,336 L 40,336'/%3E%3Ctext x='43' y='306' font-size='8' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3E∞%3C/text%3E%3Ctext x='41' y='345' font-size='8' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3En=1%3C/text%3E%3Ctext x='68' y='328' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3E1/n² = π²/6%3C/text%3E%3Ctext x='140' y='325' font-size='14' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Ey = mx + b%3C/text%3E%3Ctext x='130' y='158' font-size='13' fill='rgba%28255, 255, 255, 0.045%29' stroke='none'%3Esin²θ + cos²θ = 1%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
   color: var(--text-primary);
   line-height: 1.75; /* Increased line-height for readability */
   -webkit-font-smoothing: antialiased;

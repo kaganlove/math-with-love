@@ -8,12 +8,6 @@ import ExpressionPartsVisualizer from "../components/ExpressionPartsVisualizer";
 import WorksheetGenerator from "../components/WorksheetGenerator";
 
 export default function Curriculum() {
-  useEffect(() => {
-    document.body.style.backgroundColor = "#a0a7b0";
-    return () => {
-      document.body.style.backgroundColor = "";
-    };
-  }, []);
 
   const [activeTab, setActiveTab] = useState("library"); // "library" | "testprep"
   const [activeLevel, setActiveLevel] = useState("hs-alg"); // Default to High School Algebra
@@ -90,7 +84,7 @@ export default function Curriculum() {
   const currentTestData = testPrepMappings[selectedTest];
 
   return (
-    <div className="curriculum-container animate-fade-in" style={{ backgroundColor: "#a0a7b0" }}>
+    <div className="curriculum-container animate-fade-in">
       <div className="content-width">
         {/* Header */}
         <div className="curriculum-header text-center">

@@ -576,21 +576,21 @@ export const curriculumLevels = [
             ccss: "HSA-SSE.A.1",
             subLessons: [
               { id: "hsa-sse-1a", title: "Interpret parts of an expression, such as terms, factors, and coefficients", ccss: "HSA-SSE.A.1.a", duration: "25 mins", hasContent: true },
-              { id: "hsa-sse-1b", title: "Interpret complicated expressions by viewing one or more of their parts as a single entity", ccss: "HSA-SSE.A.1.b", duration: "25 mins" }
+              { id: "hsa-sse-1b", title: "Interpret complicated expressions by viewing one or more of their parts as a single entity", ccss: "HSA-SSE.A.1.b", duration: "25 mins", hasContent: true }
             ]
           },
-          { id: "hsa-sse-2", title: "Use structure to rewrite expressions (Difference of Squares, Grouping)", ccss: "HSA-SSE.A.2", duration: "40 mins" },
+          { id: "hsa-sse-2", title: "Use structure to rewrite expressions (Difference of Squares, Grouping)", ccss: "HSA-SSE.A.2", duration: "40 mins", hasContent: true },
           {
             id: "hsa-sse-3-parent",
             title: "Choose and produce an equivalent form of an expression to reveal properties",
             ccss: "HSA-SSE.B.3",
             subLessons: [
               { id: "hsa-sse-3a", title: "Factor a quadratic expression to reveal the zeros of the function", ccss: "HSA-SSE.B.3.a", duration: "40 mins", hasContent: true },
-              { id: "hsa-sse-3b", title: "Complete the square to reveal maximum or minimum values", ccss: "HSA-SSE.B.3.b", duration: "35 mins" },
-              { id: "hsa-sse-3c", title: "Use properties of exponents to transform expressions for exponential functions", ccss: "HSA-SSE.B.3.c", duration: "30 mins" }
+              { id: "hsa-sse-3b", title: "Complete the square to reveal maximum or minimum values", ccss: "HSA-SSE.B.3.b", duration: "35 mins", hasContent: true },
+              { id: "hsa-sse-3c", title: "Use properties of exponents to transform expressions for exponential functions", ccss: "HSA-SSE.B.3.c", duration: "30 mins", hasContent: true }
             ]
           },
-          { id: "hsa-sse-4", title: "Derive the formula for the sum of a finite geometric series", ccss: "HSA-SSE.B.4", duration: "45 mins" }
+          { id: "hsa-sse-4", title: "Derive the formula for the sum of a finite geometric series", ccss: "HSA-SSE.B.4", duration: "45 mins", hasContent: true }
         ]
       },
       {
