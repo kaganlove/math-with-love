@@ -922,13 +922,17 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--bg-primary);
+  background-color: var(--bg-secondary);
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 1.1rem 1.5rem;
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
+}
+
+.parent-standard-btn {
+  background-color: var(--bg-primary) !important;
 }
 
 .lesson-item-btn:hover {
