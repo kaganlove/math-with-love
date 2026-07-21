@@ -1174,7 +1174,7 @@ export const sampleLessons = {
       },
       {
         title: "Coefficients",
-        content: "A coefficient is a numerical factor multiplied by a variable or factor.\n• Example 1: In 7x, the coefficient is 7.\n• Example 2: In -x, the coefficient is -1.\n• Example 3: In 4(y - 2)², the coefficient is 4."
+        content: "A coefficient is the number in front of something being multiplied (most often a variable, but it can also be in front of parentheses). It acts as a scaling factor.\n• Example 1: In 7x, the coefficient is 7 (in front of the variable x).\n• Example 2: In -x, the coefficient is -1 (the negative sign in front implies -1).\n• Example 3: In 4(y - 2)², the coefficient is 4 (in front of the parentheses)."
       },
       {
         title: "Variables",
