@@ -1337,18 +1337,150 @@ export const sampleLessons = {
       { id: "hsa-sse-1a", title: "Interpret Parts of an Expression (HSA-SSE.A.1.a)" }
     ],
     introduction: "Algebraic expressions often contain hidden patterns. By recognizing structural patterns like the difference of squares or common factor groups, we can rewrite expressions into useful equivalent forms.",
-    steps: [
+    pages: [
       {
-        title: "Step 1: Look for Difference of Squares",
-        content: "Recognize the difference of two perfect squares: $a^2 - b^2 = (a - b)(a + b)$.\n\n<u><strong>Example</strong></u>:<br />Factor the binomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² - 9</div>\nIdentifying $a = x$ and $b = 3$ gives us:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x - 3)(x + 3)</div>"
+        title: "Factoring Perfect Squares",
+        introduction: "A perfect square trinomial is an algebraic expression that is the result of squaring a binomial, matching either $a^2 + 2ab + b^2 = (a + b)^2$ or $a^2 - 2ab + b^2 = (a - b)^2$.",
+        steps: [
+          {
+            title: "Identify Perfect Square Terms",
+            content: "Check if the first term and the last term of the trinomial are perfect squares.\n\n<u><strong>Example</strong></u>:<br />For the trinomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² + 6x + 9</div>\nthe first term is $x^2 = (x)^2$ and the last term is $9 = (3)^2$, giving us $a = x$ and $b = 3$."
+          },
+          {
+            title: "Check the Middle Term",
+            content: "The middle term must be exactly twice the product of the square roots ($2ab$).\n\n<u><strong>Example</strong></u>:<br />Verify that:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2 · (x) · (3) = 6x</div>\nSince it matches, this is a perfect square trinomial."
+          },
+          {
+            title: "Apply the Square Binomial Rule",
+            content: "Write the factored form as $(a + b)^2$ (or $(a - b)^2$ if the middle term is negative).\n\n<u><strong>Example</strong></u>:<br />Substituting $a = x$ and $b = 3$ yields:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 3)²</div>"
+          }
+        ],
+        practiceQuestions: [
+          {
+            question: "Factor the perfect square trinomial: x² - 10x + 25",
+            options: ["(x - 5)²", "(x + 5)²", "(x - 5)(x + 5)", "(x - 10)²"],
+            correctIndex: 0,
+            explanation: "Identifying a = x and b = 5. Since the middle coefficient (-10) is negative, we apply the subtraction form (a - b)², resulting in (x - 5)²."
+          }
+        ]
       },
       {
-        title: "Step 2: Group Terms to Factor",
-        content: "For four-term polynomials, group the first two terms and the last two terms to extract their respective Greatest Common Factors.\n\n<u><strong>Example</strong></u>:<br />Factor the polynomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x³ + 2x² + 3x + 6</div>\nGroup and factor out $x^2$ and $3$:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x²(x + 2) + 3(x + 2)</div>\nThen factor out the common binomial factor $(x + 2)$:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x² + 3)(x + 2)</div>"
+        title: "Difference of Squares",
+        introduction: "A difference of squares is a binomial of the form $a^2 - b^2$, which factors cleanly into $(a - b)(a + b)$.",
+        steps: [
+          {
+            title: "Recognize Perfect Square Bases",
+            content: "Ensure the two terms are perfect squares and are separated by a subtraction sign.\n\n<u><strong>Example</strong></u>:<br />For the binomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² - 16</div>\nthe bases are $x$ and $4$, meaning $a = x$ and $b = 4$."
+          },
+          {
+            title: "Apply the Factoring Template",
+            content: "Plug the bases into $(a - b)(a + b)$.\n\n<u><strong>Example</strong></u>:<br />Factoring $x^2 - 16$ gives:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x - 4)(x + 4)</div>"
+          }
+        ],
+        practiceQuestions: [
+          {
+            question: "Factor completely: 4x² - 49",
+            options: ["(2x - 7)²", "(2x - 7)(2x + 7)", "(4x - 7)(4x + 7)", "(2x + 7)²"],
+            correctIndex: 1,
+            explanation: "4x² is (2x)² and 49 is 7². This fits the a² - b² pattern, factoring into (2x - 7)(2x + 7)."
+          }
+        ]
       },
       {
-        title: "Step 3: Factor Higher-Order Powers",
-        content: "Rewrite higher powers as nested squares, then apply the Difference of Squares multiple times.\n\n<u><strong>Example</strong></u>:<br />Factor the fourth-power binomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x⁴ - y⁴</div>\nRewrite as squares of squares:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x²)² - (y²)²</div>\nApply difference of squares to reveal the intermediate factored form:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x² - y²)(x² + y²)</div>\nFactor the remaining difference of squares $(x^2 - y^2)$ to get the fully factored expression:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x - y)(x + y)(x² + y²)</div>"
+        title: "Factoring Trinomials (a = 1)",
+        introduction: "For trinomials in the form $x^2 + bx + c$, we look for two numbers that multiply to $c$ and add to $b$.",
+        steps: [
+          {
+            title: "List Factor Pairs",
+            content: "Identify factor pairs of the constant term $c$ and find the pair that sums to $b$.\n\n<u><strong>Example</strong></u>:<br />For the trinomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² + 5x + 6</div>\nwe need numbers that multiply to $6$ and add to $5$. The pair is $2$ and $3$."
+          },
+          {
+            title: "Write Binomial Factors",
+            content: "Write the factors as $(x + p)(x + q)$ where $p$ and $q$ are the numbers found.\n\n<u><strong>Example</strong></u>:<br />Factoring yields:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 2)(x + 3)</div>"
+          }
+        ],
+        practiceQuestions: [
+          {
+            question: "Factor the trinomial: x² - 5x - 14",
+            options: ["(x - 7)(x + 2)", "(x - 7)(x - 2)", "(x + 7)(x - 2)", "(x - 14)(x + 1)"],
+            correctIndex: 0,
+            explanation: "We look for two numbers that multiply to -14 and add to -5. These numbers are -7 and 2. Therefore, the factored form is (x - 7)(x + 2)."
+          }
+        ]
+      },
+      {
+        title: "Factoring by Grouping (a ≠ 1)",
+        introduction: "Factoring by grouping is used when there are four terms. We group them into two pairs, extract the GCF of each pair, then factor out the common binomial.",
+        steps: [
+          {
+            title: "Group Terms and Extract GCF",
+            content: "Split the polynomial into two groups and factor out the Greatest Common Factor of each.\n\n<u><strong>Example</strong></u>:<br />For the expression:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2x² + 4x + 3x + 6</div>\nGroup into pairs and factor: $2x(x + 2) + 3(x + 2)$."
+          },
+          {
+            title: "Factor Out Common Binomial",
+            content: "Recognize that $(x + 2)$ is common to both terms and factor it out.\n\n<u><strong>Example</strong></u>:<br />Combining the remaining GCFs gives:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(2x + 3)(x + 2)</div>"
+          }
+        ],
+        practiceQuestions: [
+          {
+            question: "Factor the expression: 3x² + 6x + 4x + 8",
+            options: ["(3x + 4)(x + 2)", "(3x + 2)(x + 4)", "(3x + 8)(x + 1)", "(3x + 4)(x - 2)"],
+            correctIndex: 0,
+            explanation: "Group the first two and last two terms: 3x(x + 2) + 4(x + 2). Factoring out (x + 2) gives (3x + 4)(x + 2)."
+          }
+        ]
+      },
+      {
+        title: "Slip 'n Slide Method (a ≠ 1)",
+        introduction: "The Slip 'n Slide method is an easy algorithmic shortcut for factoring quadratic trinomials $ax^2 + bx + c$ when $a \\neq 1$.",
+        steps: [
+          {
+            title: "Slip the Leading Coefficient",
+            content: "Multiply the leading coefficient $a$ by the constant $c$, and temporarily remove $a$ from the front.\n\n<u><strong>Example</strong></u>:<br />For the trinomial:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2x² + 5x + 3</div>\n'Slip' 2 to the end to get:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x² + 5x + 6</div>"
+          },
+          {
+            title: "Factor and Slide Back",
+            content: "Factor the new trinomial, then divide the constant numbers by the original coefficient $a$ (2).\n\n<u><strong>Example</strong></u>:<br />Factor $x^2 + 5x + 6$ into $(x + 2)(x + 3)$. Then divide constants by 2:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 2/2)(x + 3/2)</div>"
+          },
+          {
+            title: "Simplify Fractions",
+            content: "Simplify any fractions. If a denominator remains, slide it in front of the $x$ variable.\n\n<u><strong>Example</strong></u>:<br />$(x + 2/2)$ becomes $(x + 1)$. For $(x + 3/2)$, slide the denominator 2 in front of $x$ to get $(2x + 3)$. The final factors are:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 1)(2x + 3)</div>"
+          }
+        ],
+        practiceQuestions: [
+          {
+            question: "Factor using Slip 'n Slide: 3x² + 7x + 2",
+            options: ["(3x + 1)(x + 2)", "(3x + 2)(x + 1)", "(x + 1)(x + 6)", "(3x + 1)(x + 3)"],
+            correctIndex: 0,
+            explanation: "Slip 3: x² + 7x + 6. Factor: (x + 6)(x + 1). Slide 3 back: (x + 6/3)(x + 1/3) = (x + 2)(3x + 1), which is (3x + 1)(x + 2)."
+          }
+        ]
+      },
+      {
+        title: "Completing the Square (a ≠ 1)",
+        introduction: "Completing the square allows us to rewrite any quadratic expression into vertex form $a(x - h)^2 + k$.",
+        steps: [
+          {
+            title: "Factor Out the Lead Coefficient",
+            content: "Factor the coefficient $a$ out of the variable terms ($x^2$ and $x$) only.\n\n<u><strong>Example</strong></u>:<br />For the quadratic:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2x² + 8x + 6</div>\nFactor out 2 from variable terms:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2(x² + 4x) + 6</div>"
+          },
+          {
+            title: "Add and Subtract the Constant",
+            content: "Take half of the linear coefficient, square it, and both add and subtract it inside the parentheses.\n\n<u><strong>Example</strong></u>:<br />Half of 4 is 2; $2^2 = 4$. Add and subtract 4 inside:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2(x² + 4x + 4 - 4) + 6</div>"
+          },
+          {
+            title: "Write in Vertex Form",
+            content: "Group the perfect square trinomial and move the subtracted constant out of the parentheses by multiplying it by $a$.\n\n<u><strong>Example</strong></u>:<br />$(x^2 + 4x + 4)$ becomes $(x + 2)^2$. Move $-4$ out by multiplying by 2 (giving $-8$):\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">2(x + 2)² - 8 + 6 = 2(x + 2)² - 2</div>"
+          }
+        ],
+        practiceQuestions: [
+          {
+            question: "Rewrite by completing the square: 3x² + 12x + 9",
+            options: ["3(x + 2)² - 3", "3(x + 2)² + 3", "3(x + 4)² - 9", "3(x + 2)² - 9"],
+            correctIndex: 0,
+            explanation: "Factor out 3: 3(x² + 4x) + 9. Add/subtract 4: 3(x² + 4x + 4 - 4) + 9 = 3(x + 2)² - 12 + 9 = 3(x + 2)² - 3."
+          }
+        ]
       }
     ],
     mathBox: {
@@ -1357,53 +1489,7 @@ export const sampleLessons = {
         { desc: "Difference of Squares", formula: "a² - b² = (a - b)(a + b)" },
         { desc: "Grouping Structure", formula: "x(a + b) + y(a + b) = (x + y)(a + b)" }
       ]
-    },
-    animationSteps: [
-      {
-        equation: "x⁴ - y⁴",
-        desc: "Original Expression: A binomial with fourth powers. We can rewrite these as squares of squares.",
-        left: { type: "expression", action: null, terms: [{ val: "x⁴", color: "blue" }, { val: " - ", color: "slate" }, { val: "y⁴", color: "red" }] },
-        right: { type: "expression", action: null, terms: [{ val: "Initial Expression", color: "slate" }] }
-      },
-      {
-        equation: "(x²)² - (y²)²",
-        desc: "Rewrite as Squares: Express x⁴ as (x²)² and y⁴ as (y²)² to fit the difference of squares format.",
-        left: { type: "expression", action: null, terms: [{ val: "(x²)", color: "blue", active: true }, { val: "² - ", color: "slate" }, { val: "(y²)", color: "red", active: true }, { val: "²", color: "slate" }] },
-        right: { type: "expression", action: null, terms: [{ val: "a² - b² pattern", color: "green" }] }
-      },
-      {
-        equation: "(x² - y²)(x² + y²)",
-        desc: "First Factoring: Apply the difference of squares rule using a = x² and b = y².",
-        left: { type: "expression", action: null, terms: [{ val: "(x² - y²)", color: "blue" }, { val: "(x² + y²)", color: "red" }] },
-        right: { type: "expression", action: null, terms: [{ val: "Binomial factors", color: "green" }] }
-      },
-      {
-        equation: "(x - y)(x + y)(x² + y²)",
-        desc: "Complete Factoring: Recognize that (x² - y²) is itself a difference of squares and can be factored further.",
-        left: { type: "expression", action: null, terms: [{ val: "(x - y)(x + y)", color: "blue", active: true }, { val: "(x² + y²)", color: "red" }] },
-        right: { type: "expression", action: null, terms: [{ val: "Fully Factored Form", color: "green" }] }
-      }
-    ],
-    practiceQuestions: [
-      {
-        question: "Factor completely: 9x² - 25",
-        options: ["(3x - 5)(3x + 5)", "(9x - 5)(x + 5)", "(3x - 5)²", "(9x - 25)(x + 1)"],
-        correctIndex: 0,
-        explanation: "9x² is (3x)² and 25 is 5². The difference of squares is (3x - 5)(3x + 5)."
-      },
-      {
-        question: "Factor by grouping: x³ + 3x² + 4x + 12",
-        options: ["(x² + 3)(x + 4)", "(x² + 4)(x + 3)", "(x² - 4)(x - 3)", "(x + 3)(x + 4)"],
-        correctIndex: 1,
-        explanation: "Group as x²(x + 3) + 4(x + 3). Factoring out the common binomial gives (x² + 4)(x + 3)."
-      },
-      {
-        question: "Which of the following is equivalent to x⁴ - 81?",
-        options: ["(x - 3)(x + 3)(x² + 9)", "(x - 9)(x + 9)", "(x² - 9)²", "(x - 3)⁴"],
-        correctIndex: 0,
-        explanation: "x⁴ - 81 = (x² - 9)(x² + 9) = (x - 3)(x + 3)(x² + 9)."
-      }
-    ]
+    }
   },
   "hsa-sse-3a": {
     id: "hsa-sse-3a",

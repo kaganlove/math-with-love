@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, BookOpen, Clock, AlertCircle, ArrowLeft, CheckCircle, XCircle, FileText, ClipboardCheck, Sparkles } from "lucide-react";
+import { Search, BookOpen, Clock, AlertCircle, ArrowLeft, ArrowRight, CheckCircle, XCircle, FileText, ClipboardCheck, Sparkles } from "lucide-react";
 import { curriculumLevels, sampleLessons, testPrepMappings, getLessonById } from "../data/curriculumData";
 import AdsSlot from "../components/AdsSlot";
 import EquationVisualizer from "../components/EquationVisualizer";
@@ -24,6 +24,7 @@ export default function Curriculum() {
   // Quiz state
   const [quizAnswers, setQuizAnswers] = useState({}); // { questionIndex: selectedOptionIndex }
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [activePageIdx, setActivePageIdx] = useState(0); // Active slide index for paginated lessons
 
   // Accordion expanded state for nested standards
   const [expandedLessons, setExpandedLessons] = useState({});
@@ -70,6 +71,7 @@ export default function Curriculum() {
     setSelectedDiagnosticInfo(diagInfo);
     setQuizAnswers({});
     setQuizSubmitted(false);
+    setActivePageIdx(0);
   };
 
   const handleSelectOption = (qIndex, optionIndex) => {
@@ -84,6 +86,14 @@ export default function Curriculum() {
   const currentLevelData = curriculumLevels.find(l => l.id === activeLevel);
   const activeLesson = selectedLessonId ? getLessonById(selectedLessonId) : null;
   const currentTestData = testPrepMappings[selectedTest];
+
+  const isPaginated = activeLesson && !!activeLesson.pages;
+  const currentPage = isPaginated ? activeLesson.pages[activePageIdx] : null;
+  const stepsToRender = isPaginated ? currentPage.steps : (activeLesson ? activeLesson.steps || [] : []);
+  const introductionToRender = isPaginated ? currentPage.introduction : (activeLesson ? activeLesson.introduction : "");
+  const questionsToRender = isPaginated ? currentPage.practiceQuestions : (activeLesson ? activeLesson.practiceQuestions || [] : []);
+  const hasNextPage = isPaginated && activePageIdx < activeLesson.pages.length - 1;
+  const nextPageTitle = hasNextPage ? activeLesson.pages[activePageIdx + 1].title : "";
 
   return (
     <div className="curriculum-container animate-fade-in">
@@ -391,6 +401,63 @@ export default function Curriculum() {
                   </div>
                   <h1 className="lesson-main-title">{activeLesson.title}</h1>
 
+                  {/* Dynamic Slide Navigation at the top under the title */}
+                  {isPaginated && (
+                    <div 
+                      className="paginated-nav-container"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "0.75rem 1rem",
+                        background: "rgba(15, 23, 42, 0.4)",
+                        border: "1.5px solid rgba(255, 255, 255, 0.1)",
+                        borderRadius: "10px",
+                        marginBottom: "1.5rem",
+                        marginTop: "0.5rem"
+                      }}
+                    >
+                      <button
+                        onClick={() => {
+                          if (activePageIdx > 0) {
+                            setActivePageIdx(activePageIdx - 1);
+                            setQuizAnswers({});
+                            setQuizSubmitted(false);
+                          }
+                        }}
+                        disabled={activePageIdx === 0}
+                        className="btn-primary btn-small flex-center gap-1"
+                        style={{ opacity: activePageIdx === 0 ? 0.3 : 1 }}
+                      >
+                        <ArrowLeft size={14} /> Back
+                      </button>
+                      
+                      <div style={{ textAlign: "center" }}>
+                        <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                          Topic {activePageIdx + 1} of {activeLesson.pages.length}
+                        </span>
+                        <h4 style={{ margin: "2px 0 0 0", fontSize: "1rem", color: "#ffffff", fontWeight: "700" }}>
+                          {currentPage.title}
+                        </h4>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          if (activePageIdx < activeLesson.pages.length - 1) {
+                            setActivePageIdx(activePageIdx + 1);
+                            setQuizAnswers({});
+                            setQuizSubmitted(false);
+                          }
+                        }}
+                        disabled={activePageIdx === activeLesson.pages.length - 1}
+                        className="btn-primary btn-small flex-center gap-1"
+                        style={{ opacity: activePageIdx === activeLesson.pages.length - 1 ? 0.3 : 1 }}
+                      >
+                        Next <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  )}
+
                   {/* Generate Practice Worksheet & Prerequisites stacked right under the title */}
                   <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginTop: "1.5rem", marginBottom: "2.5rem" }}>
                     {/* Generate Practice Worksheet Box */}
@@ -424,7 +491,7 @@ export default function Curriculum() {
                   </div>
 
                   <div className="lesson-intro">
-                    <p>{activeLesson.introduction}</p>
+                    <p>{introductionToRender}</p>
                   </div>
 
                   {activeLesson.id === "hsa-sse-1a" ? (
@@ -437,7 +504,7 @@ export default function Curriculum() {
                     </div>
                   ) : activeLesson.id === "hsa-sse-2" ? (
                     <div className="my-6">
-                      <ExpressionStructureVisualizer />
+                      <ExpressionStructureVisualizer pageIndex={activePageIdx} />
                     </div>
                   ) : activeLesson.animationSteps ? (
                     <div className="my-6">
@@ -447,7 +514,7 @@ export default function Curriculum() {
 
                   <div className="lesson-steps">
                     <h3 className="section-divider-title">Explanation</h3>
-                    {activeLesson.steps.map((step, idx) => (
+                    {stepsToRender.map((step, idx) => (
                       <div key={idx} className="lesson-step-card">
                         <h4 className="step-title">{step.title.replace(/^Step\s+\d+:\s*/i, "")}</h4>
                         <p className="step-content" dangerouslySetInnerHTML={{ __html: step.content.replace(/\n/g, '<br />') }} />
@@ -460,7 +527,28 @@ export default function Curriculum() {
                     <h3 className="section-divider-title">Interactive Self-Check Practice</h3>
                     <p className="practice-intro-text">Solve these problems to test your understanding. Answers are checked instantly.</p>
                     
-                    {activeLesson.practiceQuestions.map((q, qIdx) => (
+                    {/* Warning banner above the quiz */}
+                    {hasNextPage && (
+                      <div 
+                        style={{
+                          padding: "0.85rem 1rem",
+                          backgroundColor: quizSubmitted ? "rgba(34, 197, 94, 0.1)" : "rgba(234, 179, 8, 0.08)",
+                          border: quizSubmitted ? "1.5px solid rgba(34, 197, 94, 0.3)" : "1.5px solid rgba(234, 179, 8, 0.25)",
+                          borderRadius: "10px",
+                          marginBottom: "1.5rem",
+                          fontSize: "0.9rem",
+                          fontWeight: "bold",
+                          color: quizSubmitted ? "#4ade80" : "#fbbf24",
+                          textAlign: "center"
+                        }}
+                      >
+                        {quizSubmitted 
+                          ? `🎉 Section complete! You are ready to move on to "${nextPageTitle}" below.` 
+                          : `⚠️ Complete this self-check quiz before moving on to "${nextPageTitle}".`}
+                      </div>
+                    )}
+
+                    {questionsToRender.map((q, qIdx) => (
                       <div key={qIdx} className="practice-question-card">
                         <p className="question-text">
                           <strong>Question {qIdx + 1}:</strong> {q.question}
@@ -511,7 +599,7 @@ export default function Curriculum() {
                         <button
                           onClick={submitQuiz}
                           className="btn-primary"
-                          disabled={Object.keys(quizAnswers).length < activeLesson.practiceQuestions.length}
+                          disabled={Object.keys(quizAnswers).length < questionsToRender.length}
                         >
                           Submit Answers
                         </button>
@@ -527,6 +615,51 @@ export default function Curriculum() {
                         </button>
                       )}
                     </div>
+
+                    {/* Navigation lock button under the quiz */}
+                    {hasNextPage && (
+                      <div style={{ marginTop: "2rem", display: "flex", justifyContent: "center" }}>
+                        {quizSubmitted ? (
+                          <button
+                            onClick={() => {
+                              setActivePageIdx(activePageIdx + 1);
+                              setQuizAnswers({});
+                              setQuizSubmitted(false);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="btn-primary"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              padding: "0.75rem 1.75rem",
+                              fontSize: "1rem",
+                              fontWeight: "bold",
+                              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)"
+                            }}
+                          >
+                            Move on to "{nextPageTitle}" <ArrowRight size={18} />
+                          </button>
+                        ) : (
+                          <button
+                            disabled={true}
+                            className="btn-secondary"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              padding: "0.75rem 1.75rem",
+                              fontSize: "1rem",
+                              fontWeight: "bold",
+                              opacity: 0.5,
+                              cursor: "not-allowed"
+                            }}
+                          >
+                            Complete quiz to unlock: "{nextPageTitle}"
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
