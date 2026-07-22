@@ -94,18 +94,21 @@ export default function Whiteboard() {
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
 
-  // Helper to broadcast messages via Jitsi Data Channels
+  // Helper to identify our own messages to prevent feedback loops
+  const myClientId = window.mathWithLoveClientId || (window.mathWithLoveClientId = Date.now().toString() + Math.random().toString(36).substr(2, 9));
+
+  // Helper to broadcast messages via Jitsi Data Channels and Group Chat fallback
   const broadcast = (cmd) => {
     if (window.jitsiApi) {
       try {
-        const payload = { ...cmd, mathWithLoveWhiteboard: true };
+        const payload = { ...cmd, senderId: myClientId, mathWithLoveWhiteboard: true };
         const payloadStr = JSON.stringify(payload);
         
-        // 1. Try Jitsi broadcast command
+        // 1. Try Jitsi WebRTC broadcast command
         window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, payloadStr);
         window.jitsiApi.executeCommand('sendEndpointTextMessage', '', payloadStr);
 
-        // 2. Also send directly to each participant as a fallback
+        // 2. Try Jitsi WebRTC direct message to each participant as fallback
         const participants = window.jitsiApi.getParticipantsInfo();
         if (participants && participants.length > 0) {
           participants.forEach(p => {
@@ -114,6 +117,9 @@ export default function Whiteboard() {
             }
           });
         }
+
+        // 3. Fallback: Jitsi XMPP Group Chat
+        window.jitsiApi.executeCommand('sendChatMessage', '[WB]:' + payloadStr);
       } catch (e) {
         console.error("Failed to broadcast whiteboard command:", e);
       }
@@ -121,10 +127,13 @@ export default function Whiteboard() {
   };
 
   useEffect(() => {
-    const handleSyncMessage = (event) => {
+    const processIncomingPayload = (payloadStr, remoteSenderId) => {
       try {
-        const msg = JSON.parse(event.eventData.text);
+        const msg = JSON.parse(payloadStr);
         if (!msg || !msg.mathWithLoveWhiteboard) return;
+        if (msg.senderId === myClientId) return; // Ignore our own broadcasted actions
+
+        console.log("Whiteboard collaborative command received:", msg.type, msg);
 
         if (msg.type === "ADD_ELEMENT") {
           setElements((prev) => {
@@ -141,15 +150,21 @@ export default function Whiteboard() {
           setElements([]);
           setEditingText(null);
         } else if (msg.type === "REQUEST_STATE") {
+          // If we have elements on our board, reply with our state
           setElements((currentElements) => {
             if (currentElements.length > 0 && window.jitsiApi) {
               try {
-                const payload = {
+                const reply = {
                   type: "INITIAL_STATE",
                   elements: currentElements,
+                  senderId: myClientId,
                   mathWithLoveWhiteboard: true
                 };
-                window.jitsiApi.executeCommand('sendEndpointTextMessage', event.senderInfo.id, JSON.stringify(payload));
+                const replyStr = JSON.stringify(reply);
+                if (remoteSenderId) {
+                  window.jitsiApi.executeCommand('sendEndpointTextMessage', remoteSenderId, replyStr);
+                }
+                window.jitsiApi.executeCommand('sendChatMessage', '[WB]:' + replyStr);
               } catch (err) {
                 console.error("Failed to send initial state:", err);
               }
@@ -164,16 +179,32 @@ export default function Whiteboard() {
       }
     };
 
+    const handleSyncMessage = (event) => {
+      if (event && event.eventData && event.eventData.text) {
+        processIncomingPayload(event.eventData.text, event.senderInfo ? event.senderInfo.id : null);
+      }
+    };
+
+    const handleIncomingChatMessage = (event) => {
+      if (event && event.message && event.message.startsWith('[WB]:')) {
+        processIncomingPayload(event.message.substring(5), null);
+      }
+    };
+
     const handleParticipantJoined = () => {
+      // Send current state to newly joined participant
       setElements((currentElements) => {
         if (currentElements.length > 0 && window.jitsiApi) {
           try {
             const payload = {
               type: "INITIAL_STATE",
               elements: currentElements,
+              senderId: myClientId,
               mathWithLoveWhiteboard: true
             };
-            window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, JSON.stringify(payload));
+            const payloadStr = JSON.stringify(payload);
+            window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, payloadStr);
+            window.jitsiApi.executeCommand('sendChatMessage', '[WB]:' + payloadStr);
           } catch (err) {
             console.error("Failed to broadcast initial state on participant join:", err);
           }
@@ -182,14 +213,27 @@ export default function Whiteboard() {
       });
     };
 
+    // Periodically request state during initial connection settling
+    let requestCount = 0;
+    const requestInterval = setInterval(() => {
+      if (window.jitsiApi && requestCount < 3) {
+        broadcast({ type: "REQUEST_STATE" });
+        requestCount++;
+      } else if (requestCount >= 3) {
+        clearInterval(requestInterval);
+      }
+    }, 3000);
+
     if (window.jitsiApi) {
       window.jitsiApi.on("endpointTextMessageReceived", handleSyncMessage);
+      window.jitsiApi.on("incomingMessage", handleIncomingChatMessage);
       broadcast({ type: "REQUEST_STATE" });
     }
 
     const handleJitsiReady = () => {
       if (window.jitsiApi) {
         window.jitsiApi.on("endpointTextMessageReceived", handleSyncMessage);
+        window.jitsiApi.on("incomingMessage", handleIncomingChatMessage);
         broadcast({ type: "REQUEST_STATE" });
       }
     };
@@ -198,8 +242,10 @@ export default function Whiteboard() {
     window.addEventListener("jitsi-participant-joined", handleParticipantJoined);
 
     return () => {
+      clearInterval(requestInterval);
       if (window.jitsiApi) {
         window.jitsiApi.removeListener("endpointTextMessageReceived", handleSyncMessage);
+        window.jitsiApi.removeListener("incomingMessage", handleIncomingChatMessage);
       }
       window.removeEventListener("jitsi-ready", handleJitsiReady);
       window.removeEventListener("jitsi-participant-joined", handleParticipantJoined);
