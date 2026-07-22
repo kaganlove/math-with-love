@@ -102,7 +102,9 @@ export default function SessionRoom() {
         parentNode: container,
         configOverwrite: {
           prejoinPageEnabled: false,
-          disableInviteFunctions: true
+          disableInviteFunctions: true,
+          disabledSounds: ['INCOMING_MSG_SOUND'],
+          disabledNotifications: ['notify.chatMessages']
         },
         interfaceConfigOverwrite: {
           SHOW_JITSI_WATERMARK: false,
