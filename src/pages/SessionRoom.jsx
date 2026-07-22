@@ -116,7 +116,7 @@ export default function SessionRoom() {
         window.jitsiApi = api;
         window.dispatchEvent(new Event("jitsi-ready"));
 
-        api.addEventListener("participantJoined", () => {
+        api.on("participantJoined", () => {
           window.dispatchEvent(new Event("jitsi-participant-joined"));
         });
       } catch (err) {

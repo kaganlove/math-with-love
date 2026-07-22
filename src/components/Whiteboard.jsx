@@ -99,7 +99,21 @@ export default function Whiteboard() {
     if (window.jitsiApi) {
       try {
         const payload = { ...cmd, mathWithLoveWhiteboard: true };
-        window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, JSON.stringify(payload));
+        const payloadStr = JSON.stringify(payload);
+        
+        // 1. Try Jitsi broadcast command
+        window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, payloadStr);
+        window.jitsiApi.executeCommand('sendEndpointTextMessage', '', payloadStr);
+
+        // 2. Also send directly to each participant as a fallback
+        const participants = window.jitsiApi.getParticipantsInfo();
+        if (participants && participants.length > 0) {
+          participants.forEach(p => {
+            if (p.id) {
+              window.jitsiApi.executeCommand('sendEndpointTextMessage', p.id, payloadStr);
+            }
+          });
+        }
       } catch (e) {
         console.error("Failed to broadcast whiteboard command:", e);
       }
@@ -169,13 +183,13 @@ export default function Whiteboard() {
     };
 
     if (window.jitsiApi) {
-      window.jitsiApi.addEventListener("endpointTextMessageReceived", handleSyncMessage);
+      window.jitsiApi.on("endpointTextMessageReceived", handleSyncMessage);
       broadcast({ type: "REQUEST_STATE" });
     }
 
     const handleJitsiReady = () => {
       if (window.jitsiApi) {
-        window.jitsiApi.addEventListener("endpointTextMessageReceived", handleSyncMessage);
+        window.jitsiApi.on("endpointTextMessageReceived", handleSyncMessage);
         broadcast({ type: "REQUEST_STATE" });
       }
     };
@@ -185,7 +199,7 @@ export default function Whiteboard() {
 
     return () => {
       if (window.jitsiApi) {
-        window.jitsiApi.removeEventListener("endpointTextMessageReceived", handleSyncMessage);
+        window.jitsiApi.removeListener("endpointTextMessageReceived", handleSyncMessage);
       }
       window.removeEventListener("jitsi-ready", handleJitsiReady);
       window.removeEventListener("jitsi-participant-joined", handleParticipantJoined);
