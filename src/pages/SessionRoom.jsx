@@ -24,7 +24,7 @@ export default function SessionRoom() {
   }, [searchParams, navigate]);
 
   const copyInviteLink = () => {
-    const serverHost = searchParams.get("server") || "meet.ffmuc.net";
+    const serverHost = searchParams.get("server") || "fairmeeting.net";
     const inviteUrl = `${window.location.origin}/session?room=${roomName}&server=${serverHost}`;
     navigator.clipboard.writeText(inviteUrl).then(() => {
       setCopied(true);
@@ -75,8 +75,8 @@ export default function SessionRoom() {
     };
   }, [isResizing]);
 
-  const serverHost = searchParams.get("server") || "meet.ffmuc.net";
-  const jitsiUrl = `https://${serverHost}/MathWithLove_${roomName}#config.prejoinPageEnabled=false&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.MOBILE_APP_PROMO=false`;
+  const serverHost = searchParams.get("server") || "fairmeeting.net";
+  const jitsiUrl = `https://${serverHost}/MathWithLove_${roomName}#config.prejoinPageEnabled=false&config.disableInviteFunctions=true&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.MOBILE_APP_PROMO=false`;
 
   return (
     <div className="session-room-fullscreen">

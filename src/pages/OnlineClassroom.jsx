@@ -9,10 +9,7 @@ export default function OnlineClassroom() {
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 
-  const [serverHost, setServerHost] = useState("meet.ffmuc.net");
-  const [customServerHost, setCustomServerHost] = useState("");
-
-  const activeServer = serverHost === "custom" ? (customServerHost || "meet.ffmuc.net") : serverHost;
+  const activeServer = "fairmeeting.net";
 
   // Initialize room name from query parameter or generate a random one
   useEffect(() => {
@@ -69,48 +66,7 @@ export default function OnlineClassroom() {
             </div>
 
             <div className="form-group mt-6">
-              <label className="form-label">2. Video Call Server</label>
-              <select
-                value={serverHost}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setServerHost(val);
-                  if (val !== "custom") {
-                    setCustomServerHost("");
-                  }
-                }}
-                className="form-input-field"
-                style={{
-                  background: "rgba(15, 23, 42, 0.4)",
-                  border: "1.5px solid rgba(255, 255, 255, 0.1)",
-                  borderRadius: "8px",
-                  color: "#ffffff",
-                  padding: "0.6rem 0.85rem",
-                  cursor: "pointer",
-                  width: "100%"
-                }}
-              >
-                <option value="meet.ffmuc.net" style={{ background: "#0f172a" }}>meet.ffmuc.net (Free community server, no time limit - Recommended)</option>
-                <option value="fairmeeting.net" style={{ background: "#0f172a" }}>fairmeeting.net (Free community server, no time limit)</option>
-                <option value="meet.jit.si" style={{ background: "#0f172a" }}>meet.jit.si (Official Jitsi - Blocks embedding / 5m limit)</option>
-                <option value="custom" style={{ background: "#0f172a" }}>Custom Server...</option>
-              </select>
-              {serverHost === "custom" && (
-                <input
-                  type="text"
-                  value={customServerHost}
-                  onChange={(e) => setCustomServerHost(e.target.value.replace(/https?:\/\//i, "").trim())}
-                  placeholder="e.g. meet.yourdomain.com"
-                  className="form-input-field mt-2"
-                />
-              )}
-              <span className="input-helper">
-                Due to recent Jitsi Meet policy changes, meet.jit.si enforces a 5-minute limit on embedded calls. Choose a free community server or enter your own custom server domain.
-              </span>
-            </div>
-
-            <div className="form-group mt-6">
-              <label className="form-label">3. Invite Your Student</label>
+              <label className="form-label">2. Invite Your Student</label>
               <div className="invite-link-box">
                 <span className="invite-url-text">{window.location.origin}/session?room={roomName}&server={activeServer}</span>
                 <button onClick={copyInviteLink} className="btn-copy-invite">
