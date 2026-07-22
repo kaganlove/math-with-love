@@ -75,8 +75,83 @@ export default function SessionRoom() {
     };
   }, [isResizing]);
 
-  const serverHost = searchParams.get("server") || "fairmeeting.net";
-  const jitsiUrl = `https://${serverHost}/MathWithLove_${roomName}#config.prejoinPageEnabled=false&config.disableInviteFunctions=true&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.MOBILE_APP_PROMO=false`;
+  useEffect(() => {
+    if (!roomName) return;
+    if (!inCall) {
+      if (window.jitsiApi) {
+        window.jitsiApi.dispose();
+        window.jitsiApi = null;
+      }
+      return;
+    }
+
+    const serverHost = searchParams.get("server") || "fairmeeting.net";
+    const scriptId = "jitsi-external-api-script";
+    let script = document.getElementById(scriptId);
+
+    const initJitsi = () => {
+      const container = document.getElementById("jitsi-iframe-container");
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      const options = {
+        roomName: `MathWithLove_${roomName}`,
+        width: "100%",
+        height: "100%",
+        parentNode: container,
+        configOverwrite: {
+          prejoinPageEnabled: false,
+          disableInviteFunctions: true
+        },
+        interfaceConfigOverwrite: {
+          SHOW_JITSI_WATERMARK: false,
+          SHOW_BRAND_WATERMARK: false,
+          MOBILE_APP_PROMO: false
+        }
+      };
+
+      try {
+        const api = new window.JitsiMeetExternalAPI(serverHost, options);
+        window.jitsiApi = api;
+        window.dispatchEvent(new Event("jitsi-ready"));
+
+        api.addEventListener("participantJoined", () => {
+          window.dispatchEvent(new Event("jitsi-participant-joined"));
+        });
+      } catch (err) {
+        console.error("Failed to initialize Jitsi Meet External API:", err);
+      }
+    };
+
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = `https://${serverHost}/external_api.js`;
+      script.async = true;
+      script.onload = () => {
+        initJitsi();
+      };
+      document.body.appendChild(script);
+    } else {
+      if (window.JitsiMeetExternalAPI) {
+        initJitsi();
+      } else {
+        const originalOnload = script.onload;
+        script.onload = () => {
+          if (originalOnload) originalOnload();
+          initJitsi();
+        };
+      }
+    }
+
+    return () => {
+      if (window.jitsiApi) {
+        window.jitsiApi.dispose();
+        window.jitsiApi = null;
+      }
+    };
+  }, [inCall, roomName, searchParams]);
 
   return (
     <div className="session-room-fullscreen">
@@ -111,14 +186,15 @@ export default function SessionRoom() {
         {/* Left pane: Jitsi Meet Call */}
         <section className="session-video-pane">
           {inCall ? (
-            <div className="session-iframe-container" style={isResizing ? { pointerEvents: "none" } : {}}>
-              <iframe
-                src={jitsiUrl}
-                allow="camera; microphone; display-capture; autoplay; clipboard-write"
-                className="session-jitsi-iframe"
-                title="Tutoring Video Session"
-              />
-            </div>
+            <div 
+              id="jitsi-iframe-container"
+              className="session-iframe-container"
+              style={{
+                width: "100%",
+                height: "100%",
+                pointerEvents: isResizing ? "none" : "auto"
+              }}
+            />
           ) : (
             <div className="session-video-disconnected text-center">
               <VideoOff size={48} className="text-danger mb-4" />

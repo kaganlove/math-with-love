@@ -93,6 +93,104 @@ export default function Whiteboard() {
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
+
+  // Helper to broadcast messages via Jitsi Data Channels
+  const broadcast = (cmd) => {
+    if (window.jitsiApi) {
+      try {
+        const payload = { ...cmd, mathWithLoveWhiteboard: true };
+        window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, JSON.stringify(payload));
+      } catch (e) {
+        console.error("Failed to broadcast whiteboard command:", e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleSyncMessage = (event) => {
+      try {
+        const msg = JSON.parse(event.eventData.text);
+        if (!msg || !msg.mathWithLoveWhiteboard) return;
+
+        if (msg.type === "ADD_ELEMENT") {
+          setElements((prev) => {
+            if (prev.some((el) => el.id === msg.element.id)) return prev;
+            return [...prev, msg.element];
+          });
+        } else if (msg.type === "UPDATE_ELEMENT") {
+          setElements((prev) =>
+            prev.map((el) => (el.id === msg.id ? { ...el, ...msg.updates } : el))
+          );
+        } else if (msg.type === "DELETE_ELEMENT") {
+          setElements((prev) => prev.filter((el) => el.id !== msg.id));
+        } else if (msg.type === "CLEAR_BOARD") {
+          setElements([]);
+          setEditingText(null);
+        } else if (msg.type === "REQUEST_STATE") {
+          setElements((currentElements) => {
+            if (currentElements.length > 0 && window.jitsiApi) {
+              try {
+                const payload = {
+                  type: "INITIAL_STATE",
+                  elements: currentElements,
+                  mathWithLoveWhiteboard: true
+                };
+                window.jitsiApi.executeCommand('sendEndpointTextMessage', event.senderInfo.id, JSON.stringify(payload));
+              } catch (err) {
+                console.error("Failed to send initial state:", err);
+              }
+            }
+            return currentElements;
+          });
+        } else if (msg.type === "INITIAL_STATE") {
+          setElements(msg.elements);
+        }
+      } catch (err) {
+        // Ignore non-whiteboard JSON payloads
+      }
+    };
+
+    const handleParticipantJoined = () => {
+      setElements((currentElements) => {
+        if (currentElements.length > 0 && window.jitsiApi) {
+          try {
+            const payload = {
+              type: "INITIAL_STATE",
+              elements: currentElements,
+              mathWithLoveWhiteboard: true
+            };
+            window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, JSON.stringify(payload));
+          } catch (err) {
+            console.error("Failed to broadcast initial state on participant join:", err);
+          }
+        }
+        return currentElements;
+      });
+    };
+
+    if (window.jitsiApi) {
+      window.jitsiApi.addEventListener("endpointTextMessageReceived", handleSyncMessage);
+      broadcast({ type: "REQUEST_STATE" });
+    }
+
+    const handleJitsiReady = () => {
+      if (window.jitsiApi) {
+        window.jitsiApi.addEventListener("endpointTextMessageReceived", handleSyncMessage);
+        broadcast({ type: "REQUEST_STATE" });
+      }
+    };
+
+    window.addEventListener("jitsi-ready", handleJitsiReady);
+    window.addEventListener("jitsi-participant-joined", handleParticipantJoined);
+
+    return () => {
+      if (window.jitsiApi) {
+        window.jitsiApi.removeEventListener("endpointTextMessageReceived", handleSyncMessage);
+      }
+      window.removeEventListener("jitsi-ready", handleJitsiReady);
+      window.removeEventListener("jitsi-participant-joined", handleParticipantJoined);
+    };
+  }, []);
   
   // Text element state (supporting rich editing variables)
   const [editingText, setEditingText] = useState(null); // { id, x, y, value, width, fontSize, bold, italic, underline }
@@ -358,7 +456,11 @@ export default function Whiteboard() {
     }
 
     if (hitIndex !== -1) {
-      setElements((prev) => prev.filter((_, idx) => idx !== hitIndex));
+      const elToDelete = elements[hitIndex];
+      if (elToDelete) {
+        setElements((prev) => prev.filter((_, idx) => idx !== hitIndex));
+        broadcast({ type: 'DELETE_ELEMENT', id: elToDelete.id });
+      }
     }
   };
 
@@ -539,6 +641,31 @@ export default function Whiteboard() {
       };
       setElements((prev) => [...prev, newEl]);
       setCurrentPoints(null);
+      broadcast({ type: 'ADD_ELEMENT', element: newEl });
+    }
+    if (tool === "select" && draggingElement) {
+      setElements((prev) => {
+        const el = prev.find(item => item.id === draggingElement.id);
+        if (el) {
+          broadcast({ type: 'UPDATE_ELEMENT', id: el.id, updates: { x: el.x, y: el.y } });
+        }
+        return prev;
+      });
+    }
+    if (tool === "select" && resizingElement) {
+      setElements((prev) => {
+        const el = prev.find(item => item.id === resizingElement.id);
+        if (el) {
+          broadcast({
+            type: 'UPDATE_ELEMENT',
+            id: el.id,
+            updates: el.type === "image"
+              ? { width: el.width, height: el.height }
+              : { width: el.width }
+          });
+        }
+        return prev;
+      });
     }
     setIsDrawing(false);
     setIsErasing(false);
@@ -595,7 +722,7 @@ export default function Whiteboard() {
           setElements((prev) =>
             prev.map((el) => {
               if (el.id === editingText.id) {
-                return {
+                const updated = {
                   ...el,
                   text: editingText.value,
                   fontSize: editingText.fontSize,
@@ -604,6 +731,8 @@ export default function Whiteboard() {
                   italic: editingText.italic,
                   underline: editingText.underline
                 };
+                broadcast({ type: 'UPDATE_ELEMENT', id: editingText.id, updates: updated });
+                return updated;
               }
               return el;
             })
@@ -624,11 +753,13 @@ export default function Whiteboard() {
             underline: editingText.underline || false
           };
           setElements((prev) => [...prev, newEl]);
+          broadcast({ type: 'ADD_ELEMENT', element: newEl });
         }
       } else {
         // If editing box is left empty, remove it
         if (editingText.id) {
           setElements((prev) => prev.filter((el) => el.id !== editingText.id));
+          broadcast({ type: 'DELETE_ELEMENT', id: editingText.id });
         }
       }
     }
@@ -711,6 +842,7 @@ export default function Whiteboard() {
           height: h
         };
         setElements((prev) => [...prev, newEl]);
+        broadcast({ type: 'ADD_ELEMENT', element: newEl });
         setPdfLoading(false);
         selectTool("select");
       };
@@ -764,6 +896,7 @@ export default function Whiteboard() {
             height: h
           };
           setElements((prev) => [...prev, newEl]);
+          broadcast({ type: 'ADD_ELEMENT', element: newEl });
           selectTool("select");
         };
       };
@@ -776,6 +909,7 @@ export default function Whiteboard() {
     if (window.confirm("Are you sure you want to clear the whiteboard?")) {
       setElements([]);
       setEditingText(null);
+      broadcast({ type: 'CLEAR_BOARD' });
     }
   };
 
