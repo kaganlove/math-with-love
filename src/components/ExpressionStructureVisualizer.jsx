@@ -26,6 +26,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const [rightGCFSelectionOpen, setRightGCFSelectionOpen] = useState(false);
   const [leftGCFError, setLeftGCFError] = useState(null);
   const [rightGCFError, setRightGCFError] = useState(null);
+  const [leftGCFAnimationState, setLeftGCFAnimationState] = useState("none"); // "none" | "division" | "simplified"
+  const [rightGCFAnimationState, setRightGCFAnimationState] = useState("none"); // "none" | "division" | "simplified"
   
   // Drag targets in grouping stage 3
   const [finalCommonFactorDropped, setFinalCommonFactorDropped] = useState(false);
@@ -70,6 +72,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setRightGCFSelectionOpen(false);
     setLeftGCFError(null);
     setRightGCFError(null);
+    setLeftGCFAnimationState("none");
+    setRightGCFAnimationState("none");
     setFinalCommonFactorDropped(false);
     setLeftGCFDropped(false);
     setRightGCFDropped(false);
@@ -122,6 +126,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setRightGCFSelectionOpen(false);
     setLeftGCFError(null);
     setRightGCFError(null);
+    setLeftGCFAnimationState("none");
+    setRightGCFAnimationState("none");
     setFinalCommonFactorDropped(false);
     setLeftGCFDropped(false);
     setRightGCFDropped(false);
@@ -386,6 +392,26 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
         }}
       >
         {val}
+      </div>
+    );
+  };
+
+  // Helper to render division fractions in grouping step animations
+  const renderFraction = (num, den) => {
+    return (
+      <div 
+        style={{ 
+          display: "inline-flex", 
+          flexDirection: "column", 
+          alignItems: "center", 
+          verticalAlign: "middle", 
+          margin: "0 0.25rem", 
+          fontSize: "1.1rem",
+          lineHeight: "1.1"
+        }}
+      >
+        <span style={{ borderBottom: "1.5px solid #cbd5e1", padding: "0 4px", color: "#60a5fa" }}>{num}</span>
+        <span style={{ color: "#3b82f6", fontWeight: "bold" }}>{den}</span>
       </div>
     );
   };
@@ -740,33 +766,51 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                       Extract the Greatest Common Factor (GCF) from each group:
                     </span>
                     
-                    <div style={{ display: "flex", gap: "2rem", alignItems: "center", justifyContent: "center", width: "100%" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: "0.5rem", fontSize: "1.8rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", margin: "1rem 0", minHeight: "120px", userSelect: "none" }}>
                       
                       {/* Left Group Column */}
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", width: "170px" }}>
-                        {leftGCFExtracted ? (
-                          <span style={{ fontSize: "1.6rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: "120px", position: "relative" }}>
+                        {leftGCFAnimationState === "division" ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", fontSize: "1.45rem", color: "#cbd5e1", transform: "translateY(-4px)" }}>
+                            <span style={{ color: "#3b82f6", fontWeight: "bold" }}>2x</span>
+                            <span>(</span>
+                            {renderFraction("2x²", "2x")}
+                            <span>+</span>
+                            {renderFraction("4x", "2x")}
+                            <span>)</span>
+                          </span>
+                        ) : leftGCFAnimationState === "simplified" ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", fontSize: "1.55rem", color: "#cbd5e1" }}>
+                            <span style={{ color: "#3b82f6", fontWeight: "bold" }}>2x</span>
+                            <span>(</span>
+                            <span style={{ color: "#4ade80", fontWeight: "bold", padding: "0 0.1rem" }}>x</span>
+                            <span style={{ margin: "0 0.25rem" }}>+</span>
+                            <span style={{ color: "#4ade80", fontWeight: "bold", padding: "0 0.1rem" }}>2</span>
+                            <span>)</span>
+                          </span>
+                        ) : leftGCFExtracted ? (
+                          <span style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif" }}>
                             2x(x + 2)
                           </span>
                         ) : (
                           <>
-                            <span style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#60a5fa", fontFamily: "Outfit, sans-serif" }}>
+                            <span style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#60a5fa", fontFamily: "Outfit, sans-serif" }}>
                               (2x² + 4x)
                             </span>
-                            <div style={{ position: "relative" }}>
+                            <div style={{ position: "absolute", top: "100%", marginTop: "0.5rem" }}>
                               <button
                                 onClick={() => {
                                   setLeftGCFSelectionOpen(!leftGCFSelectionOpen);
                                   setRightGCFSelectionOpen(false);
                                 }}
                                 style={{
-                                  padding: "0.4rem 0.8rem",
+                                  padding: "0.3rem 0.6rem",
                                   borderRadius: "6px",
                                   border: "1.5px dashed #3b82f6",
                                   backgroundColor: "rgba(59, 130, 246, 0.1)",
                                   color: "#60a5fa",
                                   cursor: "pointer",
-                                  fontSize: "0.85rem",
+                                  fontSize: "0.8rem",
                                   fontWeight: "bold",
                                   outline: "none"
                                 }}
@@ -784,9 +828,9 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                                     backgroundColor: "#1e293b",
                                     border: "1.5px solid #3b82f6",
                                     borderRadius: "10px",
-                                    padding: "0.6rem",
+                                    padding: "0.5rem",
                                     zIndex: 10,
-                                    width: "120px",
+                                    width: "110px",
                                     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
                                     display: "grid",
                                     gridTemplateColumns: "1fr 1fr",
@@ -798,9 +842,17 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                                       key={opt}
                                       onClick={() => {
                                         if (opt === "2x") {
-                                          setLeftGCFExtracted(true);
                                           setLeftGCFSelectionOpen(false);
                                           setLeftGCFError(null);
+                                          // Trigger division animation steps
+                                          setLeftGCFAnimationState("division");
+                                          setTimeout(() => {
+                                            setLeftGCFAnimationState("simplified");
+                                          }, 1800);
+                                          setTimeout(() => {
+                                            setLeftGCFAnimationState("none");
+                                            setLeftGCFExtracted(true);
+                                          }, 3600);
                                         } else {
                                           setLeftGCFError("Select 2x.");
                                         }
@@ -809,10 +861,10 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                                         backgroundColor: "rgba(15, 23, 42, 0.6)",
                                         border: "1px solid #475569",
                                         color: "#ffffff",
-                                        padding: "0.3rem",
+                                        padding: "0.25rem",
                                         borderRadius: "6px",
                                         cursor: "pointer",
-                                        fontSize: "0.85rem",
+                                        fontSize: "0.8rem",
                                         fontWeight: "bold"
                                       }}
                                     >
@@ -825,39 +877,57 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                           </>
                         )}
                         {leftGCFError && (
-                          <span style={{ fontSize: "0.75rem", color: "#f87171", textAlign: "center", marginTop: "0.25rem" }}>
+                          <span style={{ fontSize: "0.7rem", color: "#f87171", textAlign: "center", position: "absolute", top: "100%", marginTop: "2rem", width: "120px" }}>
                             {leftGCFError}
                           </span>
                         )}
                       </div>
 
-                      <span style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#cbd5e1" }}>+</span>
+                      <span style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#cbd5e1", alignSelf: "flex-start", margin: "0 0.5rem" }}>+</span>
 
                       {/* Right Group Column */}
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", width: "170px" }}>
-                        {rightGCFExtracted ? (
-                          <span style={{ fontSize: "1.6rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: "120px", position: "relative" }}>
+                        {rightGCFAnimationState === "division" ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", fontSize: "1.45rem", color: "#cbd5e1", transform: "translateY(-4px)" }}>
+                            <span style={{ color: "#3b82f6", fontWeight: "bold" }}>3</span>
+                            <span>(</span>
+                            {renderFraction("3x", "3")}
+                            <span>+</span>
+                            {renderFraction("6", "3")}
+                            <span>)</span>
+                          </span>
+                        ) : rightGCFAnimationState === "simplified" ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", fontSize: "1.55rem", color: "#cbd5e1" }}>
+                            <span style={{ color: "#3b82f6", fontWeight: "bold" }}>3</span>
+                            <span>(</span>
+                            <span style={{ color: "#4ade80", fontWeight: "bold", padding: "0 0.1rem" }}>x</span>
+                            <span style={{ margin: "0 0.25rem" }}>+</span>
+                            <span style={{ color: "#4ade80", fontWeight: "bold", padding: "0 0.1rem" }}>2</span>
+                            <span>)</span>
+                          </span>
+                        ) : rightGCFExtracted ? (
+                          <span style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif" }}>
                             3(x + 2)
                           </span>
                         ) : (
                           <>
-                            <span style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#60a5fa", fontFamily: "Outfit, sans-serif" }}>
+                            <span style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#60a5fa", fontFamily: "Outfit, sans-serif" }}>
                               (3x + 6)
                             </span>
-                            <div style={{ position: "relative" }}>
+                            <div style={{ position: "absolute", top: "100%", marginTop: "0.5rem" }}>
                               <button
                                 onClick={() => {
                                   setRightGCFSelectionOpen(!rightGCFSelectionOpen);
                                   setLeftGCFSelectionOpen(false);
                                 }}
                                 style={{
-                                  padding: "0.4rem 0.8rem",
+                                  padding: "0.3rem 0.6rem",
                                   borderRadius: "6px",
                                   border: "1.5px dashed #3b82f6",
                                   backgroundColor: "rgba(59, 130, 246, 0.1)",
                                   color: "#60a5fa",
                                   cursor: "pointer",
-                                  fontSize: "0.85rem",
+                                  fontSize: "0.8rem",
                                   fontWeight: "bold",
                                   outline: "none"
                                 }}
@@ -875,9 +945,9 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                                     backgroundColor: "#1e293b",
                                     border: "1.5px solid #3b82f6",
                                     borderRadius: "10px",
-                                    padding: "0.6rem",
+                                    padding: "0.5rem",
                                     zIndex: 10,
-                                    width: "120px",
+                                    width: "110px",
                                     boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
                                     display: "grid",
                                     gridTemplateColumns: "1fr 1fr",
@@ -889,9 +959,17 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                                       key={opt}
                                       onClick={() => {
                                         if (opt === "3") {
-                                          setRightGCFExtracted(true);
                                           setRightGCFSelectionOpen(false);
                                           setRightGCFError(null);
+                                          // Trigger division animation steps
+                                          setRightGCFAnimationState("division");
+                                          setTimeout(() => {
+                                            setRightGCFAnimationState("simplified");
+                                          }, 1800);
+                                          setTimeout(() => {
+                                            setRightGCFAnimationState("none");
+                                            setRightGCFExtracted(true);
+                                          }, 3600);
                                         } else {
                                           setRightGCFError("Select 3.");
                                         }
@@ -900,10 +978,10 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                                         backgroundColor: "rgba(15, 23, 42, 0.6)",
                                         border: "1px solid #475569",
                                         color: "#ffffff",
-                                        padding: "0.3rem",
+                                        padding: "0.25rem",
                                         borderRadius: "6px",
                                         cursor: "pointer",
-                                        fontSize: "0.85rem",
+                                        fontSize: "0.8rem",
                                         fontWeight: "bold"
                                       }}
                                     >
@@ -916,7 +994,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                           </>
                         )}
                         {rightGCFError && (
-                          <span style={{ fontSize: "0.75rem", color: "#f87171", textAlign: "center", marginTop: "0.25rem" }}>
+                          <span style={{ fontSize: "0.7rem", color: "#f87171", textAlign: "center", position: "absolute", top: "100%", marginTop: "2rem", width: "120px" }}>
                             {rightGCFError}
                           </span>
                         )}
