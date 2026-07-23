@@ -7,13 +7,20 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   // Drag-and-drop states for Perfect Squares (pageIndex = 0) and Difference of Squares (pageIndex = 1)
   const [zone9Replaced, setZone9Replaced] = useState(false);
   const [zone6xReplaced, setZone6xReplaced] = useState(false);
+  const [factoredBlankReplaced, setFactoredBlankReplaced] = useState(false);
+  const [factoredBlank1Replaced, setFactoredBlank1Replaced] = useState(false);
+  const [factoredBlank2Replaced, setFactoredBlank2Replaced] = useState(false);
+
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [hoveredZone, setHoveredZone] = useState(null); // "6x" | "9"
+  const [hoveredZone, setHoveredZone] = useState(null); // "6x" | "9" | "blank" | "blank1" | "blank2"
   const [finalFactored, setFinalFactored] = useState(false);
 
   const zone9Ref = useRef(null);
   const zone6xRef = useRef(null);
+  const blankRef = useRef(null);
+  const blank1Ref = useRef(null);
+  const blank2Ref = useRef(null);
   const dragRef = useRef(null);
   const dragStartOffset = useRef({ x: 0, y: 0 });
 
@@ -22,10 +29,20 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setStep(0);
     setZone9Replaced(false);
     setZone6xReplaced(false);
+    setFactoredBlankReplaced(false);
+    setFactoredBlank1Replaced(false);
+    setFactoredBlank2Replaced(false);
     setFinalFactored(false);
     setIsDragging(false);
     setHoveredZone(null);
   }, [pageIndex]);
+
+  // Self-heal/sync finalFactored for Difference of Squares once both blanks are populated
+  useEffect(() => {
+    if (pageIndex === 1 && factoredBlank1Replaced && factoredBlank2Replaced) {
+      setFinalFactored(true);
+    }
+  }, [factoredBlank1Replaced, factoredBlank2Replaced, pageIndex]);
 
   const handleNextStep = () => {
     setStep((prev) => (prev < 2 ? prev + 1 : 0));
@@ -35,6 +52,9 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setStep(0);
     setZone9Replaced(false);
     setZone6xReplaced(false);
+    setFactoredBlankReplaced(false);
+    setFactoredBlank1Replaced(false);
+    setFactoredBlank2Replaced(false);
     setFinalFactored(false);
     setIsDragging(false);
     setHoveredZone(null);
@@ -42,8 +62,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
 
   const handlePointerDown = (e) => {
     e.preventDefault();
-    if (pageIndex === 0 && zone6xReplaced && zone9Replaced) return;
-    if (pageIndex === 1 && zone9Replaced) return;
+    if (pageIndex === 0 && factoredBlankReplaced) return;
+    if (pageIndex === 1 && factoredBlank1Replaced && factoredBlank2Replaced) return;
 
     const rect = dragRef.current.getBoundingClientRect();
     dragStartOffset.current = {
@@ -63,16 +83,49 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
 
     // Check collisions with active drop zones
     let hover = null;
-    if (pageIndex === 0 && !zone6xReplaced && zone6xRef.current) {
-      const rect = zone6xRef.current.getBoundingClientRect();
-      if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
-        hover = "6x";
+    if (pageIndex === 0) {
+      if (!zone6xReplaced || !zone9Replaced) {
+        if (!zone6xReplaced && zone6xRef.current) {
+          const rect = zone6xRef.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "6x";
+          }
+        }
+        if (!zone9Replaced && zone9Ref.current) {
+          const rect = zone9Ref.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "9";
+          }
+        }
+      } else {
+        if (!factoredBlankReplaced && blankRef.current) {
+          const rect = blankRef.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "blank";
+          }
+        }
       }
-    }
-    if (!zone9Replaced && zone9Ref.current) {
-      const rect = zone9Ref.current.getBoundingClientRect();
-      if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
-        hover = "9";
+    } else if (pageIndex === 1) {
+      if (!zone9Replaced) {
+        if (zone9Ref.current) {
+          const rect = zone9Ref.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "9";
+          }
+        }
+      } else {
+        if (!factoredBlank1Replaced && blank1Ref.current) {
+          const rect = blank1Ref.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "blank1";
+          }
+        }
+        if (!factoredBlank2Replaced && blank2Ref.current) {
+          const rect = blank2Ref.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "blank2";
+          }
+        }
       }
     }
     setHoveredZone(hover);
@@ -87,6 +140,13 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
       setZone6xReplaced(true);
     } else if (hoveredZone === "9") {
       setZone9Replaced(true);
+    } else if (hoveredZone === "blank") {
+      setFactoredBlankReplaced(true);
+      setFinalFactored(true);
+    } else if (hoveredZone === "blank1") {
+      setFactoredBlank1Replaced(true);
+    } else if (hoveredZone === "blank2") {
+      setFactoredBlank2Replaced(true);
     }
     setHoveredZone(null);
   };
@@ -296,8 +356,111 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
               )}
             </div>
 
+            {/* Factored Blanks Row (Phase 2 - Visible when structure is revealed but not fully completed) */}
+            {pageIndex === 0 && zone6xReplaced && zone9Replaced && !finalFactored && (
+              <div 
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  fontSize: "2rem", 
+                  marginTop: "2rem", 
+                  color: "#d8b4fe", 
+                  gap: "0.2rem",
+                  fontFamily: "Outfit, sans-serif" 
+                }}
+                className="animate-fade-in"
+              >
+                <span>(x + </span>
+                <span 
+                  ref={blankRef}
+                  style={{
+                    border: hoveredZone === "blank" ? "2.5px dashed #22c55e" : "2px dashed #a855f7",
+                    backgroundColor: hoveredZone === "blank" ? "rgba(34, 197, 94, 0.15)" : "rgba(168, 85, 247, 0.08)",
+                    padding: "0.1rem 0.8rem",
+                    borderRadius: "8px",
+                    color: hoveredZone === "blank" ? "#4ade80" : "#cbd5e1",
+                    fontSize: "1.75rem",
+                    transition: "all 0.15s ease",
+                    transform: hoveredZone === "blank" ? "scale(1.05)" : "none",
+                    margin: "0 0.25rem",
+                    minWidth: "40px",
+                    display: "inline-block",
+                    textAlign: "center"
+                  }}
+                >
+                  _
+                </span>
+                <span>)²</span>
+              </div>
+            )}
+
+            {pageIndex === 1 && zone9Replaced && !finalFactored && (
+              <div 
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  fontSize: "1.8rem", 
+                  marginTop: "2rem", 
+                  color: "#d8b4fe", 
+                  gap: "0.2rem",
+                  fontFamily: "Outfit, sans-serif" 
+                }}
+                className="animate-fade-in"
+              >
+                <span>(x - </span>
+                {factoredBlank1Replaced ? (
+                  <span style={{ color: "#4ade80", fontWeight: "bold", padding: "0 0.2rem" }}>3</span>
+                ) : (
+                  <span 
+                    ref={blank1Ref}
+                    style={{
+                      border: hoveredZone === "blank1" ? "2.5px dashed #22c55e" : "2px dashed #a855f7",
+                      backgroundColor: hoveredZone === "blank1" ? "rgba(34, 197, 94, 0.15)" : "rgba(168, 85, 247, 0.08)",
+                      padding: "0.1rem 0.6rem",
+                      borderRadius: "8px",
+                      color: hoveredZone === "blank1" ? "#4ade80" : "#cbd5e1",
+                      fontSize: "1.5rem",
+                      transition: "all 0.15s ease",
+                      transform: hoveredZone === "blank1" ? "scale(1.05)" : "none",
+                      margin: "0 0.25rem",
+                      minWidth: "36px",
+                      display: "inline-block",
+                      textAlign: "center"
+                    }}
+                  >
+                    _
+                  </span>
+                )}
+                <span>)(x + </span>
+                {factoredBlank2Replaced ? (
+                  <span style={{ color: "#4ade80", fontWeight: "bold", padding: "0 0.2rem" }}>3</span>
+                ) : (
+                  <span 
+                    ref={blank2Ref}
+                    style={{
+                      border: hoveredZone === "blank2" ? "2.5px dashed #22c55e" : "2px dashed #a855f7",
+                      backgroundColor: hoveredZone === "blank2" ? "rgba(34, 197, 94, 0.15)" : "rgba(168, 85, 247, 0.08)",
+                      padding: "0.1rem 0.6rem",
+                      borderRadius: "8px",
+                      color: hoveredZone === "blank2" ? "#4ade80" : "#cbd5e1",
+                      fontSize: "1.5rem",
+                      transition: "all 0.15s ease",
+                      transform: hoveredZone === "blank2" ? "scale(1.05)" : "none",
+                      margin: "0 0.25rem",
+                      minWidth: "36px",
+                      display: "inline-block",
+                      textAlign: "center"
+                    }}
+                  >
+                    _
+                  </span>
+                )}
+                <span>)</span>
+              </div>
+            )}
+
             {/* Draggable Number Pill */}
-            {((pageIndex === 0 && !(zone6xReplaced && zone9Replaced)) || (pageIndex === 1 && !zone9Replaced)) && (
+            {((pageIndex === 0 && !factoredBlankReplaced) || (pageIndex === 1 && !(factoredBlank1Replaced && factoredBlank2Replaced))) && (
               <div style={{ marginTop: "2.5rem", minHeight: "55px", display: "flex", alignItems: "center" }}>
                 <div
                   ref={dragRef}
@@ -351,31 +514,6 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                 }}
               >
                 <span>3</span>
-              </div>
-            )}
-
-            {/* Rewrite / Collapse Actions */}
-            {pageIndex === 0 && zone6xReplaced && zone9Replaced && !finalFactored && (
-              <div style={{ marginTop: "2rem" }} className="animate-fade-in">
-                <button
-                  onClick={() => setFinalFactored(true)}
-                  className="btn-primary flex-center gap-2"
-                  style={{ padding: "0.6rem 1.25rem", fontWeight: "bold" }}
-                >
-                  <Layers size={16} /> Factor to: (a + b)²
-                </button>
-              </div>
-            )}
-
-            {pageIndex === 1 && zone9Replaced && !finalFactored && (
-              <div style={{ marginTop: "2rem" }} className="animate-fade-in">
-                <button
-                  onClick={() => setFinalFactored(true)}
-                  className="btn-primary flex-center gap-2"
-                  style={{ padding: "0.6rem 1.25rem", fontWeight: "bold" }}
-                >
-                  <Layers size={16} /> Factor to: (a - b)(a + b)
-                </button>
               </div>
             )}
 
@@ -476,11 +614,11 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                 pageIndex === 0 ? (
                   finalFactored 
                     ? "Factored Equivalent Form" 
-                    : (zone6xReplaced && zone9Replaced ? "Structure Revealed" : "Original Trinomial Structure")
+                    : (zone6xReplaced && zone9Replaced ? "Stage 2: Factor Binomial" : "Stage 1: Rewrite Structure")
                 ) : (
                   finalFactored 
                     ? "Factored Equivalent Form" 
-                    : (zone9Replaced ? "Structure Revealed" : "Original Binomial Structure")
+                    : (zone9Replaced ? "Stage 2: Factor Binomial" : "Stage 1: Rewrite Structure")
                 )
               ) : (
                 <>
@@ -496,13 +634,13 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                   finalFactored 
                     ? "Perfect square trinomials factor cleanly into the square of a binomial: (x + 3)²."
                     : (zone6xReplaced && zone9Replaced
-                        ? "Great job! The expression is now rewritten in its structured form: x² + 2(x)(3) + (3)². Click the button to factor it."
-                        : "A perfect square trinomial follows the template a² + 2ab + b² = (a + b)². Drag the number 3 (since √9 = 3) to pull it into the linear term 6x to rewrite it to 2(x)(3), and to the constant 9 to rewrite it to (3)².")
+                        ? "Great job! The structured form is revealed. Now, drag the number 3 into the blank space inside (x + _)² to factor it completely!"
+                        : "A perfect square trinomial follows the template a² + 2ab + b² = (a + b)². Drag the number 3 (since √9 = 3) into 9 to make it (3)² and into 6x to make it 2(x)(3).")
                 ) : (
                   finalFactored
                     ? "The difference of two perfect squares factors cleanly into the product of conjugate binomials: (x - 3)(x + 3)."
                     : (zone9Replaced
-                        ? "Awesome! The expression is now rewritten in its structured form: x² - (3)². Click the button to factor it."
+                        ? "Awesome! The structured form is revealed. Now, drag the number 3 into both blank spaces inside the binomials to factor it completely!"
                         : "A difference of squares follows the template a² - b² = (a - b)(a + b). Drag the number 3 (since √9 = 3) into the constant term 9 to rewrite it as a perfect square: (3)².")
                 )
               ) : (

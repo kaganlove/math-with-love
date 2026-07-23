@@ -579,7 +579,7 @@ export const curriculumLevels = [
               { id: "hsa-sse-1b", title: "Interpret complicated expressions by viewing one or more of their parts as a single entity", ccss: "HSA-SSE.A.1.b", duration: "25 mins", hasContent: true }
             ]
           },
-          { id: "hsa-sse-2", title: "Use structure to rewrite expressions (Difference of Squares, Grouping)", ccss: "HSA-SSE.A.2", duration: "40 mins", hasContent: true },
+          { id: "hsa-sse-2", title: "Use structure to rewrite expressions (Difference of Squares, Perfect Squares)", ccss: "HSA-SSE.A.2", duration: "40 mins", hasContent: true },
           {
             id: "hsa-sse-3-parent",
             title: "Choose and produce an equivalent form of an expression to reveal properties",
@@ -1340,7 +1340,7 @@ export const sampleLessons = {
     pages: [
       {
         title: "Factoring Perfect Squares",
-        introduction: "A perfect square trinomial is an algebraic expression that is the result of squaring a binomial, matching either <span style=\"color: var(--primary); font-weight: bold;\">a² + 2ab + b² = (a + b)²</span> or <span style=\"color: var(--primary); font-weight: bold;\">a² - 2ab + b² = (a - b)²</span>.",
+        introduction: "A perfect square trinomial is an algebraic expression that is the result of squaring a binomial, matching either:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">a² + 2ab + b² = (a + b)²</div>\nor:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">a² - 2ab + b² = (a - b)²</div>",
         steps: [
           {
             title: "Identify Perfect Square Terms",
@@ -1366,7 +1366,7 @@ export const sampleLessons = {
       },
       {
         title: "Difference of Squares",
-        introduction: "A difference of squares is a binomial of the form <span style=\"color: var(--primary); font-weight: bold;\">a² - b²</span>, which factors cleanly into <span style=\"color: var(--primary); font-weight: bold;\">(a - b)(a + b)</span>.",
+        introduction: "A difference of squares is a binomial of the form:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">a² - b²</div>\nwhich factors cleanly into:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(a - b)(a + b)</div>",
         steps: [
           {
             title: "Recognize Perfect Square Bases",
