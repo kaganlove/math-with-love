@@ -34,6 +34,13 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const [leftGCFDropped, setLeftGCFDropped] = useState(false);
   const [rightGCFDropped, setRightGCFDropped] = useState(false);
 
+  // Slip 'n Slide states for pageIndex = 4
+  const [slipStep, setSlipStep] = useState(0); // 0 (Slip animation), 1 (Big X Factoring), 2 (Slide animation)
+  const [slipAnimationState, setSlipAnimationState] = useState("idle"); // "idle" | "slipping" | "slipped"
+  const [slipFactorLeft, setSlipFactorLeft] = useState(null);
+  const [slipFactorRight, setSlipFactorRight] = useState(null);
+  const [slideAnimationState, setSlideAnimationState] = useState("idle"); // "idle" | "dividing" | "simplified" | "sliding" | "final"
+
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [hoveredZone, setHoveredZone] = useState(null); // "6x" | "9" | "blank" | "blank1" | "blank2" | "leftZone" | "rightZone" | "commonZone" | "leftGCFZone" | "rightGCFZone"
@@ -77,6 +84,11 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setFinalCommonFactorDropped(false);
     setLeftGCFDropped(false);
     setRightGCFDropped(false);
+    setSlipStep(0);
+    setSlipAnimationState("idle");
+    setSlipFactorLeft(null);
+    setSlipFactorRight(null);
+    setSlideAnimationState("idle");
     setFinalFactored(false);
     setIsDragging(false);
     setHoveredZone(null);
@@ -102,6 +114,13 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
       setFinalFactored(true);
     }
   }, [finalCommonFactorDropped, leftGCFDropped, rightGCFDropped, pageIndex]);
+
+  // Self-heal/sync finalFactored for Slip 'n Slide pageIndex = 4 once slide step completes
+  useEffect(() => {
+    if (pageIndex === 4 && slideAnimationState === "final") {
+      setFinalFactored(true);
+    }
+  }, [slideAnimationState, pageIndex]);
 
   const handleNextStep = () => {
     setStep((prev) => (prev < 2 ? prev + 1 : 0));
@@ -131,6 +150,11 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setFinalCommonFactorDropped(false);
     setLeftGCFDropped(false);
     setRightGCFDropped(false);
+    setSlipStep(0);
+    setSlipAnimationState("idle");
+    setSlipFactorLeft(null);
+    setSlipFactorRight(null);
+    setSlideAnimationState("idle");
     setFinalFactored(false);
     setIsDragging(false);
     setHoveredZone(null);
@@ -142,6 +166,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     if (pageIndex === 1 && factoredBlank1Replaced && factoredBlank2Replaced) return;
     if (pageIndex === 2 && leftFactor !== null && rightFactor !== null) return;
     if (pageIndex === 3 && finalCommonFactorDropped && leftGCFDropped && rightGCFDropped) return;
+    if (pageIndex === 4 && (slipStep !== 1 || (slipFactorLeft !== null && slipFactorRight !== null))) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     dragStartOffset.current = {
@@ -240,6 +265,21 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
           }
         }
       }
+    } else if (pageIndex === 4) {
+      if (slipStep === 1) {
+        if (slipFactorLeft === null && leftZoneRef.current) {
+          const rect = leftZoneRef.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "leftZone";
+          }
+        }
+        if (slipFactorRight === null && rightZoneRef.current) {
+          const rect = rightZoneRef.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "rightZone";
+          }
+        }
+      }
     }
     setHoveredZone(hover);
   };
@@ -262,14 +302,26 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
       setFactoredBlank2Replaced(true);
     } else if (hoveredZone === "leftZone") {
       if (activeDragValue === 2 || activeDragValue === 3) {
-        if (rightFactor !== activeDragValue) {
-          setLeftFactor(activeDragValue);
+        if (pageIndex === 4) {
+          if (slipFactorRight !== activeDragValue) {
+            setSlipFactorLeft(activeDragValue);
+          }
+        } else {
+          if (rightFactor !== activeDragValue) {
+            setLeftFactor(activeDragValue);
+          }
         }
       }
     } else if (hoveredZone === "rightZone") {
       if (activeDragValue === 2 || activeDragValue === 3) {
-        if (leftFactor !== activeDragValue) {
-          setRightFactor(activeDragValue);
+        if (pageIndex === 4) {
+          if (slipFactorLeft !== activeDragValue) {
+            setSlipFactorRight(activeDragValue);
+          }
+        } else {
+          if (leftFactor !== activeDragValue) {
+            setRightFactor(activeDragValue);
+          }
         }
       }
     } else if (hoveredZone === "commonZone") {
@@ -359,11 +411,13 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const config = pagesConfig[pageIndex] || pagesConfig[0];
 
   // Determine if this is a custom drag-and-drop page
-  const isDragPage = pageIndex === 0 || pageIndex === 1 || pageIndex === 2 || pageIndex === 3;
+  const isDragPage = pageIndex === 0 || pageIndex === 1 || pageIndex === 2 || pageIndex === 3 || pageIndex === 4;
 
   // Helper to render draggable factor pills for Trinomials a=1 (pageIndex = 2)
   const renderFactorPill = (val) => {
-    const isUsed = leftFactor === val || rightFactor === val;
+    const isUsed = pageIndex === 4
+      ? (slipFactorLeft === val || slipFactorRight === val)
+      : (leftFactor === val || rightFactor === val);
     return (
       <div
         key={val}
@@ -1203,6 +1257,333 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
               </div>
             )}
 
+            {/* Slip 'n Slide method layout (pageIndex === 4) */}
+            {pageIndex === 4 && (
+              <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }} className="animate-fade-in">
+                
+                {/* CSS styles for animating dashes */}
+                <style>{`
+                  @keyframes dash {
+                    to {
+                      stroke-dashoffset: -20;
+                    }
+                  }
+                  .dash-animate {
+                    stroke-dasharray: 6;
+                    animation: dash 1s linear infinite;
+                  }
+                `}</style>
+
+                {/* Stage 0: Slip leading coefficient */}
+                {slipStep === 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                    <span style={{ fontSize: "1rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "1.5rem" }}>
+                      Multiply the leading coefficient (2) by the constant (3):
+                    </span>
+
+                    <div style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "100px", minWidth: "300px", userSelect: "none" }}>
+                      
+                      {/* SVG Curved arrow from 2 to 3 */}
+                      <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible", pointerEvents: "none" }}>
+                        {slipAnimationState === "slipping" && (
+                          <>
+                            <path
+                              d="M 68 35 Q 150 100 232 35"
+                              fill="none"
+                              stroke="#3b82f6"
+                              strokeWidth="3.5"
+                              strokeDasharray="6"
+                              className="dash-animate"
+                            />
+                            {/* Arrow head */}
+                            <path
+                              d="M 232 35 L 220 38 L 226 27 Z"
+                              fill="#3b82f6"
+                            />
+                          </>
+                        )}
+                      </svg>
+
+                      <span style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#60a5fa" : "#ffffff", fontWeight: "bold", marginRight: "0.25rem" }}>2</span>
+                      <span>x² + 5x + </span>
+                      <span style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#60a5fa" : "#ffffff", fontWeight: "bold", marginLeft: "0.25rem" }}>3</span>
+                    </div>
+
+                    {slipAnimationState === "slipping" && (
+                      <div className="animate-fade-in" style={{ fontSize: "1.2rem", color: "#60a5fa", fontWeight: "bold", marginTop: "1rem" }}>
+                        2 × 3 = 6
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: "2rem" }}>
+                      {slipAnimationState === "idle" ? (
+                        <button
+                          onClick={() => {
+                            setSlipAnimationState("slipping");
+                            setTimeout(() => {
+                              setSlipAnimationState("slipped");
+                              setSlipStep(1);
+                            }, 2500);
+                          }}
+                          className="btn-primary"
+                          style={{ padding: "0.6rem 1.5rem", fontWeight: "bold" }}
+                        >
+                          Slip the 2!
+                        </button>
+                      ) : (
+                        <button
+                          disabled
+                          className="btn-secondary"
+                          style={{ padding: "0.6rem 1.5rem", fontWeight: "bold", opacity: 0.7, cursor: "not-allowed" }}
+                        >
+                          Slipping...
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Stage 1: Big X Factoring */}
+                {slipStep === 1 && !finalFactored && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                    <span style={{ fontSize: "1rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "1.5rem" }}>
+                      Factor the simplified trinomial expression:
+                    </span>
+
+                    <span style={{ fontSize: "2rem", fontWeight: "bold", color: "#60a5fa", fontFamily: "Outfit, sans-serif", marginBottom: "1rem" }}>
+                      x² + 5x + 6
+                    </span>
+
+                    {/* Big X Component */}
+                    <div 
+                      style={{ 
+                        position: "relative", 
+                        width: "220px", 
+                        height: "220px", 
+                        margin: "1.5rem 0", 
+                        userSelect: "none" 
+                      }}
+                      className="animate-fade-in"
+                    >
+                      <svg width="220" height="220" viewBox="0 0 220 220" style={{ overflow: "visible" }}>
+                        <line x1="40" y1="40" x2="180" y2="180" stroke="#475569" strokeWidth="4" strokeLinecap="round" />
+                        <line x1="180" y1="40" x2="40" y2="180" stroke="#475569" strokeWidth="4" strokeLinecap="round" />
+                      </svg>
+                      
+                      {/* Top Term (c = 6, Multiply) */}
+                      <div style={{ position: "absolute", top: "10px", left: "50%", transform: "translateX(-50%)", textAlign: "center" }}>
+                        <span style={{ fontSize: "0.7rem", color: "#4ade80", fontWeight: "bold", display: "block", textTransform: "uppercase", letterSpacing: "0.05em" }}>Multiply (·)</span>
+                        <span style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#ffffff", fontFamily: "Outfit, sans-serif" }}>6</span>
+                      </div>
+
+                      {/* Bottom Term (b = 5, Add) */}
+                      <div style={{ position: "absolute", bottom: "10px", left: "50%", transform: "translateX(-50%)", textAlign: "center" }}>
+                        <span style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#ffffff", fontFamily: "Outfit, sans-serif" }}>5</span>
+                        <span style={{ fontSize: "0.7rem", color: "#60a5fa", fontWeight: "bold", display: "block", textTransform: "uppercase", letterSpacing: "0.05em" }}>Add (+)</span>
+                      </div>
+
+                      {/* Left Zone Box */}
+                      <div 
+                        ref={leftZoneRef}
+                        style={{
+                          position: "absolute",
+                          left: "15px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          width: "48px",
+                          height: "48px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "8px",
+                          border: slipFactorLeft !== null ? "2px solid #22c55e" : hoveredZone === "leftZone" ? "2.5px dashed #22c55e" : "2px dashed #475569",
+                          backgroundColor: slipFactorLeft !== null ? "rgba(34, 197, 94, 0.15)" : hoveredZone === "leftZone" ? "rgba(34, 197, 94, 0.1)" : "rgba(15, 23, 42, 0.6)",
+                          color: slipFactorLeft !== null ? "#4ade80" : "#64748b",
+                          fontSize: "1.5rem",
+                          fontWeight: "bold",
+                          transition: "all 0.15s ease",
+                          fontFamily: "Outfit, sans-serif"
+                        }}
+                      >
+                        {slipFactorLeft !== null ? slipFactorLeft : "?"}
+                      </div>
+
+                      {/* Right Zone Box */}
+                      <div 
+                        ref={rightZoneRef}
+                        style={{
+                          position: "absolute",
+                          right: "15px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          width: "48px",
+                          height: "48px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "8px",
+                          border: slipFactorRight !== null ? "2px solid #22c55e" : hoveredZone === "rightZone" ? "2.5px dashed #22c55e" : "2px dashed #475569",
+                          backgroundColor: slipFactorRight !== null ? "rgba(34, 197, 94, 0.15)" : hoveredZone === "rightZone" ? "rgba(34, 197, 94, 0.1)" : "rgba(15, 23, 42, 0.6)",
+                          color: slipFactorRight !== null ? "#4ade80" : "#64748b",
+                          fontSize: "1.5rem",
+                          fontWeight: "bold",
+                          transition: "all 0.15s ease",
+                          fontFamily: "Outfit, sans-serif"
+                        }}
+                      >
+                        {slipFactorRight !== null ? slipFactorRight : "?"}
+                      </div>
+                    </div>
+
+                    {/* Populated Binomial factors */}
+                    <div 
+                      style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        fontSize: "1.8rem", 
+                        marginTop: "1.5rem", 
+                        color: "#d8b4fe", 
+                        gap: "0.2rem",
+                        fontFamily: "Outfit, sans-serif" 
+                      }}
+                      className="animate-fade-in"
+                    >
+                      <span>(x + </span>
+                      <span style={{ color: slipFactorLeft !== null ? "#4ade80" : "#64748b", fontWeight: "bold" }}>
+                        {slipFactorLeft !== null ? slipFactorLeft : "_"}
+                      </span>
+                      <span>)(x + </span>
+                      <span style={{ color: slipFactorRight !== null ? "#4ade80" : "#64748b", fontWeight: "bold" }}>
+                        {slipFactorRight !== null ? slipFactorRight : "_"}
+                      </span>
+                      <span>)</span>
+                    </div>
+
+                    {slipFactorLeft !== null && slipFactorRight !== null && (
+                      <button
+                        onClick={() => setSlipStep(2)}
+                        className="btn-primary animate-fade-in"
+                        style={{ marginTop: "2rem", padding: "0.5rem 1.25rem", fontWeight: "bold" }}
+                      >
+                        Proceed to Slide!
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Stage 2: Slide leading coefficient back */}
+                {slipStep === 2 && !finalFactored && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                    
+                    {slideAnimationState === "idle" && (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                        <span style={{ fontSize: "1rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "1.5rem" }}>
+                          Slipped factors expression:
+                        </span>
+                        <div style={{ fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", margin: "2rem 0" }}>
+                          (x + 2)(x + 3)
+                        </div>
+                        <button
+                          onClick={() => setSlideAnimationState("dividing")}
+                          className="btn-primary"
+                          style={{ padding: "0.6rem 1.5rem", fontWeight: "bold" }}
+                        >
+                          Divide constants by slipped 2
+                        </button>
+                      </div>
+                    )}
+
+                    {slideAnimationState === "dividing" && (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                        <span style={{ fontSize: "1rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "1.5rem" }}>
+                          Slipped coefficient (2) divided under constants:
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", margin: "2rem 0" }}>
+                          <span>(x + </span>
+                          {renderFraction("2", "2")}
+                          <span>)(x + </span>
+                          {renderFraction("3", "2")}
+                          <span>)</span>
+                        </div>
+                        <button
+                          onClick={() => setSlideAnimationState("simplified")}
+                          className="btn-primary"
+                          style={{ padding: "0.6rem 1.5rem", fontWeight: "bold" }}
+                        >
+                          Simplify Fractions
+                        </button>
+                      </div>
+                    )}
+
+                    {slideAnimationState === "simplified" && (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                        <span style={{ fontSize: "1rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "1.5rem" }}>
+                          Simplified binomials. 3/2 cannot simplify!
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", margin: "2rem 0" }}>
+                          <span>(x + </span>
+                          <span style={{ color: "#4ade80" }}>1</span>
+                          <span>)(x + </span>
+                          <span style={{ border: "2px dashed #eab308", padding: "0.25rem 0.5rem", borderRadius: "8px", backgroundColor: "rgba(234, 179, 8, 0.05)" }}>
+                            {renderFraction("3", "2")}
+                          </span>
+                          <span>)</span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSlideAnimationState("sliding");
+                            setTimeout(() => {
+                              setSlideAnimationState("final");
+                            }, 2500);
+                          }}
+                          className="btn-primary"
+                          style={{ padding: "0.6rem 1.5rem", fontWeight: "bold" }}
+                        >
+                          Slide the denominator 2!
+                        </button>
+                      </div>
+                    )}
+
+                    {slideAnimationState === "sliding" && (
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                        <span style={{ fontSize: "1rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "1.5rem" }}>
+                          Sliding denominator 2 back to the front of x...
+                        </span>
+                        <div style={{ position: "relative", display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", margin: "2rem 0", height: "100px", minWidth: "300px" }}>
+                          
+                          {/* SVG arrow sliding the denominator 2 to the front */}
+                          <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible", pointerEvents: "none" }}>
+                            <path
+                              d="M 230 65 Q 185 105 142 50"
+                              fill="none"
+                              stroke="#eab308"
+                              strokeWidth="3.5"
+                              strokeDasharray="6"
+                              className="dash-animate"
+                            />
+                            {/* Arrow marker */}
+                            <path
+                              d="M 142 50 L 153 52 L 148 61 Z"
+                              fill="#eab308"
+                            />
+                          </svg>
+
+                          <span>(x + 1)(</span>
+                          <span style={{ color: "#eab308", opacity: 0.8, marginRight: "0.15rem", animation: "pulse 1s infinite" }}>2</span>
+                          <span>x + </span>
+                          <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", verticalAlign: "middle", margin: "0 0.25rem", fontSize: "1.2rem", lineHeight: "1.1" }}>
+                            <span style={{ borderBottom: "1.5px solid #cbd5e1", padding: "0 4px", color: "#60a5fa" }}>3</span>
+                            <span style={{ color: "#eab308", textDecoration: "line-through", opacity: 0.25 }}>2</span>
+                          </div>
+                          <span>)</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            
             {/* Factored Blanks Row (Phase 2 - Visible when structure is revealed but not fully completed) */}
             {pageIndex === 0 && zone6xReplaced && zone9Replaced && !finalFactored && (
               <div 
@@ -1362,8 +1743,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
               </div>
             )}
 
-            {/* Draggable Factors bank (For pageIndex 2) */}
-            {pageIndex === 2 && !finalFactored && (
+            {/* Draggable Factors bank (For pageIndex 2 & 4) */}
+            {(pageIndex === 2 || (pageIndex === 4 && slipStep === 1)) && !finalFactored && (
               <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}>
                 <span style={{ fontSize: "0.85rem", color: "#94a3b8", fontWeight: "600" }}>Drag the correct factor pair of 6:</span>
                 <div style={{ display: "flex", gap: "2rem", justifyContent: "center" }}>
@@ -1414,7 +1795,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
             {finalFactored && (
               <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <div style={{ fontSize: "2.25rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif" }}>
-                  {pageIndex === 0 ? "(x + 3)²" : pageIndex === 1 ? "(x - 3)(x + 3)" : pageIndex === 2 ? `(x + ${leftFactor})(x + ${rightFactor})` : "(x + 2)(2x + 3)"}
+                  {pageIndex === 0 ? "(x + 3)²" : pageIndex === 1 ? "(x - 3)(x + 3)" : pageIndex === 2 ? `(x + ${leftFactor})(x + ${rightFactor})` : pageIndex === 3 ? "(x + 2)(2x + 3)" : "(x + 1)(2x + 3)"}
                 </div>
                 <button
                   onClick={handleReset}
@@ -1516,7 +1897,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                   finalFactored
                     ? "Factored Equivalent Form"
                     : "The Big X Method"
-                ) : (
+                ) : pageIndex === 3 ? (
                   finalFactored
                     ? "Factored Equivalent Form"
                     : groupingStep === 0
@@ -1524,6 +1905,14 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                       : groupingStep === 1
                         ? "Stage 2: Click to Extract GCFs"
                         : "Stage 3: Group and Factor"
+                ) : (
+                  finalFactored
+                    ? "Factored Equivalent Form"
+                    : slipStep === 0
+                      ? "Stage 1: Slip Coefficient"
+                      : slipStep === 1
+                        ? "Stage 2: Big X Factoring"
+                        : "Stage 3: Slide & Simplify"
                 )
               ) : (
                 <>
@@ -1551,7 +1940,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                   finalFactored
                     ? "Trinomials factor into the product of binomials: (x + 2)(x + 3)."
                     : "The Big X Method helps us find factors. The top number is the product (c = 6) and the bottom number is the sum (b = 5). Drag the correct factor pair (2 and 3) of 6 into the left and right spots to populate the binomial form!"
-                ) : (
+                ) : pageIndex === 3 ? (
                   finalFactored
                     ? "Factoring by grouping splits the terms and factors out their GCFs, yielding: (x + 2)(2x + 3)."
                     : groupingStep === 0
@@ -1559,6 +1948,14 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                       : groupingStep === 1
                         ? "Great! 7x is split into 3x + 4x, giving groups (2x² + 4x) and (3x + 6). Click on each group button and select its Greatest Common Factor (GCF) to pull it out!"
                         : "Fantastic! GCFs are pulled out to reveal common binomial factor (x + 2). Drag the common factor '(x + 2)' and leftovers '(2x + 3)' into their zones to factor completely!"
+                ) : (
+                  finalFactored
+                    ? "Slip 'n Slide factoring resolves a≠1 trinomials by slipping the coefficient, factoring, and sliding it back under to yield (x + 1)(2x + 3)."
+                    : slipStep === 0
+                      ? "First, we 'slip' the leading coefficient 2 to the end and multiply it by 3, transforming 2x² + 5x + 3 into x² + 5x + 6. Click 'Slip!' to animate this!"
+                      : slipStep === 1
+                        ? "Now, factor the simplified trinomial x² + 5x + 6. Drag the correct factor pair (2 and 3) of 6 into the Big X zones!"
+                        : "Now, 'slide' the initial coefficient 2 back under each constant. Simplify 2/2 to 1. For 3/2 (which cannot simplify), slide the denominator 2 to the front of x. Click 'Slide!' to animate!"
                 )
               ) : (
                 <>
