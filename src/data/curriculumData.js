@@ -1361,6 +1361,18 @@ export const sampleLessons = {
             options: ["(x - 5)²", "(x + 5)²", "(x - 5)(x + 5)", "(x - 10)²"],
             correctIndex: 0,
             explanation: "Identifying a = x and b = 5. Since the middle coefficient (-10) is negative, we apply the subtraction form (a - b)², resulting in (x - 5)²."
+          },
+          {
+            question: "Factor the perfect square trinomial: x² + 14x + 49",
+            options: ["(x + 7)²", "(x - 7)²", "(x + 14)²", "(x + 7)(x - 7)"],
+            correctIndex: 0,
+            explanation: "The first term is x² = (x)², the last term is 49 = (7)², and the middle term is 2(x)(7) = 14x. Since the middle term is positive, this factors to (x + 7)²."
+          },
+          {
+            question: "Factor the perfect square trinomial: 4x² - 12x + 9",
+            options: ["(2x - 3)²", "(2x + 3)²", "(2x - 3)(2x + 3)", "(4x - 3)²"],
+            correctIndex: 0,
+            explanation: "The first term is 4x² = (2x)², the last term is 9 = (3)², and the middle term is -2(2x)(3) = -12x. Therefore, the factored form is (2x - 3)²."
           }
         ]
       },
@@ -1383,6 +1395,18 @@ export const sampleLessons = {
             options: ["(2x - 7)²", "(2x - 7)(2x + 7)", "(4x - 7)(4x + 7)", "(2x + 7)²"],
             correctIndex: 1,
             explanation: "4x² is (2x)² and 49 is 7². This fits the a² - b² pattern, factoring into (2x - 7)(2x + 7)."
+          },
+          {
+            question: "Factor completely using difference of squares: 25x² - 64",
+            options: ["(5x - 8)(5x + 8)", "(5x - 8)²", "(5x + 8)²", "(25x - 8)(x + 8)"],
+            correctIndex: 0,
+            explanation: "25x² is (5x)² and 64 is 8². This fits the difference of squares template a² - b², resulting in (5x - 8)(5x + 8)."
+          },
+          {
+            question: "Factor completely: x⁴ - 81",
+            options: ["(x² - 9)(x² + 9)", "(x - 3)(x + 3)(x² + 9)", "(x - 3)²(x² + 9)", "(x - 9)(x + 9)"],
+            correctIndex: 1,
+            explanation: "x⁴ - 81 factors to (x² - 9)(x² + 9). The first term (x² - 9) is also a difference of squares and factors further into (x - 3)(x + 3), yielding (x - 3)(x + 3)(x² + 9)."
           }
         ]
       }
@@ -1429,6 +1453,18 @@ export const sampleLessons = {
             options: ["(x - 7)(x + 2)", "(x - 7)(x - 2)", "(x + 7)(x - 2)", "(x - 14)(x + 1)"],
             correctIndex: 0,
             explanation: "We look for two numbers that multiply to -14 and add to -5. These numbers are -7 and 2. Therefore, the factored form is (x - 7)(x + 2)."
+          },
+          {
+            question: "Factor the trinomial: x² + 3x - 10",
+            options: ["(x + 5)(x - 2)", "(x - 5)(x + 2)", "(x + 10)(x - 1)", "(x - 10)(x + 1)"],
+            correctIndex: 0,
+            explanation: "We need two numbers that multiply to -10 and add to 3. These numbers are 5 and -2, giving (x + 5)(x - 2)."
+          },
+          {
+            question: "Factor the trinomial: x² - 8x + 15",
+            options: ["(x - 5)(x - 3)", "(x + 5)(x + 3)", "(x - 5)(x + 3)", "(x - 15)(x - 1)"],
+            correctIndex: 0,
+            explanation: "We need two numbers that multiply to 15 and add to -8. These numbers are -5 and -3, yielding (x - 5)(x - 3)."
           }
         ]
       },
@@ -1451,6 +1487,18 @@ export const sampleLessons = {
             options: ["(3x + 4)(x + 2)", "(3x + 2)(x + 4)", "(3x + 8)(x + 1)", "(3x + 4)(x - 2)"],
             correctIndex: 0,
             explanation: "Group the first two and last two terms: 3x(x + 2) + 4(x + 2). Factoring out (x + 2) gives (3x + 4)(x + 2)."
+          },
+          {
+            question: "Factor by grouping: x³ - 3x² + 2x - 6",
+            options: ["(x² + 2)(x - 3)", "(x² - 2)(x + 3)", "(x² + 3)(x - 2)", "(x² - 3)(x + 2)"],
+            correctIndex: 0,
+            explanation: "Group terms: x²(x - 3) + 2(x - 3). Factoring out (x - 3) gives (x² + 2)(x - 3)."
+          },
+          {
+            question: "Factor completely: 5x³ + 5x² - 3x - 3",
+            options: ["(5x² - 3)(x + 1)", "(5x² + 3)(x - 1)", "(5x² - 1)(x + 3)", "(5x² - 3)(x - 1)"],
+            correctIndex: 0,
+            explanation: "Group terms: 5x²(x + 1) - 3(x + 1). Factoring out (x + 1) gives (5x² - 3)(x + 1)."
           }
         ]
       },
@@ -1477,6 +1525,18 @@ export const sampleLessons = {
             options: ["(3x + 1)(x + 2)", "(3x + 2)(x + 1)", "(x + 1)(x + 6)", "(3x + 1)(x + 3)"],
             correctIndex: 0,
             explanation: "Slip 3: x² + 7x + 6. Factor: (x + 6)(x + 1). Slide 3 back: (x + 6/3)(x + 1/3) = (x + 2)(3x + 1), which is (3x + 1)(x + 2)."
+          },
+          {
+            question: "Factor using Slip 'n Slide: 2x² + 7x + 5",
+            options: ["(2x + 5)(x + 1)", "(2x + 1)(x + 5)", "(2x + 5)(2x + 1)", "(x + 5)(x + 1)"],
+            correctIndex: 0,
+            explanation: "Slip 2 to the end: x² + 7x + 10. Factor: (x + 5)(x + 2). Slide original coeff 2 back: (x + 5/2)(x + 2/2) = (2x + 5)(x + 1)."
+          },
+          {
+            question: "Factor using Slip 'n Slide: 3x² - 5x - 2",
+            options: ["(3x + 1)(x - 2)", "(3x - 1)(x + 2)", "(3x - 2)(x + 1)", "(3x + 2)(x - 1)"],
+            correctIndex: 0,
+            explanation: "Slip 3 to the end: x² - 5x - 6. Factor: (x - 6)(x + 1). Slide 3 back: (x - 6/3)(x + 1/3) = (x - 2)(3x + 1)."
           }
         ]
       }
@@ -1564,6 +1624,18 @@ export const sampleLessons = {
             options: ["3(x + 2)² - 3", "3(x + 2)² + 3", "3(x + 4)² - 9", "3(x + 2)² - 9"],
             correctIndex: 0,
             explanation: "Factor out 3: 3(x² + 4x) + 9. Add/subtract 4: 3(x² + 4x + 4 - 4) + 9 = 3(x + 2)² - 12 + 9 = 3(x + 2)² - 3."
+          },
+          {
+            question: "Complete the square to vertex form: 2x² - 8x + 5",
+            options: ["2(x - 2)² - 3", "2(x - 2)² + 3", "2(x - 2)² - 1", "2(x - 4)² - 3"],
+            correctIndex: 0,
+            explanation: "Factor 2 out of variables: 2(x² - 4x) + 5. Add/subtract 4 inside: 2(x² - 4x + 4 - 4) + 5 = 2(x - 2)² - 8 + 5 = 2(x - 2)² - 3."
+          },
+          {
+            question: "Complete the square to vertex form: 4x² + 24x + 30",
+            options: ["4(x + 3)² - 6", "4(x + 3)² + 6", "4(x + 3)² - 30", "4(x + 6)² - 6"],
+            correctIndex: 0,
+            explanation: "Factor out 4: 4(x² + 6x) + 30. Half of 6 is 3, squared is 9. Add/subtract 9 inside: 4(x² + 6x + 9 - 9) + 30 = 4(x + 3)² - 36 + 30 = 4(x + 3)² - 6."
           }
         ]
       }

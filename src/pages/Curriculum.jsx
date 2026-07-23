@@ -535,24 +535,62 @@ export default function Curriculum() {
                     <h3 className="section-divider-title">Interactive Self-Check Practice</h3>
                     <p className="practice-intro-text">Solve these problems to test your understanding. Answers are checked instantly.</p>
                     
-                    {/* Warning banner above the quiz */}
-                    {hasNextPage && (
+                    {/* Navigation bar above the quiz */}
+                    {activeLesson.pages && activeLesson.pages.length > 1 && (
                       <div 
-                        style={{
-                          padding: "0.85rem 1rem",
-                          backgroundColor: quizSubmitted ? "rgba(34, 197, 94, 0.1)" : "rgba(234, 179, 8, 0.08)",
-                          border: quizSubmitted ? "1.5px solid rgba(34, 197, 94, 0.3)" : "1.5px solid rgba(234, 179, 8, 0.25)",
-                          borderRadius: "10px",
-                          marginBottom: "1.5rem",
-                          fontSize: "0.9rem",
-                          fontWeight: "bold",
-                          color: quizSubmitted ? "#4ade80" : "#fbbf24",
-                          textAlign: "center"
+                        className="quiz-header-card" 
+                        style={{ 
+                          display: "flex", 
+                          justifyContent: "space-between", 
+                          alignItems: "center",
+                          padding: "0.85rem 1.25rem",
+                          backgroundColor: "rgba(30, 41, 59, 0.5)",
+                          border: "1px solid rgba(255, 255, 255, 0.08)",
+                          borderRadius: "12px",
+                          marginBottom: "2rem",
+                          marginTop: "0.5rem"
                         }}
                       >
-                        {quizSubmitted 
-                          ? `🎉 Section complete! You are ready to move on to "${nextPageTitle}" below.` 
-                          : `⚠️ Complete this self-check quiz before moving on to "${nextPageTitle}".`}
+                        <button
+                          onClick={() => {
+                            if (activePageIdx > 0) {
+                              setActivePageIdx(activePageIdx - 1);
+                              setQuizAnswers({});
+                              setQuizSubmitted(false);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }}
+                          disabled={activePageIdx === 0}
+                          className="btn-primary btn-small flex-center gap-1"
+                          style={{ opacity: activePageIdx === 0 ? 0.3 : 1 }}
+                        >
+                          <ArrowLeft size={14} /> Back
+                        </button>
+                        
+                        <div style={{ textAlign: "center" }}>
+                          <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                            Topic {activePageIdx + 1} of {activeLesson.pages.length}
+                          </span>
+                          <h4 style={{ margin: "2px 0 0 0", fontSize: "1rem", color: "#ffffff", fontWeight: "700" }}>
+                            {currentPage.title}
+                          </h4>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            if (activePageIdx < activeLesson.pages.length - 1) {
+                              setActivePageIdx(activePageIdx + 1);
+                              setQuizAnswers({});
+                              setQuizSubmitted(false);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }}
+                          disabled={activePageIdx === activeLesson.pages.length - 1}
+                          className="btn-primary btn-small flex-center gap-1"
+                          style={{ opacity: activePageIdx === activeLesson.pages.length - 1 ? 0.3 : 1 }}
+                        >
+                          Next <ArrowRight size={14} />
+                        </button>
                       </div>
                     )}
 
@@ -624,48 +662,61 @@ export default function Curriculum() {
                       )}
                     </div>
 
-                    {/* Navigation lock button under the quiz */}
-                    {hasNextPage && (
-                      <div style={{ marginTop: "2rem", display: "flex", justifyContent: "center" }}>
-                        {quizSubmitted ? (
-                          <button
-                            onClick={() => {
+                    {/* Navigation bar below the quiz */}
+                    {activeLesson.pages && activeLesson.pages.length > 1 && (
+                      <div 
+                        className="quiz-header-card" 
+                        style={{ 
+                          display: "flex", 
+                          justifyContent: "space-between", 
+                          alignItems: "center",
+                          padding: "0.85rem 1.25rem",
+                          backgroundColor: "rgba(30, 41, 59, 0.5)",
+                          border: "1px solid rgba(255, 255, 255, 0.08)",
+                          borderRadius: "12px",
+                          marginTop: "2.5rem"
+                        }}
+                      >
+                        <button
+                          onClick={() => {
+                            if (activePageIdx > 0) {
+                              setActivePageIdx(activePageIdx - 1);
+                              setQuizAnswers({});
+                              setQuizSubmitted(false);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }}
+                          disabled={activePageIdx === 0}
+                          className="btn-primary btn-small flex-center gap-1"
+                          style={{ opacity: activePageIdx === 0 ? 0.3 : 1 }}
+                        >
+                          <ArrowLeft size={14} /> Back
+                        </button>
+                        
+                        <div style={{ textAlign: "center" }}>
+                          <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                            Topic {activePageIdx + 1} of {activeLesson.pages.length}
+                          </span>
+                          <h4 style={{ margin: "2px 0 0 0", fontSize: "1rem", color: "#ffffff", fontWeight: "700" }}>
+                            {currentPage.title}
+                          </h4>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            if (activePageIdx < activeLesson.pages.length - 1) {
                               setActivePageIdx(activePageIdx + 1);
                               setQuizAnswers({});
                               setQuizSubmitted(false);
                               window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                            className="btn-primary"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "0.5rem",
-                              padding: "0.75rem 1.75rem",
-                              fontSize: "1rem",
-                              fontWeight: "bold",
-                              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)"
-                            }}
-                          >
-                            Move on to "{nextPageTitle}" <ArrowRight size={18} />
-                          </button>
-                        ) : (
-                          <button
-                            disabled={true}
-                            className="btn-secondary"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "0.5rem",
-                              padding: "0.75rem 1.75rem",
-                              fontSize: "1rem",
-                              fontWeight: "bold",
-                              opacity: 0.5,
-                              cursor: "not-allowed"
-                            }}
-                          >
-                            Complete quiz to unlock: "{nextPageTitle}"
-                          </button>
-                        )}
+                            }
+                          }}
+                          disabled={activePageIdx === activeLesson.pages.length - 1}
+                          className="btn-primary btn-small flex-center gap-1"
+                          style={{ opacity: activePageIdx === activeLesson.pages.length - 1 ? 0.3 : 1 }}
+                        >
+                          Next <ArrowRight size={14} />
+                        </button>
                       </div>
                     )}
                   </div>
