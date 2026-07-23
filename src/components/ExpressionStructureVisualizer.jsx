@@ -1774,41 +1774,66 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                         </span>
 
                         {zerosStep === 1 ? (
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "80px" }}>
-                              <span>x</span>
-                              <span 
-                                onClick={() => {
-                                  if (!leftConstantMoving) {
-                                    setLeftConstantMoving(true);
-                                    setTimeout(() => {
-                                      setZerosStep(2);
-                                      setLeftConstantMoving(false);
-                                    }, 800);
-                                  }
-                                }}
-                                className="hover-scale"
-                                style={{ 
-                                  color: "#3b82f6", 
-                                  cursor: "pointer", 
-                                  margin: "0 0.25rem", 
-                                  backgroundColor: "rgba(59, 130, 246, 0.15)", 
-                                  padding: "0.1rem 0.5rem", 
-                                  borderRadius: "6px",
-                                  border: "1px dashed rgba(59, 130, 246, 0.4)",
-                                  animation: "pulse 1.5s infinite",
-                                  transition: "all 0.5s ease",
-                                  transform: leftConstantMoving ? "translateY(-40px) scale(0.6)" : "none",
-                                  opacity: leftConstantMoving ? 0 : 1
-                                }}
-                                title="Click to move constant to other side"
-                              >
-                                + 1
-                              </span>
-                              <span> = 0</span>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", height: "100px" }}>
+                              {/* Column for x */}
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                <span style={{ fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>x</span>
+                                <span style={{ height: "1.8rem" }}></span>
+                              </div>
+                              {/* Column for +1 */}
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                <span 
+                                  onClick={() => {
+                                    if (!leftConstantMoving) {
+                                      setLeftConstantMoving(true);
+                                      setTimeout(() => {
+                                        setZerosStep(2);
+                                        setLeftConstantMoving(false);
+                                      }, 1500);
+                                    }
+                                  }}
+                                  className="hover-scale"
+                                  style={{ 
+                                    fontSize: "2rem", 
+                                    fontWeight: "bold", 
+                                    fontFamily: "Outfit, sans-serif",
+                                    color: "#3b82f6", 
+                                    cursor: "pointer", 
+                                    backgroundColor: "rgba(59, 130, 246, 0.15)", 
+                                    padding: "0.1rem 0.5rem", 
+                                    borderRadius: "6px",
+                                    border: "1.5px dashed rgba(59, 130, 246, 0.4)",
+                                    animation: leftConstantMoving ? "none" : "pulse 1.5s infinite",
+                                    transition: "all 0.3s ease"
+                                  }}
+                                  title="Click to perform opposite operation on both sides"
+                                >
+                                  + 1
+                                </span>
+                                {leftConstantMoving ? (
+                                  <span className="animate-fade-in" style={{ fontSize: "1.25rem", color: "#ef4444", fontWeight: "800", fontFamily: "Outfit, sans-serif", marginTop: "0.4rem" }}>- 1</span>
+                                ) : (
+                                  <span style={{ height: "1.8rem" }}></span>
+                                )}
+                              </div>
+                              {/* Column for = */}
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                <span style={{ fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>=</span>
+                                <span style={{ height: "1.8rem" }}></span>
+                              </div>
+                              {/* Column for 0 */}
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                <span style={{ fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>0</span>
+                                {leftConstantMoving ? (
+                                  <span className="animate-fade-in" style={{ fontSize: "1.25rem", color: "#ef4444", fontWeight: "800", fontFamily: "Outfit, sans-serif", marginTop: "0.4rem" }}>- 1</span>
+                                ) : (
+                                  <span style={{ height: "1.8rem" }}></span>
+                                )}
+                              </div>
                             </div>
-                            <span style={{ fontSize: "0.85rem", color: "#60a5fa", fontStyle: "italic", textAlign: "center", animation: "pulse 1.5s infinite" }}>
-                              👉 Click the <strong>+ 1</strong> to isolate x!
+                            <span style={{ fontSize: "0.85rem", color: "#60a5fa", fontStyle: "italic", textAlign: "center", marginTop: "0.5rem", animation: "pulse 1.5s infinite" }}>
+                              {leftConstantMoving ? "Subtracting 1 from both sides..." : "👉 Click + 1 to balance both sides!"}
                             </span>
                           </div>
                         ) : (
@@ -1846,77 +1871,120 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                             2x + 3 = 0
                           </div>
                         ) : zerosStep === 2 ? (
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "80px" }}>
-                              <span>2x</span>
-                              <span 
-                                onClick={() => {
-                                  if (!rightConstantMoving) {
-                                    setRightConstantMoving(true);
-                                    setTimeout(() => {
-                                      setZerosStep(3);
-                                      setRightConstantMoving(false);
-                                    }, 800);
-                                  }
-                                }}
-                                className="hover-scale"
-                                style={{ 
-                                  color: "#a855f7", 
-                                  cursor: "pointer", 
-                                  margin: "0 0.25rem", 
-                                  backgroundColor: "rgba(168, 85, 247, 0.15)", 
-                                  padding: "0.1rem 0.5rem", 
-                                  borderRadius: "6px",
-                                  border: "1px dashed rgba(168, 85, 247, 0.4)",
-                                  animation: "pulse 1.5s infinite",
-                                  transition: "all 0.5s ease",
-                                  transform: rightConstantMoving ? "translateY(-40px) scale(0.6)" : "none",
-                                  opacity: rightConstantMoving ? 0 : 1
-                                }}
-                                title="Click to move constant to other side"
-                              >
-                                + 3
-                              </span>
-                              <span> = 0</span>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", height: "100px" }}>
+                              {/* Column for 2x */}
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                <span style={{ fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>2x</span>
+                                <span style={{ height: "1.8rem" }}></span>
+                              </div>
+                              {/* Column for +3 */}
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                <span 
+                                  onClick={() => {
+                                    if (!rightConstantMoving) {
+                                      setRightConstantMoving(true);
+                                      setTimeout(() => {
+                                        setZerosStep(3);
+                                        setRightConstantMoving(false);
+                                      }, 1500);
+                                    }
+                                  }}
+                                  className="hover-scale"
+                                  style={{ 
+                                    fontSize: "2rem", 
+                                    fontWeight: "bold", 
+                                    fontFamily: "Outfit, sans-serif",
+                                    color: "#a855f7", 
+                                    cursor: "pointer", 
+                                    backgroundColor: "rgba(168, 85, 247, 0.15)", 
+                                    padding: "0.1rem 0.5rem", 
+                                    borderRadius: "6px",
+                                    border: "1.5px dashed rgba(168, 85, 247, 0.4)",
+                                    animation: rightConstantMoving ? "none" : "pulse 1.5s infinite",
+                                    transition: "all 0.3s ease"
+                                  }}
+                                  title="Click to perform opposite operation on both sides"
+                                >
+                                  + 3
+                                </span>
+                                {rightConstantMoving ? (
+                                  <span className="animate-fade-in" style={{ fontSize: "1.25rem", color: "#ef4444", fontWeight: "800", fontFamily: "Outfit, sans-serif", marginTop: "0.4rem" }}>- 3</span>
+                                ) : (
+                                  <span style={{ height: "1.8rem" }}></span>
+                                )}
+                              </div>
+                              {/* Column for = */}
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                <span style={{ fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>=</span>
+                                <span style={{ height: "1.8rem" }}></span>
+                              </div>
+                              {/* Column for 0 */}
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                                <span style={{ fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>0</span>
+                                {rightConstantMoving ? (
+                                  <span className="animate-fade-in" style={{ fontSize: "1.25rem", color: "#ef4444", fontWeight: "800", fontFamily: "Outfit, sans-serif", marginTop: "0.4rem" }}>- 3</span>
+                                ) : (
+                                  <span style={{ height: "1.8rem" }}></span>
+                                )}
+                              </div>
                             </div>
-                            <span style={{ fontSize: "0.85rem", color: "#c084fc", fontStyle: "italic", textAlign: "center", animation: "pulse 1.5s infinite" }}>
-                              👉 Click the <strong>+ 3</strong> next!
+                            <span style={{ fontSize: "0.85rem", color: "#c084fc", fontStyle: "italic", textAlign: "center", marginTop: "0.5rem", animation: "pulse 1.5s infinite" }}>
+                              {rightConstantMoving ? "Subtracting 3 from both sides..." : "👉 Click + 3 to balance both sides!"}
                             </span>
                           </div>
                         ) : zerosStep === 3 ? (
-                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                            <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "80px" }}>
-                              <span 
-                                onClick={() => {
-                                  if (!rightDivisionMoving) {
-                                    setRightDivisionMoving(true);
-                                    setTimeout(() => {
-                                      setZerosStep(4);
-                                      setRightDivisionMoving(false);
-                                    }, 800);
-                                  }
-                                }}
-                                className="hover-scale"
-                                style={{ 
-                                  color: "#f59e0b", 
-                                  cursor: "pointer", 
-                                  padding: "0.1rem 0.4rem", 
-                                  backgroundColor: "rgba(245, 158, 11, 0.15)",
-                                  borderRadius: "6px",
-                                  border: "1px dashed rgba(245, 158, 11, 0.4)",
-                                  animation: "pulse 1.5s infinite",
-                                  transition: "all 0.5s ease",
-                                  transform: rightDivisionMoving ? "translateY(25px) scale(0.7)" : "none",
-                                  opacity: rightDivisionMoving ? 0.3 : 1
-                                }}
-                                title="Click coefficient to divide right side"
-                              >
-                                2
-                              </span>
-                              <span>x = -3</span>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", height: "100px" }}>
+                              {rightDivisionMoving ? (
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }} className="animate-fade-in">
+                                  {/* Left side fraction: 2x / 2 */}
+                                  <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>
+                                    <span style={{ borderBottom: "2px solid #cbd5e1", padding: "0 8px" }}>2x</span>
+                                    <span style={{ color: "#f59e0b", fontSize: "1.4rem" }}>2</span>
+                                  </div>
+                                  {/* Equal */}
+                                  <span style={{ fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>=</span>
+                                  {/* Right side fraction: -3 / 2 */}
+                                  <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>
+                                    <span style={{ borderBottom: "2px solid #cbd5e1", padding: "0 8px" }}>-3</span>
+                                    <span style={{ color: "#f59e0b", fontSize: "1.4rem" }}>2</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>
+                                  <span 
+                                    onClick={() => {
+                                      if (!rightDivisionMoving) {
+                                        setRightDivisionMoving(true);
+                                        setTimeout(() => {
+                                          setZerosStep(4);
+                                          setRightDivisionMoving(false);
+                                        }, 1500);
+                                      }
+                                    }}
+                                    className="hover-scale"
+                                    style={{ 
+                                      color: "#f59e0b", 
+                                      cursor: "pointer", 
+                                      padding: "0.1rem 0.5rem", 
+                                      backgroundColor: "rgba(245, 158, 11, 0.15)",
+                                      borderRadius: "6px",
+                                      border: "1.5px dashed rgba(245, 158, 11, 0.4)",
+                                      animation: "pulse 1.5s infinite",
+                                      transition: "all 0.3s ease",
+                                      marginRight: "0.25rem"
+                                    }}
+                                    title="Click coefficient to perform division on both sides"
+                                  >
+                                    2
+                                  </span>
+                                  <span>x = -3</span>
+                                </div>
+                              )}
                             </div>
-                            <span style={{ fontSize: "0.85rem", color: "#f59e0b", fontStyle: "italic", textAlign: "center", animation: "pulse 1.5s infinite" }}>
-                              👉 Click the coefficient <strong>2</strong> to divide!
+                            <span style={{ fontSize: "0.85rem", color: "#f59e0b", fontStyle: "italic", textAlign: "center", marginTop: "0.5rem", animation: "pulse 1.5s infinite" }}>
+                              {rightDivisionMoving ? "Dividing both sides by 2..." : "👉 Click the coefficient 2 to balance both sides!"}
                             </span>
                           </div>
                         ) : (
