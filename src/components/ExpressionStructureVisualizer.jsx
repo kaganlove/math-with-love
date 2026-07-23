@@ -1,12 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Sparkles, RefreshCw, Layers } from "lucide-react";
 
 export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const [step, setStep] = useState(0); // 0: original, 1: structured/grouped, 2: factored
 
-  // Reset step whenever page changes
+  // Drag-and-drop states for Perfect Squares (pageIndex = 0) and Difference of Squares (pageIndex = 1)
+  const [zone9Replaced, setZone9Replaced] = useState(false);
+  const [zone6xReplaced, setZone6xReplaced] = useState(false);
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [hoveredZone, setHoveredZone] = useState(null); // "6x" | "9"
+  const [finalFactored, setFinalFactored] = useState(false);
+
+  const zone9Ref = useRef(null);
+  const zone6xRef = useRef(null);
+  const dragRef = useRef(null);
+  const dragStartOffset = useRef({ x: 0, y: 0 });
+
+  // Reset steps and drag variables whenever pageIndex changes
   useEffect(() => {
     setStep(0);
+    setZone9Replaced(false);
+    setZone6xReplaced(false);
+    setFinalFactored(false);
+    setIsDragging(false);
+    setHoveredZone(null);
   }, [pageIndex]);
 
   const handleNextStep = () => {
@@ -15,6 +33,62 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
 
   const handleReset = () => {
     setStep(0);
+    setZone9Replaced(false);
+    setZone6xReplaced(false);
+    setFinalFactored(false);
+    setIsDragging(false);
+    setHoveredZone(null);
+  };
+
+  const handlePointerDown = (e) => {
+    e.preventDefault();
+    if (pageIndex === 0 && zone6xReplaced && zone9Replaced) return;
+    if (pageIndex === 1 && zone9Replaced) return;
+
+    const rect = dragRef.current.getBoundingClientRect();
+    dragStartOffset.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    };
+    setIsDragging(true);
+    setDragPosition({ x: e.clientX, y: e.clientY });
+    e.target.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging) return;
+    const x = e.clientX;
+    const y = e.clientY;
+    setDragPosition({ x, y });
+
+    // Check collisions with active drop zones
+    let hover = null;
+    if (pageIndex === 0 && !zone6xReplaced && zone6xRef.current) {
+      const rect = zone6xRef.current.getBoundingClientRect();
+      if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+        hover = "6x";
+      }
+    }
+    if (!zone9Replaced && zone9Ref.current) {
+      const rect = zone9Ref.current.getBoundingClientRect();
+      if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+        hover = "9";
+      }
+    }
+    setHoveredZone(hover);
+  };
+
+  const handlePointerUp = (e) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    e.target.releasePointerCapture(e.pointerId);
+
+    if (hoveredZone === "6x") {
+      setZone6xReplaced(true);
+    } else if (hoveredZone === "9") {
+      setZone9Replaced(true);
+    }
+    setHoveredZone(null);
   };
 
   // Content configuration for each slide index
@@ -87,8 +161,11 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   // Safeguard index range
   const config = pagesConfig[pageIndex] || pagesConfig[0];
 
+  // Determine if this is a custom drag-and-drop page
+  const isDragPage = pageIndex === 0 || pageIndex === 1;
+
   return (
-    <div className="interactive-parts-card">
+    <div className="interactive-parts-card" style={{ touchAction: "none" }}>
       <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
         <span 
           style={{
@@ -105,7 +182,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
           {config.title} Visualizer
         </span>
         <h3 style={{ fontSize: "1.25rem", fontWeight: "700", marginTop: "0.5rem", color: "#ffffff" }}>
-          Step-by-Step Factoring Pattern
+          {isDragPage ? "Interactive Factoring Sandbox" : "Step-by-Step Factoring Pattern"}
         </h3>
       </div>
 
@@ -120,63 +197,262 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
           background: "rgba(15, 23, 42, 0.6)",
           border: "1.5px solid #1e293b",
           borderRadius: "12px",
-          minHeight: "180px",
+          minHeight: "200px",
           position: "relative",
           margin: "1rem 0"
         }}
       >
-        <div style={{ textAlign: "center", width: "100%" }}>
-          {step === 0 && (
-            <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#ffffff", fontFamily: "Outfit, sans-serif" }}>
-              {config.original}
-            </div>
-          )}
-          {step === 1 && (
-            <div style={{ fontSize: "1.6rem", fontWeight: "bold", color: "#d8b4fe", fontFamily: "Outfit, sans-serif" }}>
-              {config.structured}
-            </div>
-          )}
-          {step === 2 && (
-            <div style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif", transform: "scale(1.05)", transition: "all 0.2s" }}>
-              {config.factored}
-            </div>
-          )}
-        </div>
-
-        {/* Steps Navigator */}
-        <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
-          <button
-            onClick={handleNextStep}
-            className="btn-primary btn-small"
-            style={{ display: "flex", alignItems: "center", gap: "0.25rem", padding: "0.4rem 1rem", fontSize: "0.8rem" }}
-          >
-            <Layers size={14} /> 
-            {step === 0 && "Show Structure"}
-            {step === 1 && "Factor Expression"}
-            {step === 2 && "Reset Pattern"}
-          </button>
-          
-          {step > 0 && (
-            <button
-              onClick={handleReset}
-              style={{
-                display: "inline-flex",
+        {isDragPage ? (
+          /* ================= DRAG AND DROP SANDBOX LAYOUT ================= */
+          <div style={{ textAlign: "center", width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            
+            {/* Equation Row */}
+            <div 
+              style={{ 
+                fontSize: "2.25rem", 
+                fontWeight: "bold", 
+                color: "#ffffff", 
+                fontFamily: "Outfit, sans-serif",
+                display: "flex",
                 alignItems: "center",
-                gap: "0.35rem",
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "#ffffff",
-                padding: "0.4rem 0.8rem",
-                borderRadius: "6px",
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-                cursor: "pointer"
+                justifyContent: "center",
+                gap: "0.4rem",
+                userSelect: "none"
               }}
             >
-              <RefreshCw size={12} /> Reset
+              <span>x²</span>
+
+              {pageIndex === 0 ? (
+                /* PERFECT SQUARES */
+                <>
+                  <span>+</span>
+                  {zone6xReplaced ? (
+                    <span style={{ color: "#d8b4fe", padding: "0 0.2rem" }}>2(x)(3)</span>
+                  ) : (
+                    <span 
+                      ref={zone6xRef}
+                      style={{
+                        border: hoveredZone === "6x" ? "2.5px dashed #22c55e" : "2px dashed #ef4444",
+                        backgroundColor: hoveredZone === "6x" ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.05)",
+                        padding: "0.1rem 0.8rem",
+                        borderRadius: "8px",
+                        color: hoveredZone === "6x" ? "#4ade80" : "#e2e8f0",
+                        fontSize: "1.75rem",
+                        transition: "all 0.15s ease",
+                        transform: hoveredZone === "6x" ? "scale(1.05)" : "none",
+                        margin: "0 0.25rem"
+                      }}
+                    >
+                      6x
+                    </span>
+                  )}
+                  <span>+</span>
+                  {zone9Replaced ? (
+                    <span style={{ color: "#d8b4fe", padding: "0 0.2rem" }}>(3)²</span>
+                  ) : (
+                    <span 
+                      ref={zone9Ref}
+                      style={{
+                        border: hoveredZone === "9" ? "2.5px dashed #22c55e" : "2px dashed #ef4444",
+                        backgroundColor: hoveredZone === "9" ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.05)",
+                        padding: "0.1rem 0.8rem",
+                        borderRadius: "8px",
+                        color: hoveredZone === "9" ? "#4ade80" : "#e2e8f0",
+                        fontSize: "1.75rem",
+                        transition: "all 0.15s ease",
+                        transform: hoveredZone === "9" ? "scale(1.05)" : "none",
+                        margin: "0 0.25rem"
+                      }}
+                    >
+                      9
+                    </span>
+                  )}
+                </>
+              ) : (
+                /* DIFFERENCE OF SQUARES */
+                <>
+                  <span>-</span>
+                  {zone9Replaced ? (
+                    <span style={{ color: "#d8b4fe", padding: "0 0.2rem" }}>(3)²</span>
+                  ) : (
+                    <span 
+                      ref={zone9Ref}
+                      style={{
+                        border: hoveredZone === "9" ? "2.5px dashed #22c55e" : "2px dashed #ef4444",
+                        backgroundColor: hoveredZone === "9" ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.05)",
+                        padding: "0.1rem 0.8rem",
+                        borderRadius: "8px",
+                        color: hoveredZone === "9" ? "#4ade80" : "#e2e8f0",
+                        fontSize: "1.75rem",
+                        transition: "all 0.15s ease",
+                        transform: hoveredZone === "9" ? "scale(1.05)" : "none",
+                        margin: "0 0.25rem"
+                      }}
+                    >
+                      9
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Draggable Number Pill */}
+            {((pageIndex === 0 && !(zone6xReplaced && zone9Replaced)) || (pageIndex === 1 && !zone9Replaced)) && (
+              <div style={{ marginTop: "2.5rem", minHeight: "55px", display: "flex", alignItems: "center" }}>
+                <div
+                  ref={dragRef}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    backgroundColor: "#3b82f6",
+                    color: "#ffffff",
+                    padding: "0.5rem 1.25rem",
+                    borderRadius: "8px",
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    cursor: "grab",
+                    userSelect: "none",
+                    touchAction: "none",
+                    opacity: isDragging ? 0.3 : 1,
+                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                    border: "1.5px solid rgba(255,255,255,0.2)"
+                  }}
+                >
+                  <span style={{ fontSize: "1.1rem" }}>☰</span>
+                  <span>3</span>
+                </div>
+              </div>
+            )}
+
+            {/* Fixed Floating Clone during Dragging */}
+            {isDragging && (
+              <div
+                style={{
+                  position: "fixed",
+                  left: `${dragPosition.x - dragStartOffset.current.x}px`,
+                  top: `${dragPosition.y - dragStartOffset.current.y}px`,
+                  zIndex: 9999,
+                  pointerEvents: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  backgroundColor: hoveredZone ? "#22c55e" : "#2563eb",
+                  color: "#ffffff",
+                  padding: "0.5rem 1.25rem",
+                  borderRadius: "8px",
+                  fontSize: "1rem",
+                  fontWeight: "bold",
+                  boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.5)",
+                  border: "1.5px solid rgba(255,255,255,0.3)"
+                }}
+              >
+                <span>3</span>
+              </div>
+            )}
+
+            {/* Rewrite / Collapse Actions */}
+            {pageIndex === 0 && zone6xReplaced && zone9Replaced && !finalFactored && (
+              <div style={{ marginTop: "2rem" }} className="animate-fade-in">
+                <button
+                  onClick={() => setFinalFactored(true)}
+                  className="btn-primary flex-center gap-2"
+                  style={{ padding: "0.6rem 1.25rem", fontWeight: "bold" }}
+                >
+                  <Layers size={16} /> Factor to: (a + b)²
+                </button>
+              </div>
+            )}
+
+            {pageIndex === 1 && zone9Replaced && !finalFactored && (
+              <div style={{ marginTop: "2rem" }} className="animate-fade-in">
+                <button
+                  onClick={() => setFinalFactored(true)}
+                  className="btn-primary flex-center gap-2"
+                  style={{ padding: "0.6rem 1.25rem", fontWeight: "bold" }}
+                >
+                  <Layers size={16} /> Factor to: (a - b)(a + b)
+                </button>
+              </div>
+            )}
+
+            {/* Factored Success Box */}
+            {finalFactored && (
+              <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <div style={{ fontSize: "2.25rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif" }}>
+                  {pageIndex === 0 ? "(x + 3)²" : "(x - 3)(x + 3)"}
+                </div>
+                <button
+                  onClick={handleReset}
+                  className="btn-secondary flex-center gap-1"
+                  style={{ marginTop: "1.5rem", padding: "0.4rem 0.8rem", fontSize: "0.75rem", fontWeight: "bold" }}
+                >
+                  <RefreshCw size={12} /> Reset Interactive
+                </button>
+              </div>
+            )}
+
+          </div>
+        ) : (
+          /* ================= STANDARD STEP-BY-STEP LAYOUT ================= */
+          <div style={{ textAlign: "center", width: "100%" }}>
+            {step === 0 && (
+              <div style={{ fontSize: "2rem", fontWeight: "bold", color: "#ffffff", fontFamily: "Outfit, sans-serif" }}>
+                {config.original}
+              </div>
+            )}
+            {step === 1 && (
+              <div style={{ fontSize: "1.6rem", fontWeight: "bold", color: "#d8b4fe", fontFamily: "Outfit, sans-serif" }}>
+                {config.structured}
+              </div>
+            )}
+            {step === 2 && (
+              <div style={{ fontSize: "1.8rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif", transform: "scale(1.05)", transition: "all 0.2s" }}>
+                {config.factored}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Steps Navigator (only for standard layout) */}
+        {!isDragPage && (
+          <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+            <button
+              onClick={handleNextStep}
+              className="btn-primary btn-small"
+              style={{ display: "flex", alignItems: "center", gap: "0.25rem", padding: "0.4rem 1rem", fontSize: "0.8rem" }}
+            >
+              <Layers size={14} /> 
+              {step === 0 && "Show Structure"}
+              {step === 1 && "Factor Expression"}
+              {step === 2 && "Reset Pattern"}
             </button>
-          )}
-        </div>
+            
+            {step > 0 && (
+              <button
+                onClick={handleReset}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                  backgroundColor: "rgba(255, 255, 255, 0.08)",
+                  border: "1px solid rgba(255, 255, 255, 0.15)",
+                  color: "#ffffff",
+                  padding: "0.4rem 0.8rem",
+                  borderRadius: "6px",
+                  fontSize: "0.75rem",
+                  fontWeight: "bold",
+                  cursor: "pointer"
+                }}
+              >
+                <RefreshCw size={12} /> Reset
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Info Card explaining the active step */}
@@ -196,14 +472,46 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
           </div>
           <div>
             <h4 style={{ fontSize: "1.125rem", fontWeight: "700", color: "#ffffff", margin: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              {step === 0 && "Original Expression"}
-              {step === 1 && "Reveal Pattern Structure"}
-              {step === 2 && "Factored Equivalent Form"}
+              {isDragPage ? (
+                pageIndex === 0 ? (
+                  finalFactored 
+                    ? "Factored Equivalent Form" 
+                    : (zone6xReplaced && zone9Replaced ? "Structure Revealed" : "Original Trinomial Structure")
+                ) : (
+                  finalFactored 
+                    ? "Factored Equivalent Form" 
+                    : (zone9Replaced ? "Structure Revealed" : "Original Binomial Structure")
+                )
+              ) : (
+                <>
+                  {step === 0 && "Original Expression"}
+                  {step === 1 && "Reveal Pattern Structure"}
+                  {step === 2 && "Factored Equivalent Form"}
+                </>
+              )}
             </h4>
             <p style={{ fontSize: "0.95rem", color: "#cbd5e1", marginTop: "0.5rem", lineHeight: "1.6" }}>
-              {step === 0 && config.explanation0}
-              {step === 1 && config.explanation1}
-              {step === 2 && config.explanation2}
+              {isDragPage ? (
+                pageIndex === 0 ? (
+                  finalFactored 
+                    ? "Perfect square trinomials factor cleanly into the square of a binomial: (x + 3)²."
+                    : (zone6xReplaced && zone9Replaced
+                        ? "Great job! The expression is now rewritten in its structured form: x² + 2(x)(3) + (3)². Click the button to factor it."
+                        : "A perfect square trinomial follows the template a² + 2ab + b² = (a + b)². Drag the number 3 (since √9 = 3) to pull it into the linear term 6x to rewrite it to 2(x)(3), and to the constant 9 to rewrite it to (3)².")
+                ) : (
+                  finalFactored
+                    ? "The difference of two perfect squares factors cleanly into the product of conjugate binomials: (x - 3)(x + 3)."
+                    : (zone9Replaced
+                        ? "Awesome! The expression is now rewritten in its structured form: x² - (3)². Click the button to factor it."
+                        : "A difference of squares follows the template a² - b² = (a - b)(a + b). Drag the number 3 (since √9 = 3) into the constant term 9 to rewrite it as a perfect square: (3)².")
+                )
+              ) : (
+                <>
+                  {step === 0 && config.explanation0}
+                  {step === 1 && config.explanation1}
+                  {step === 2 && config.explanation2}
+                </>
+              )}
             </p>
           </div>
         </div>

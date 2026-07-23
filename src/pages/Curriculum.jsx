@@ -491,7 +491,7 @@ export default function Curriculum() {
                   </div>
 
                   <div className="lesson-intro">
-                    <p>{introductionToRender}</p>
+                    <p dangerouslySetInnerHTML={{ __html: introductionToRender }} />
                   </div>
 
                   {activeLesson.id === "hsa-sse-1a" ? (
