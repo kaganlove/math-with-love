@@ -197,21 +197,21 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           `Result: Sn = ${sumVal}`
         ];
       } else if (lessonId === "hsa-sse-3a") {
-        const subType = i % 3;
+        const subType = i % 4;
         if (subType === 0) {
           // Trinomials (a = 1)
           const p = Math.floor(Math.random() * 8) - 4 || 2; // -4 to 4, non-zero
           const q = Math.floor(Math.random() * 8) - 4 || 3; // -4 to 4, non-zero
           const b = p + q;
           const c = p * q;
-          const bSign = b > 0 ? `+ ${b}` : b < 0 ? `- ${Math.abs(b)}` : "";
+          const bSign = b === 1 ? "+ x" : b === -1 ? "- x" : b > 0 ? `+ ${b}x` : b < 0 ? `- ${Math.abs(b)}x` : "";
           const cSign = c > 0 ? `+ ${c}` : `- ${Math.abs(c)}`;
           
-          equationText = `Factor the trinomial (a = 1):\nx² ${bSign ? `${bSign}x` : ""} ${cSign}`;
+          equationText = `Factor the trinomial (a = 1):\nx² ${bSign} ${cSign}`;
           solutionText = `(x ${p >= 0 ? `+ ${p}` : `- ${Math.abs(p)}`})(x ${q >= 0 ? `+ ${q}` : `- ${Math.abs(q)}`})`;
           
           stepsText = [
-            `Trinomial: x² ${bSign ? `${bSign}x` : ""} ${cSign}`,
+            `Trinomial: x² ${bSign} ${cSign}`,
             `Find two numbers that multiply to ${c} and add to ${b}: ${p} and ${q}`,
             `Write factored binomial form: ${solutionText}`
           ];
@@ -226,7 +226,7 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             `Group first two and last two terms: x²(x + ${a}) + ${b}(x + ${a})`,
             `Factor out the common binomial (x + ${a}): (x² + ${b})(x + ${a})`
           ];
-        } else {
+        } else if (subType === 2) {
           // Slip 'n Slide Method (a ≠ 1)
           const p = 2;
           const r = Math.random() > 0.5 ? 1 : 3;
@@ -242,6 +242,40 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
             `Factor new trinomial: (x + ${a*s})(x + ${r})`,
             `'Slide' ${a} back under constants: (x + ${a*s}/${a})(x + ${r}/${a})`,
             `Simplify fractions: (x + ${s})(${a}x + ${r})`
+          ];
+        } else {
+          // Finding Zeros from factors (a = 1 or 2)
+          const a = Math.random() > 0.5 ? 1 : 2;
+          const p = Math.floor(Math.random() * 8) - 4 || 2; // -4 to 4, non-zero
+          const q = Math.floor(Math.random() * 6) - 3 || 3; // -3 to 3, non-zero
+          
+          // Ensure distinct values
+          const finalP = p;
+          const finalQ = q === p ? q + 1 : q;
+          
+          const coeffA = a;
+          const coeffB = -(a * finalQ + finalP);
+          const coeffC = finalP * finalQ;
+          
+          const bSign = coeffB === 1 ? "+ x" : coeffB === -1 ? "- x" : coeffB > 0 ? `+ ${coeffB}x` : coeffB < 0 ? `- ${Math.abs(coeffB)}x` : "";
+          const cSign = coeffC > 0 ? `+ ${coeffC}` : `- ${Math.abs(coeffC)}`;
+          
+          const expandedForm = `${coeffA === 1 ? "" : coeffA}x² ${bSign} ${cSign}`;
+          const factoredForm = `(${coeffA}x ${finalP >= 0 ? `- ${finalP}` : `+ ${Math.abs(finalP)}`})(x ${finalQ >= 0 ? `- ${finalQ}` : `+ ${Math.abs(finalQ)}`})`;
+          
+          const zero1Str = coeffA === 1 ? `${finalP}` : `${finalP}/2`;
+          const zero2Str = `${finalQ}`;
+          
+          equationText = `Find the zeros of the quadratic function:\nf(x) = ${expandedForm}`;
+          solutionText = `x = ${zero1Str} and x = ${zero2Str}`;
+          
+          stepsText = [
+            `Set function to zero: ${expandedForm} = 0`,
+            `Factor the quadratic expression: ${factoredForm} = 0`,
+            `Apply the Zero Product Property (set each factor to 0):`,
+            `  ${coeffA === 1 ? "x" : `${coeffA}x`} ${finalP >= 0 ? `- ${finalP}` : `+ ${Math.abs(finalP)}`} = 0  =>  x = ${zero1Str}`,
+            `  x ${finalQ >= 0 ? `- ${finalQ}` : `+ ${Math.abs(finalQ)}`} = 0  =>  x = ${zero2Str}`,
+            `Resulting zeros: x = ${zero1Str} and x = ${zero2Str}`
           ];
         }
       } else if (lessonId === "hsa-rei-6") {
