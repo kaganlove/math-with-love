@@ -77,6 +77,32 @@ const getTextLines = (ctx, text, fontStyle, maxWidth) => {
   return lines;
 };
 
+// Helper function to compress and scale uploaded images/worksheets to fit data channel limits (<50KB)
+const compressImage = (img, callback) => {
+  const maxDim = 800; // Resize down to maximum 800px width/height
+  let w = img.width;
+  let h = img.height;
+  if (w > maxDim || h > maxDim) {
+    if (w > h) {
+      h = (maxDim / w) * h;
+      w = maxDim;
+    } else {
+      w = (maxDim / h) * w;
+      h = maxDim;
+    }
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, w, h);
+
+  // Export to JPEG with a compression quality of 0.4
+  const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.4);
+  callback(compressedDataUrl, w, h);
+};
+
 export default function Whiteboard() {
   const canvasRef = useRef(null);
   const contextRef = useRef(null);
@@ -90,7 +116,7 @@ export default function Whiteboard() {
   const [tool, setTool] = useState("pen"); // "pen" | "eraser" | "text" | "select"
 
   // Interaction helper states
-  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [canvasSize, setCanvasSize] = useState({ width: 2400, height: 1800 });
   const [isDrawing, setIsDrawing] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
 
@@ -213,6 +239,11 @@ export default function Whiteboard() {
       });
     };
 
+    const handleVideoConferenceJoined = () => {
+      console.log("Joined/reconnected to video conference, requesting whiteboard state...");
+      broadcast({ type: "REQUEST_STATE" });
+    };
+
     // Periodically request state during initial connection settling
     let requestCount = 0;
     const requestInterval = setInterval(() => {
@@ -240,6 +271,7 @@ export default function Whiteboard() {
 
     window.addEventListener("jitsi-ready", handleJitsiReady);
     window.addEventListener("jitsi-participant-joined", handleParticipantJoined);
+    window.addEventListener("jitsi-video-conference-joined", handleVideoConferenceJoined);
 
     return () => {
       clearInterval(requestInterval);
@@ -249,6 +281,7 @@ export default function Whiteboard() {
       }
       window.removeEventListener("jitsi-ready", handleJitsiReady);
       window.removeEventListener("jitsi-participant-joined", handleParticipantJoined);
+      window.removeEventListener("jitsi-video-conference-joined", handleVideoConferenceJoined);
     };
   }, []);
   
@@ -276,22 +309,7 @@ export default function Whiteboard() {
     { name: "Dark", value: "#0f172a" }
   ];
 
-  // Track parent element dimensions to resize canvas dynamically (ResizeObserver handles panel splits)
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const parent = canvas.parentNode;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (let entry of entries) {
-        const { width, height } = entry.contentRect;
-        setCanvasSize({ width, height });
-      }
-    });
-
-    resizeObserver.observe(parent);
-    return () => resizeObserver.disconnect();
-  }, []);
+  
 
   // Main drawing logic that clears and redraws all vector elements
   const drawCanvas = () => {
@@ -877,34 +895,40 @@ export default function Whiteboard() {
       const img = new Image();
       img.src = dataUrl;
       img.onload = () => {
-        let w = img.width;
-        let h = img.height;
-        const maxW = canvasSize.width * 0.7;
-        const maxH = canvasSize.height * 0.7;
+        compressImage(img, (compressedDataUrl, w, h) => {
+          const compressedImg = new Image();
+          compressedImg.src = compressedDataUrl;
+          compressedImg.onload = () => {
+            const maxW = canvasSize.width * 0.7;
+            const maxH = canvasSize.height * 0.7;
+            let finalW = w;
+            let finalH = h;
 
-        if (w > maxW) {
-          h = (maxW / w) * h;
-          w = maxW;
-        }
-        if (h > maxH) {
-          w = (maxH / h) * w;
-          h = maxH;
-        }
+            if (finalW > maxW) {
+              finalH = (maxW / finalW) * finalH;
+              finalW = maxW;
+            }
+            if (finalH > maxH) {
+              finalW = (maxH / finalH) * finalW;
+              finalH = maxH;
+            }
 
-        const newEl = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          type: "image",
-          src: dataUrl,
-          img: img,
-          x: (canvasSize.width - w) / 2,
-          y: (canvasSize.height - h) / 2,
-          width: w,
-          height: h
-        };
-        setElements((prev) => [...prev, newEl]);
-        broadcast({ type: 'ADD_ELEMENT', element: newEl });
-        setPdfLoading(false);
-        selectTool("select");
+            const newEl = {
+              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+              type: "image",
+              src: compressedDataUrl,
+              img: compressedImg,
+              x: (canvasSize.width - finalW) / 2,
+              y: (canvasSize.height - finalH) / 2,
+              width: finalW,
+              height: finalH
+            };
+            setElements((prev) => [...prev, newEl]);
+            broadcast({ type: 'ADD_ELEMENT', element: newEl });
+            setPdfLoading(false);
+            selectTool("select");
+          };
+        });
       };
     } catch (err) {
       console.error("PDF extraction error:", err);
@@ -931,33 +955,39 @@ export default function Whiteboard() {
         const img = new Image();
         img.src = dataUrl;
         img.onload = () => {
-          let w = img.width;
-          let h = img.height;
-          const maxW = canvasSize.width * 0.7;
-          const maxH = canvasSize.height * 0.7;
+          compressImage(img, (compressedDataUrl, w, h) => {
+            const compressedImg = new Image();
+            compressedImg.src = compressedDataUrl;
+            compressedImg.onload = () => {
+              const maxW = canvasSize.width * 0.7;
+              const maxH = canvasSize.height * 0.7;
+              let finalW = w;
+              let finalH = h;
 
-          if (w > maxW) {
-            h = (maxW / w) * h;
-            w = maxW;
-          }
-          if (h > maxH) {
-            w = (maxH / h) * w;
-            h = maxH;
-          }
+              if (finalW > maxW) {
+                finalH = (maxW / finalW) * finalH;
+                finalW = maxW;
+              }
+              if (finalH > maxH) {
+                finalW = (maxH / finalH) * finalW;
+                finalH = maxH;
+              }
 
-          const newEl = {
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-            type: "image",
-            src: dataUrl,
-            img: img,
-            x: (canvasSize.width - w) / 2,
-            y: (canvasSize.height - h) / 2,
-            width: w,
-            height: h
-          };
-          setElements((prev) => [...prev, newEl]);
-          broadcast({ type: 'ADD_ELEMENT', element: newEl });
-          selectTool("select");
+              const newEl = {
+                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                type: "image",
+                src: compressedDataUrl,
+                img: compressedImg,
+                x: (canvasSize.width - finalW) / 2,
+                y: (canvasSize.height - finalH) / 2,
+                width: finalW,
+                height: finalH
+              };
+              setElements((prev) => [...prev, newEl]);
+              broadcast({ type: 'ADD_ELEMENT', element: newEl });
+              selectTool("select");
+            };
+          });
         };
       };
       reader.readAsDataURL(file);

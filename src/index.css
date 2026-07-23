@@ -1969,13 +1969,31 @@ h1, h2, h3, h4, h5, h6 {
   flex: 1;
   width: 100%;
   position: relative;
-  background-color: #ffffff;
+  background-color: #f1f5f9; /* Slate 100 background for Miro-like workspace board feeling */
   border: 1.5px solid var(--border-color);
+  overflow: auto; /* Enable scrollbars */
+}
+
+/* Custom modern scrollbars for the canvas wrapper */
+.canvas-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.canvas-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.canvas-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.canvas-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .whiteboard-canvas {
-  width: 100%;
-  height: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); /* floating card shadow */
+  margin: 30px; /* Aesthetic margin around the whiteboard sheet */
   display: block;
   cursor: crosshair;
 }

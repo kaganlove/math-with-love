@@ -121,6 +121,10 @@ export default function SessionRoom() {
         api.on("participantJoined", () => {
           window.dispatchEvent(new Event("jitsi-participant-joined"));
         });
+
+        api.on("videoConferenceJoined", () => {
+          window.dispatchEvent(new Event("jitsi-video-conference-joined"));
+        });
       } catch (err) {
         console.error("Failed to initialize Jitsi Meet External API:", err);
       }
