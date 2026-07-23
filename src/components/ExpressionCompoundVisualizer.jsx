@@ -57,6 +57,10 @@ export default function ExpressionCompoundVisualizer() {
     setIsReplaced(false);
   };
 
+  const containerRect = dragContainerRef.current ? dragContainerRef.current.getBoundingClientRect() : { left: 0, top: 0 };
+  const dragX = dragPosition.x - containerRect.left;
+  const dragY = dragPosition.y - containerRect.top;
+
   return (
     <div ref={dragContainerRef} className="interactive-parts-card" style={{ touchAction: "none", position: "relative" }}>
       <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
@@ -182,37 +186,7 @@ export default function ExpressionCompoundVisualizer() {
           </div>
         )}
 
-        {/* Freeform Floating Drag Element */}
-        {isDragging && (() => {
-          const containerRect = dragContainerRef.current ? dragContainerRef.current.getBoundingClientRect() : { left: 0, top: 0 };
-          const dragX = dragPosition.x - containerRect.left;
-          const dragY = dragPosition.y - containerRect.top;
-          return (
-            <div
-              style={{
-                position: "absolute",
-                left: `${dragX - dragStartOffset.current.x}px`,
-                top: `${dragY - dragStartOffset.current.y}px`,
-                zIndex: 9999,
-                pointerEvents: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                backgroundColor: isHovered ? "#22c55e" : "#6366f1",
-                color: "#ffffff",
-                padding: "0.5rem 1rem",
-                borderRadius: "8px",
-                fontSize: "0.95rem",
-                fontWeight: "bold",
-                boxShadow: "0 10px 25px -5px rgba(99, 102, 241, 0.5)",
-                border: "1.5px solid rgba(255,255,255,0.3)"
-              }}
-            >
-              <span style={{ fontSize: "1.1rem" }}>☰</span>
-              <span>u = (x + 3)</span>
-            </div>
-          );
-        })()}
+
 
         {/* Success / Restart Box */}
         {isReplaced && (
@@ -286,6 +260,32 @@ export default function ExpressionCompoundVisualizer() {
           </div>
         </div>
       </div>
+      {/* Freeform Floating Drag Element - Rendered as direct child of relative container */}
+      {isDragging && (
+        <div
+          style={{
+            position: "absolute",
+            left: `${dragX - dragStartOffset.current.x}px`,
+            top: `${dragY - dragStartOffset.current.y}px`,
+            zIndex: 9999,
+            pointerEvents: "none",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            backgroundColor: isHovered ? "#22c55e" : "#6366f1",
+            color: "#ffffff",
+            padding: "0.5rem 1rem",
+            borderRadius: "8px",
+            fontSize: "0.95rem",
+            fontWeight: "bold",
+            boxShadow: "0 10px 25px -5px rgba(99, 102, 241, 0.5)",
+            border: "1.5px solid rgba(255,255,255,0.3)"
+          }}
+        >
+          <span style={{ fontSize: "1.1rem" }}>☰</span>
+          <span>u = (x + 3)</span>
+        </div>
+      )}
     </div>
   );
 }
