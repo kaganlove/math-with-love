@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Sparkles, RefreshCw, Layers } from "lucide-react";
 
 export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
@@ -40,6 +40,19 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const [slipFactorLeft, setSlipFactorLeft] = useState(null);
   const [slipFactorRight, setSlipFactorRight] = useState(null);
   const [slideAnimationState, setSlideAnimationState] = useState("idle"); // "idle" | "dividing" | "simplified" | "sliding" | "final"
+
+  // Refs and paths for dynamic arrow calculations
+  const slipContainerRef = useRef(null);
+  const slipSourceRef = useRef(null);
+  const slipTargetRef = useRef(null);
+  const [slipArrowPath, setSlipArrowPath] = useState("");
+  const [slipArrowHeadPath, setSlipArrowHeadPath] = useState("");
+
+  const slideContainerRef = useRef(null);
+  const slideSourceRef = useRef(null);
+  const slideTargetRef = useRef(null);
+  const [slideArrowPath, setSlideArrowPath] = useState("");
+  const [slideArrowHeadPath, setSlideArrowHeadPath] = useState("");
 
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -121,6 +134,76 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
       setFinalFactored(true);
     }
   }, [slideAnimationState, pageIndex]);
+
+  // Dynamically calculate arrow paths based on actual element positions
+  useLayoutEffect(() => {
+    const updatePaths = () => {
+      // 1. Slip Arrow (Stage 0: 2 -> 3)
+      if (
+        (slipAnimationState === "slipping" || slipAnimationState === "multiplying") &&
+        slipSourceRef.current &&
+        slipTargetRef.current &&
+        slipContainerRef.current
+      ) {
+        const containerRect = slipContainerRef.current.getBoundingClientRect();
+        const sourceRect = slipSourceRef.current.getBoundingClientRect();
+        const targetRect = slipTargetRef.current.getBoundingClientRect();
+
+        // Calculate center-top coordinates relative to container
+        const sourceX = (sourceRect.left + sourceRect.right) / 2 - containerRect.left;
+        const sourceY = sourceRect.top - containerRect.top;
+
+        const targetX = (targetRect.left + targetRect.right) / 2 - containerRect.left;
+        const targetY = targetRect.top - containerRect.top;
+
+        // Arch over the top
+        const controlX = (sourceX + targetX) / 2;
+        const controlY = Math.min(sourceY, targetY) - 50;
+
+        setSlipArrowPath(`M ${sourceX} ${sourceY} Q ${controlX} ${controlY} ${targetX} ${targetY}`);
+        
+        // Arrow head pointing down/right at target
+        setSlipArrowHeadPath(`M ${targetX} ${targetY} L ${targetX - 10} ${targetY - 5} L ${targetX - 4} ${targetY - 11} Z`);
+      }
+
+      // 2. Slide Arrow (Stage 2: Denominator 2 -> in front of x)
+      if (
+        slideAnimationState === "sliding" &&
+        slideSourceRef.current &&
+        slideTargetRef.current &&
+        slideContainerRef.current
+      ) {
+        const containerRect = slideContainerRef.current.getBoundingClientRect();
+        const sourceRect = slideSourceRef.current.getBoundingClientRect();
+        const targetRect = slideTargetRef.current.getBoundingClientRect();
+
+        // Source: denominator 2 (center-bottom relative to container)
+        const sourceX = (sourceRect.left + sourceRect.right) / 2 - containerRect.left;
+        const sourceY = sourceRect.bottom - containerRect.top;
+
+        // Target: ghost coefficient 2 in front of x (center-bottom relative to container)
+        const targetX = (targetRect.left + targetRect.right) / 2 - containerRect.left;
+        const targetY = targetRect.bottom - containerRect.top + 8; // land slightly below or level with target center
+
+        // Arch under the bottom
+        const controlX = (sourceX + targetX) / 2;
+        const controlY = Math.max(sourceY, targetY) + 40;
+
+        setSlideArrowPath(`M ${sourceX} ${sourceY} Q ${controlX} ${controlY} ${targetX} ${targetY}`);
+
+        // Arrow head pointing up/left at target
+        setSlideArrowHeadPath(`M ${targetX} ${targetY} L ${targetX + 8} ${targetY + 4} L ${targetX + 3} ${targetY + 10} Z`);
+      }
+    };
+
+    // Delay slightly to allow rendering/reflow to settle
+    const timer = setTimeout(updatePaths, 50);
+    window.addEventListener("resize", updatePaths);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updatePaths);
+    };
+  }, [slipAnimationState, slideAnimationState, pageIndex, slipStep]);
 
   const handleNextStep = () => {
     setStep((prev) => (prev < 2 ? prev + 1 : 0));
@@ -1281,14 +1364,14 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                       Multiply the leading coefficient (2) by the constant (3):
                     </span>
 
-                    <div style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "2.2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "100px", minWidth: "300px", userSelect: "none" }}>
+                    <div ref={slipContainerRef} style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "2.2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "100px", minWidth: "300px", userSelect: "none" }}>
                       
-                      {/* SVG Curved arrow from 2 to 3 - Over Arch */}
+                      {/* SVG Curved arrow from 2 to 3 - Dynamic Over Arch */}
                       <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible", pointerEvents: "none" }}>
-                        {(slipAnimationState === "slipping" || slipAnimationState === "multiplying") && (
+                        {(slipAnimationState === "slipping" || slipAnimationState === "multiplying") && slipArrowPath && (
                           <>
                             <path
-                              d="M 72 25 Q 150 -25 228 25"
+                              d={slipArrowPath}
                               fill="none"
                               stroke="#3b82f6"
                               strokeWidth="3.5"
@@ -1297,7 +1380,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                             />
                             {/* Arrow head */}
                             <path
-                              d="M 228 25 L 216 22 L 222 34 Z"
+                              d={slipArrowHeadPath}
                               fill="#3b82f6"
                             />
                           </>
@@ -1306,15 +1389,15 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
 
                       {slipAnimationState === "multiplying" ? (
                         <>
-                          <span style={{ textDecoration: "line-through", color: "#ef4444", opacity: 0.4, marginRight: "0.25rem", transition: "all 0.3s ease" }}>2</span>
+                          <span ref={slipSourceRef} style={{ textDecoration: "line-through", color: "#ef4444", opacity: 0.4, marginRight: "0.25rem", transition: "all 0.3s ease" }}>2</span>
                           <span>x² + 5x + </span>
-                          <span style={{ color: "#4ade80", fontWeight: "bold", fontSize: "2.5rem", transition: "all 0.3s ease", animation: "pulse 1s infinite" }}>6</span>
+                          <span ref={slipTargetRef} style={{ color: "#4ade80", fontWeight: "bold", fontSize: "2.5rem", transition: "all 0.3s ease", animation: "pulse 1s infinite" }}>6</span>
                         </>
                       ) : (
                         <>
-                          <span style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#3b82f6" : "#ffffff", fontWeight: "bold", marginRight: "0.25rem" }}>2</span>
+                          <span ref={slipSourceRef} style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#3b82f6" : "#ffffff", fontWeight: "bold", marginRight: "0.25rem" }}>2</span>
                           <span>x² + 5x + </span>
-                          <span style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#3b82f6" : "#ffffff", fontWeight: "bold", marginLeft: "0.25rem" }}>3</span>
+                          <span ref={slipTargetRef} style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#3b82f6" : "#ffffff", fontWeight: "bold", marginLeft: "0.25rem" }}>3</span>
                         </>
                       )}
                     </div>
@@ -1567,31 +1650,35 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                         <span style={{ fontSize: "1rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "1.5rem" }}>
                           Sliding denominator 2 back to the front of x...
                         </span>
-                        <div style={{ position: "relative", display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", margin: "2rem 0", height: "100px", minWidth: "300px" }}>
+                        <div ref={slideContainerRef} style={{ position: "relative", display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", margin: "2rem 0", height: "100px", minWidth: "300px" }}>
                           
-                          {/* SVG arrow sliding the denominator 2 to the front */}
+                          {/* SVG arrow sliding the denominator 2 to the front - Dynamic Under Arch */}
                           <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible", pointerEvents: "none" }}>
-                            <path
-                              d="M 240 70 Q 187 115 135 55"
-                              fill="none"
-                              stroke="#eab308"
-                              strokeWidth="3.5"
-                              strokeDasharray="6"
-                              className="dash-animate"
-                            />
-                            {/* Arrow marker */}
-                            <path
-                              d="M 135 55 L 147 57 L 140 68 Z"
-                              fill="#eab308"
-                            />
+                            {slideArrowPath && (
+                              <>
+                                <path
+                                  d={slideArrowPath}
+                                  fill="none"
+                                  stroke="#eab308"
+                                  strokeWidth="3.5"
+                                  strokeDasharray="6"
+                                  className="dash-animate"
+                                />
+                                {/* Arrow marker */}
+                                <path
+                                  d={slideArrowHeadPath}
+                                  fill="#eab308"
+                                />
+                              </>
+                            )}
                           </svg>
 
                           <span>(x + 1)(</span>
-                          <span style={{ color: "#eab308", opacity: 0.8, marginRight: "0.15rem", animation: "pulse 1s infinite" }}>2</span>
+                          <span ref={slideTargetRef} style={{ color: "#eab308", opacity: 0.8, marginRight: "0.15rem", animation: "pulse 1s infinite" }}>2</span>
                           <span>x + </span>
                           <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", verticalAlign: "middle", margin: "0 0.25rem", fontSize: "1.2rem", lineHeight: "1.1" }}>
                             <span style={{ borderBottom: "1.5px solid #cbd5e1", padding: "0 4px", color: "#60a5fa" }}>3</span>
-                            <span style={{ color: "#eab308", textDecoration: "line-through", opacity: 0.25 }}>2</span>
+                            <span ref={slideSourceRef} style={{ color: "#eab308", textDecoration: "line-through", opacity: 0.25 }}>2</span>
                           </div>
                           <span>)</span>
                         </div>
