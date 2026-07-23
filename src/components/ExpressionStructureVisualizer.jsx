@@ -625,6 +625,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
               <div style={{ marginTop: "2.5rem", minHeight: "55px", display: "flex", alignItems: "center" }}>
                 <div
                   onPointerDown={(e) => startDrag(e, 3)}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -660,6 +662,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                       <div
                         key={val}
                         onPointerDown={(e) => startDrag(e, val)}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
                         style={{
                           display: "inline-flex",
                           alignItems: "center",
