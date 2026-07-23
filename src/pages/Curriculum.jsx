@@ -512,7 +512,7 @@ export default function Curriculum() {
                     </div>
                   ) : activeLesson.id === "hsa-sse-3b" ? (
                     <div className="my-6">
-                      <ExpressionStructureVisualizer pageIndex={activePageIdx + 5} />
+                      <ExpressionStructureVisualizer pageIndex={activePageIdx + 6} />
                     </div>
                   ) : activeLesson.animationSteps ? (
                     <div className="my-6">

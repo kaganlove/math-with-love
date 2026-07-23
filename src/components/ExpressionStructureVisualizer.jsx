@@ -59,6 +59,12 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const [hoveredZone, setHoveredZone] = useState(null); // "6x" | "9" | "blank" | "blank1" | "blank2" | "leftZone" | "rightZone" | "commonZone" | "leftGCFZone" | "rightGCFZone"
   const [finalFactored, setFinalFactored] = useState(false);
 
+  // Zeros Method states (pageIndex = 5)
+  const [zerosStep, setZerosStep] = useState(0);
+  const [leftConstantMoving, setLeftConstantMoving] = useState(false);
+  const [rightConstantMoving, setRightConstantMoving] = useState(false);
+  const [rightDivisionMoving, setRightDivisionMoving] = useState(false);
+
   const dragContainerRef = useRef(null);
   const zone9Ref = useRef(null);
   const zone6xRef = useRef(null);
@@ -135,6 +141,13 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
       setFinalFactored(true);
     }
   }, [slideAnimationState, pageIndex]);
+
+  // Self-heal/sync finalFactored for Finding Zeros pageIndex = 5 once solved
+  useEffect(() => {
+    if (pageIndex === 5 && zerosStep === 4) {
+      setFinalFactored(true);
+    }
+  }, [zerosStep, pageIndex]);
 
   // Dynamically calculate arrow paths based on actual element positions
   useLayoutEffect(() => {
@@ -242,6 +255,10 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setFinalFactored(false);
     setIsDragging(false);
     setHoveredZone(null);
+    setZerosStep(0);
+    setLeftConstantMoving(false);
+    setRightConstantMoving(false);
+    setRightDivisionMoving(false);
   };
 
   const containerRect = dragContainerRef.current ? dragContainerRef.current.getBoundingClientRect() : { left: 0, top: 0 };
@@ -476,6 +493,15 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
       explanation2: "Now 'slide' the original leading coefficient (2) back under the constants. Simplify the fractions (2/2 = 1) and move any remaining denominators to the front of x: (x + 1)(2x + 3)."
     },
     {
+      title: "Finding Zeros from Factors",
+      original: "(x + 1)(2x + 3) = 0",
+      structured: "x + 1 = 0  and  2x + 3 = 0",
+      factored: "x = -1  and  x = -1.5",
+      explanation0: "To find the zeros of a quadratic function f(x), set f(x) = 0. If it is already factored, we can apply the Zero Product Property.",
+      explanation1: "The Zero Product Property states that if a · b = 0, then either a = 0 or b = 0. Set each individual binomial factor to 0.",
+      explanation2: "Solve each linear equation. The values of x are the zeros (roots) where the function's graph intersects the x-axis."
+    },
+    {
       title: "Completing the Square (a = 1)",
       original: "x² + 6x + 5",
       structured: "(x² + 6x + 9 - 9) + 5",
@@ -499,7 +525,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const config = pagesConfig[pageIndex] || pagesConfig[0];
 
   // Determine if this is a custom drag-and-drop page
-  const isDragPage = pageIndex === 0 || pageIndex === 1 || pageIndex === 2 || pageIndex === 3 || pageIndex === 4;
+  const isDragPage = pageIndex === 0 || pageIndex === 1 || pageIndex === 2 || pageIndex === 3 || pageIndex === 4 || pageIndex === 5;
 
   // Helper to render draggable factor pills for Trinomials a=1 (pageIndex = 2)
   const renderFactorPill = (val) => {
@@ -1693,6 +1719,254 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                 )}
               </div>
             )}
+
+            {/* Finding Zeros Layout (pageIndex === 5) */}
+            {pageIndex === 5 && (
+              <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }} className="animate-fade-in">
+                
+                {/* Stage 0: Initial Factors set to 0 */}
+                {zerosStep === 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                    <span style={{ fontSize: "1.05rem", color: "#94a3b8", fontWeight: "600", marginBottom: "1.5rem", textAlign: "center" }}>
+                      To find the zeros, set the factored quadratic expression equal to 0:
+                    </span>
+
+                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", fontSize: "2.5rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#60a5fa", height: "100px", margin: "1.5rem 0", letterSpacing: "0.02em" }}>
+                      (x + 1)(2x + 3) = 0
+                    </div>
+
+                    <p style={{ maxWidth: "480px", textAlign: "center", color: "#cbd5e1", fontSize: "0.95rem", lineHeight: "1.6", marginBottom: "2rem" }}>
+                      According to the <strong>Zero Product Property</strong>, if the product of two binomials is zero, then at least one of the individual binomials must equal zero.
+                    </p>
+
+                    <button
+                      onClick={() => setZerosStep(1)}
+                      className="btn-primary flex-center gap-2"
+                      style={{ padding: "0.75rem 2rem", fontSize: "1.05rem", borderRadius: "10px", boxShadow: "0 4px 15px rgba(59, 130, 246, 0.4)" }}
+                    >
+                      <Sparkles size={18} /> Apply Zero Product Property
+                    </button>
+                  </div>
+                )}
+
+                {/* Stage 1 to 4: Solving the simple equations */}
+                {zerosStep > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                    
+                    <div style={{ display: "flex", justifyContent: "space-around", width: "100%", gap: "2rem", flexWrap: "wrap", marginTop: "1rem" }}>
+                      
+                      {/* Left Column: x + 1 = 0 */}
+                      <div style={{ 
+                        flex: 1, 
+                        minWidth: "260px", 
+                        backgroundColor: "rgba(30, 41, 59, 0.5)", 
+                        border: zerosStep >= 2 ? "2px solid #22c55e" : "1.5px solid rgba(255, 255, 255, 0.1)", 
+                        borderRadius: "16px", 
+                        padding: "1.5rem", 
+                        display: "flex", 
+                        flexDirection: "column", 
+                        alignItems: "center",
+                        boxShadow: zerosStep >= 2 ? "0 0 15px rgba(34, 197, 94, 0.1)" : "none",
+                        transition: "all 0.3s ease"
+                      }}>
+                        <span style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.05em", color: zerosStep >= 2 ? "#4ade80" : "#94a3b8", fontWeight: "700", marginBottom: "1rem" }}>
+                          Factor Equation 1
+                        </span>
+
+                        {zerosStep === 1 ? (
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "80px" }}>
+                              <span>x</span>
+                              <span 
+                                onClick={() => {
+                                  if (!leftConstantMoving) {
+                                    setLeftConstantMoving(true);
+                                    setTimeout(() => {
+                                      setZerosStep(2);
+                                      setLeftConstantMoving(false);
+                                    }, 800);
+                                  }
+                                }}
+                                className="hover-scale"
+                                style={{ 
+                                  color: "#3b82f6", 
+                                  cursor: "pointer", 
+                                  margin: "0 0.25rem", 
+                                  backgroundColor: "rgba(59, 130, 246, 0.15)", 
+                                  padding: "0.1rem 0.5rem", 
+                                  borderRadius: "6px",
+                                  border: "1px dashed rgba(59, 130, 246, 0.4)",
+                                  animation: "pulse 1.5s infinite",
+                                  transition: "all 0.5s ease",
+                                  transform: leftConstantMoving ? "translateY(-40px) scale(0.6)" : "none",
+                                  opacity: leftConstantMoving ? 0 : 1
+                                }}
+                                title="Click to move constant to other side"
+                              >
+                                + 1
+                              </span>
+                              <span> = 0</span>
+                            </div>
+                            <span style={{ fontSize: "0.85rem", color: "#60a5fa", fontStyle: "italic", textAlign: "center", animation: "pulse 1.5s infinite" }}>
+                              👉 Click the <strong>+ 1</strong> to isolate x!
+                            </span>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "105px", justifyContent: "center" }}>
+                            <div style={{ fontSize: "2.2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#22c55e" }}>
+                              x = -1
+                            </div>
+                            <span style={{ fontSize: "0.85rem", color: "#22c55e", fontWeight: "600", marginTop: "0.5rem" }}>
+                              ✓ First zero found!
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right Column: 2x + 3 = 0 */}
+                      <div style={{ 
+                        flex: 1, 
+                        minWidth: "260px", 
+                        backgroundColor: "rgba(30, 41, 59, 0.5)", 
+                        border: zerosStep >= 4 ? "2px solid #22c55e" : zerosStep >= 2 ? "1.5px solid #a855f7" : "1.5px solid rgba(255, 255, 255, 0.1)", 
+                        borderRadius: "16px", 
+                        padding: "1.5rem", 
+                        display: "flex", 
+                        flexDirection: "column", 
+                        alignItems: "center",
+                        boxShadow: zerosStep >= 4 ? "0 0 15px rgba(34, 197, 94, 0.1)" : "none",
+                        transition: "all 0.3s ease"
+                      }}>
+                        <span style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.05em", color: zerosStep >= 4 ? "#4ade80" : zerosStep >= 2 ? "#c084fc" : "#94a3b8", fontWeight: "700", marginBottom: "1rem" }}>
+                          Factor Equation 2
+                        </span>
+
+                        {zerosStep === 1 ? (
+                          <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#cbd5e1", opacity: 0.5, height: "105px" }}>
+                            2x + 3 = 0
+                          </div>
+                        ) : zerosStep === 2 ? (
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "80px" }}>
+                              <span>2x</span>
+                              <span 
+                                onClick={() => {
+                                  if (!rightConstantMoving) {
+                                    setRightConstantMoving(true);
+                                    setTimeout(() => {
+                                      setZerosStep(3);
+                                      setRightConstantMoving(false);
+                                    }, 800);
+                                  }
+                                }}
+                                className="hover-scale"
+                                style={{ 
+                                  color: "#a855f7", 
+                                  cursor: "pointer", 
+                                  margin: "0 0.25rem", 
+                                  backgroundColor: "rgba(168, 85, 247, 0.15)", 
+                                  padding: "0.1rem 0.5rem", 
+                                  borderRadius: "6px",
+                                  border: "1px dashed rgba(168, 85, 247, 0.4)",
+                                  animation: "pulse 1.5s infinite",
+                                  transition: "all 0.5s ease",
+                                  transform: rightConstantMoving ? "translateY(-40px) scale(0.6)" : "none",
+                                  opacity: rightConstantMoving ? 0 : 1
+                                }}
+                                title="Click to move constant to other side"
+                              >
+                                + 3
+                              </span>
+                              <span> = 0</span>
+                            </div>
+                            <span style={{ fontSize: "0.85rem", color: "#c084fc", fontStyle: "italic", textAlign: "center", animation: "pulse 1.5s infinite" }}>
+                              👉 Click the <strong>+ 3</strong> next!
+                            </span>
+                          </div>
+                        ) : zerosStep === 3 ? (
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "80px" }}>
+                              <span 
+                                onClick={() => {
+                                  if (!rightDivisionMoving) {
+                                    setRightDivisionMoving(true);
+                                    setTimeout(() => {
+                                      setZerosStep(4);
+                                      setRightDivisionMoving(false);
+                                    }, 800);
+                                  }
+                                }}
+                                className="hover-scale"
+                                style={{ 
+                                  color: "#f59e0b", 
+                                  cursor: "pointer", 
+                                  padding: "0.1rem 0.4rem", 
+                                  backgroundColor: "rgba(245, 158, 11, 0.15)",
+                                  borderRadius: "6px",
+                                  border: "1px dashed rgba(245, 158, 11, 0.4)",
+                                  animation: "pulse 1.5s infinite",
+                                  transition: "all 0.5s ease",
+                                  transform: rightDivisionMoving ? "translateY(25px) scale(0.7)" : "none",
+                                  opacity: rightDivisionMoving ? 0.3 : 1
+                                }}
+                                title="Click coefficient to divide right side"
+                              >
+                                2
+                              </span>
+                              <span>x = -3</span>
+                            </div>
+                            <span style={{ fontSize: "0.85rem", color: "#f59e0b", fontStyle: "italic", textAlign: "center", animation: "pulse 1.5s infinite" }}>
+                              👉 Click the coefficient <strong>2</strong> to divide!
+                            </span>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "105px", justifyContent: "center" }}>
+                            <div style={{ fontSize: "2.2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#22c55e" }}>
+                              x = -3/2
+                            </div>
+                            <span style={{ fontSize: "0.85rem", color: "#22c55e", fontWeight: "600", marginTop: "0.5rem" }}>
+                              ✓ Second zero found!
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
+
+                    {/* Success zeros display */}
+                    {zerosStep === 4 && (
+                      <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", marginTop: "2rem", padding: "1.5rem", border: "1.5px solid rgba(34, 197, 94, 0.3)", borderRadius: "16px", backgroundColor: "rgba(34, 197, 94, 0.05)" }}>
+                        <h4 style={{ fontSize: "1.2rem", color: "#22c55e", fontWeight: "bold", margin: "0 0 0.5rem 0", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <Sparkles size={20} /> Zeros Discovered Successfully!
+                        </h4>
+                        <p style={{ color: "#cbd5e1", fontSize: "0.95rem", textAlign: "center", margin: "0 0 1.25rem 0", maxWidth: "560px", lineHeight: "1.5" }}>
+                          The zeros of the quadratic function <strong>f(x) = 2x² + 5x + 3</strong> are at <strong>x = -1</strong> and <strong>x = -1.5</strong> (or -3/2).
+                          At these x-coordinates, the graph of the parabola crosses the x-axis (y = 0)!
+                        </p>
+                        
+                        <div style={{ display: "flex", gap: "1.5rem", fontSize: "1.8rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#4ade80" }}>
+                          <div style={{ padding: "0.4rem 1.25rem", backgroundColor: "rgba(34, 197, 94, 0.15)", borderRadius: "10px", border: "1px solid rgba(34, 197, 94, 0.3)" }}>
+                            x = -1
+                          </div>
+                          <div style={{ padding: "0.4rem 1.25rem", backgroundColor: "rgba(34, 197, 94, 0.15)", borderRadius: "10px", border: "1px solid rgba(34, 197, 94, 0.3)" }}>
+                            x = -1.5
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleReset}
+                          className="btn-secondary flex-center gap-1"
+                          style={{ marginTop: "1.5rem", padding: "0.4rem 0.8rem", fontSize: "0.75rem", fontWeight: "bold" }}
+                        >
+                          <RefreshCw size={12} /> Reset Interactive
+                        </button>
+                      </div>
+                    )}
+
+                  </div>
+                )}
+
+              </div>
+            )}
             
             {/* Factored Blanks Row (Phase 2 - Visible when structure is revealed but not fully completed) */}
             {pageIndex === 0 && zone6xReplaced && zone9Replaced && !finalFactored && (
@@ -1877,7 +2151,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
 
 
             {/* Factored Success Box */}
-            {finalFactored && (
+            {finalFactored && pageIndex !== 5 && (
               <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <div style={{ fontSize: "2.25rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif" }}>
                   {pageIndex === 0 ? "(x + 3)²" : pageIndex === 1 ? "(x - 3)(x + 3)" : pageIndex === 2 ? `(x + ${leftFactor})(x + ${rightFactor})` : pageIndex === 3 ? "(x + 2)(2x + 3)" : "(x + 1)(2x + 3)"}

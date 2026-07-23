@@ -1539,6 +1539,44 @@ export const sampleLessons = {
             explanation: "Slip 3 to the end: x² - 5x - 6. Factor: (x - 6)(x + 1). Slide 3 back: (x - 6/3)(x + 1/3) = (x - 2)(3x + 1)."
           }
         ]
+      },
+      {
+        title: "Finding Zeros from Factors",
+        introduction: "Once a quadratic expression is factored into binomials like <span style=\"color: var(--primary); font-weight: bold;\">(x + 1)(2x + 3) = 0</span>, we can find the zeros of the function by applying the Zero Product Property.",
+        steps: [
+          {
+            title: "Set Expression to Zero",
+            content: "To find the zeros (roots or x-intercepts) of a quadratic function, set the entire expression equal to 0.\n\n<u><strong>Example</strong></u>:<br />\nFor a quadratic function factored as (x + 1)(2x + 3), set it equal to 0:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">(x + 1)(2x + 3) = 0</div>"
+          },
+          {
+            title: "Apply Zero Product Property",
+            content: "Set each individual factor equal to zero: if two quantities multiply to zero, at least one of them must be zero.\n\n<u><strong>Example</strong></u>:<br />\nSplit into two independent simple linear equations:\n<div style=\"text-align: center; margin: 0.6rem 0; font-size: 1.25rem; font-weight: bold; color: var(--primary);\">x + 1 = 0 &nbsp;&nbsp;&nbsp;&nbsp; or &nbsp;&nbsp;&nbsp;&nbsp; 2x + 3 = 0</div>"
+          },
+          {
+            title: "Solve for x",
+            content: "Isolate the variable x in each equation to find the two zeros.\n\n<u><strong>Example</strong></u>:<br />\nSubtract 1 from the first equation: <span style=\"color: var(--primary); font-weight: bold;\">x = -1</span>.<br />\nSubtract 3 and divide by 2 in the second equation: <span style=\"color: var(--primary); font-weight: bold;\">x = -1.5</span>.\nThese x-coordinates represent where the parabola crosses the x-axis!"
+          }
+        ],
+        practiceQuestions: [
+          {
+            question: "Find the zeros of the function: f(x) = (x - 4)(2x + 1)",
+            options: ["x = 4 and x = -1/2", "x = -4 and x = 1/2", "x = 4 and x = 2", "x = -4 and x = -2"],
+            correctIndex: 0,
+            explanation: "Set each factor to zero: x - 4 = 0 => x = 4, and 2x + 1 = 0 => 2x = -1 => x = -1/2."
+          },
+          {
+            question: "If f(x) = x² - 9 factors into (x - 3)(x + 3), what are the zeros of f(x)?",
+            options: ["x = 3 and x = -3", "x = 9 and x = -9", "x = 0 and x = 3", "x = 3 only"],
+            correctIndex: 0,
+            explanation: "Set each factor to zero: x - 3 = 0 => x = 3, and x + 3 = 0 => x = -3. The zeros are 3 and -3."
+          },
+          {
+            question: "Find the zeros of the quadratic: f(x) = x(3x - 5)",
+            options: ["x = 0 and x = 5/3", "x = 0 and x = -5/3", "x = 1 and x = 5/3", "x = 0 and x = 5"],
+            correctIndex: 0,
+            explanation: "Set each factor to zero: x = 0, and 3x - 5 = 0 => 3x = 5 => x = 5/3. The zeros are 0 and 5/3."
+          }
+        ]
       }
     ],
     mathBox: {
