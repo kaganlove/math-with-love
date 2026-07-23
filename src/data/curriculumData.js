@@ -1336,7 +1336,7 @@ export const sampleLessons = {
     prerequisites: [
       { id: "hsa-sse-1a", title: "Interpret Parts of an Expression (HSA-SSE.A.1.a)" }
     ],
-    introduction: "Algebraic expressions often contain hidden patterns. By recognizing structural patterns like the difference of squares or common factor groups, we can rewrite expressions into useful equivalent forms.",
+    introduction: "Algebraic expressions often contain hidden patterns. By recognizing structural patterns like the difference of squares or perfect squares, we can rewrite expressions into useful factored forms.",
     pages: [
       {
         title: "Factoring Perfect Squares",
@@ -1385,7 +1385,31 @@ export const sampleLessons = {
             explanation: "4x² is (2x)² and 49 is 7². This fits the a² - b² pattern, factoring into (2x - 7)(2x + 7)."
           }
         ]
-      },
+      }
+    ],
+    mathBox: {
+      title: "Structural Identities",
+      equations: [
+        { desc: "Difference of Squares", formula: "a² - b² = (a - b)(a + b)" },
+        { desc: "Perfect Square (Sum)", formula: "a² + 2ab + b² = (a + b)²" },
+        { desc: "Perfect Square (Diff)", formula: "a² - 2ab + b² = (a - b)²" }
+      ]
+    }
+  },
+  "hsa-sse-3a": {
+    id: "hsa-sse-3a",
+    title: "Factor Quadratics to Reveal Zeros",
+    subtitle: "Algebra 1 Quadratics",
+    duration: "40 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-SSE.B.3.a",
+    prerequisites: [
+      { id: "distributive-property", title: "Distributive Property (7.EE.A.1)" },
+      { id: "greatest-common-factor", title: "Greatest Common Factor (6.NS.B.4)" }
+    ],
+    introduction: "Factoring is the process of breaking an expression down into a product of simpler expressions. To factor trinomials, we look for two numbers that multiply to c and add to b, or group terms to reveal common binomial factors.",
+    pages: [
       {
         title: "Factoring Trinomials (a = 1)",
         introduction: "For trinomials in the form <span style=\"color: var(--primary); font-weight: bold;\">x² + bx + c</span>, we look for two numbers that multiply to <span style=\"color: var(--primary); font-weight: bold;\">c</span> and add to <span style=\"color: var(--primary); font-weight: bold;\">b</span>.",
@@ -1455,10 +1479,71 @@ export const sampleLessons = {
             explanation: "Slip 3: x² + 7x + 6. Factor: (x + 6)(x + 1). Slide 3 back: (x + 6/3)(x + 1/3) = (x + 2)(3x + 1), which is (3x + 1)(x + 2)."
           }
         ]
+      }
+    ],
+    mathBox: {
+      title: "Factoring Quadratics Guide",
+      equations: [
+        { desc: "General Form", formula: "x² + bx + c = (x + p)(x + q)" },
+        { desc: "Slide Formula", formula: "ax² + bx + c → x² + bx + ac" },
+        { desc: "Grouping GCF", formula: "xa + ya = a(x + y)" }
+      ]
+    }
+  },
+  "hsa-sse-3b": {
+    id: "hsa-sse-3b",
+    title: "Complete the Square to Find Extremes",
+    subtitle: "Algebra 1 Quadratics",
+    duration: "35 mins",
+    level: "High School Math",
+    topic: "Algebra 1",
+    ccss: "HSA-SSE.B.3.b",
+    prerequisites: [
+      { id: "hsa-sse-3a", title: "Factor Quadratics to Reveal Zeros (HSA-SSE.B.3.a)" }
+    ],
+    introduction: "Completing the square is an algebraic technique used to rewrite a quadratic expression ax² + bx + c in the vertex form a(x - h)² + k. This form immediately reveals the vertex (h, k), which is the maximum or minimum point.",
+    pages: [
+      {
+        title: "Completing the Square (a = 1)",
+        introduction: "For quadratics where the leading coefficient is 1, we add and subtract the squared half of the middle linear coefficient to form a perfect square binomial.",
+        steps: [
+          {
+            title: "Calculate (b / 2)²",
+            content: "Take the coefficient of the middle linear term (b), divide it by 2, and square the result. For x² + 6x, b = 6, so (6 / 2)² = 9."
+          },
+          {
+            title: "Add and Subtract this Constant",
+            content: "Add and subtract this value inside the expression to keep it equivalent: x² + 6x + 9 - 9."
+          },
+          {
+            title: "Write in Vertex Form",
+            content: "Factor the perfect square trinomial (x² + bx + (b/2)²) into (x + b/2)² and combine remaining constants: (x + 3)² - 9."
+          }
+        ],
+        practiceQuestions: [
+          {
+            question: "Complete the square for x² + 8x. What is the value that completes the square?",
+            options: ["4", "8", "16", "64"],
+            correctIndex: 2,
+            explanation: "Take b = 8, divide by 2 to get 4, and square it: 4² = 16."
+          },
+          {
+            question: "Rewrite x² - 10x + 30 in vertex form.",
+            options: ["(x - 5)² + 5", "(x - 5)² - 25", "(x + 5)² + 5", "(x - 10)² + 30"],
+            correctIndex: 0,
+            explanation: "(b/2)² = (-10/2)² = 25. Add/subtract 25: x² - 10x + 25 - 25 + 30 = (x - 5)² + 5."
+          },
+          {
+            question: "For the function f(x) = (x - 4)² + 7, what is the minimum value of f(x)?",
+            options: ["4", "-4", "7", "-7"],
+            correctIndex: 2,
+            explanation: "The vertex form reveals the minimum value is the constant term outside, which is 7."
+          }
+        ]
       },
       {
         title: "Completing the Square (a ≠ 1)",
-        introduction: "Completing the square allows us to rewrite any quadratic expression into vertex form <span style=\"color: var(--primary); font-weight: bold;\">a(x - h)² + k</span>.",
+        introduction: "Completing the square allows us to rewrite any quadratic expression ax² + bx + c when a ≠ 1 into vertex form a(x - h)² + k.",
         steps: [
           {
             title: "Factor Out the Lead Coefficient",
@@ -1484,181 +1569,13 @@ export const sampleLessons = {
       }
     ],
     mathBox: {
-      title: "Structural Identities",
-      equations: [
-        { desc: "Difference of Squares", formula: "a² - b² = (a - b)(a + b)" },
-        { desc: "Grouping Structure", formula: "x(a + b) + y(a + b) = (x + y)(a + b)" }
-      ]
-    }
-  },
-  "hsa-sse-3a": {
-    id: "hsa-sse-3a",
-    title: "Factor Quadratics to Reveal Zeros",
-    subtitle: "Algebra 1 Quadratics",
-    duration: "40 mins",
-    level: "High School Math",
-    topic: "Algebra 1",
-    ccss: "HSA-SSE.B.3.a",
-    prerequisites: [
-      { id: "distributive-property", title: "Distributive Property (7.EE.A.1)" },
-      { id: "greatest-common-factor", title: "Greatest Common Factor (6.NS.B.4)" }
-    ],
-    introduction: "Factoring is the process of breaking an expression down into a product of simpler expressions. To factor trinomials in the form x² + bx + c, we look for two numbers that multiply to c and add to b.",
-    steps: [
-      {
-        title: "Step 1: Identify b and c",
-        content: "Find the middle term coefficient (b) and the constant term (c). For example, in x² + 5x + 6, b = 5 and c = 6."
-      },
-      {
-        title: "Step 2: Find Factors of c that Add to b",
-        content: "List factor pairs of c. Find the pair that sums up to b. For 6: pairs are (1,6) and (2,3). The pair (2,3) adds up to 5."
-      },
-      {
-        title: "Step 3: Write the Factored Expression",
-        content: "Using the factor values p and q, write the expression in binomial form: (x + p)(x + q). For x² + 5x + 6, this is (x + 2)(x + 3)."
-      }
-    ],
-    mathBox: {
-      title: "Factoring Trinomials Guide",
-      equations: [
-        { desc: "General Form", formula: "x² + bx + c = (x + p)(x + q)" },
-        { desc: "Addition Rule", formula: "p + q = b" },
-        { desc: "Multiplication Rule", formula: "p * q = c" }
-      ]
-    },
-    animationSteps: [
-      {
-        equation: "x² + 5x + 6",
-        desc: "Original Trinomial: We need to find two numbers p and q that multiply to 6 (the constant) and add to 5 (the middle coefficient).",
-        left: { type: "expression", action: null, terms: [{ val: "x² + 5x + 6", color: "slate" }] },
-        right: { type: "expression", action: null, terms: [{ val: "p + q = 5, p*q = 6", color: "blue" }] }
-      },
-      {
-        equation: "x² + 2x + 3x + 6",
-        desc: "Identify Factors & Split: The numbers are 2 and 3 because 2 + 3 = 5 and 2 * 3 = 6. Split the middle term 5x into 2x + 3x.",
-        left: { type: "expression", action: null, terms: [{ val: "x² + 2x", color: "blue" }, { val: " + 3x + 6", color: "purple" }] },
-        right: { type: "expression", action: null, terms: [{ val: "2 and 3", color: "green" }] }
-      },
-      {
-        equation: "x(x + 2) + 3(x + 2)",
-        desc: "Factor by Grouping: Factor out x from the first two terms, and 3 from the last two terms. Notice (x + 2) is common.",
-        left: { type: "expression", action: null, terms: [{ val: "x(x + 2)", color: "blue" }, { val: " + 3(x + 2)", color: "purple" }] },
-        right: { type: "expression", action: null, terms: [{ val: "Common: (x+2)", color: "green" }] }
-      },
-      {
-        equation: "(x + 2)(x + 3)",
-        desc: "Factored Form: Factor out the common binomial (x + 2) to get the final factored trinomial expression.",
-        left: { type: "expression", action: null, terms: [{ val: "(x + 2)", color: "blue", active: true }] },
-        right: { type: "expression", action: null, terms: [{ val: "(x + 3)", color: "green", active: true }] }
-      }
-    ],
-    practiceQuestions: [
-      {
-        question: "Factor x² + 7x + 12",
-        options: ["(x + 3)(x + 4)", "(x + 2)(x + 6)", "(x + 1)(x + 12)", "(x - 3)(x - 4)"],
-        correctIndex: 0,
-        explanation: "We need two numbers that multiply to 12 and add to 7. These numbers are 3 and 4: (x + 3)(x + 4)."
-      },
-      {
-        question: "Which two numbers multiply to -15 and add to 2?",
-        options: ["-3 and 5", "3 and -5", "-1 and 15", "-5 and -3"],
-        correctIndex: 0,
-        explanation: "-3 * 5 = -15, and -3 + 5 = 2. So the numbers are -3 and 5."
-      },
-      {
-        question: "Factor x² - 5x + 6",
-        options: ["(x - 2)(x - 3)", "(x - 1)(x - 6)", "(x + 2)(x + 3)", "(x + 1)(x - 6)"],
-        correctIndex: 0,
-        explanation: "We need two numbers that multiply to 6 and add to -5. These numbers are -2 and -3: (x - 2)(x - 3)."
-      },
-      {
-        question: "Factor x² - x - 20",
-        options: ["(x - 5)(x + 4)", "(x + 5)(x - 4)", "(x - 10)(x + 2)", "(x - 2)(x + 10)"],
-        correctIndex: 0,
-        explanation: "We need two numbers that multiply to -20 and add to -1. These numbers are -5 and 4: (x - 5)(x + 4)."
-      }
-    ]
-  },
-  "hsa-sse-3b": {
-    id: "hsa-sse-3b",
-    title: "Complete the Square to Find Extremes",
-    subtitle: "Algebra 1 Quadratics",
-    duration: "35 mins",
-    level: "High School Math",
-    topic: "Algebra 1",
-    ccss: "HSA-SSE.B.3.b",
-    prerequisites: [
-      { id: "hsa-sse-3a", title: "Factor Quadratics to Reveal Zeros (HSA-SSE.B.3.a)" }
-    ],
-    introduction: "Completing the square is an algebraic technique used to rewrite a quadratic expression x² + bx + c in the vertex form (x - h)² + k. This form immediately reveals the vertex (h, k), which is the maximum or minimum point.",
-    steps: [
-      {
-        title: "Step 1: Calculate (b / 2)¹",
-        content: "Take the coefficient of the middle linear term (b), divide it by 2, and square the result. For x² + 6x, b = 6, so (6 / 2)² = 9."
-      },
-      {
-        title: "Step 2: Add and Subtract this Constant",
-        content: "Add and subtract this value inside the expression to keep it equivalent: x² + 6x + 9 - 9."
-      },
-      {
-        title: "Step 3: Write in Vertex Form",
-        content: "Factor the perfect square trinomial (x² + bx + (b/2)²) into (x + b/2)² and combine remaining constants: (x + 3)² - 9."
-      }
-    ],
-    mathBox: {
       title: "Vertex Form formula",
       equations: [
-        { desc: "Standard Form", formula: "x² + bx + c" },
-        { desc: "Vertex Form", formula: "(x - h)² + k" },
+        { desc: "Standard Form", formula: "ax² + bx + c" },
+        { desc: "Vertex Form", formula: "a(x - h)² + k" },
         { desc: "Extremum Vertex", formula: "Vertex coordinate: (h, k)" }
       ]
-    },
-    animationSteps: [
-      {
-        equation: "x² + 6x + 5",
-        desc: "Original Expression: We want to find the minimum of this quadratic by rewriting it in vertex form.",
-        left: { type: "expression", action: null, terms: [{ val: "x² + 6x", color: "blue" }, { val: " + 5", color: "slate" }] },
-        right: { type: "expression", action: null, terms: [{ val: "c = 5", color: "slate" }] }
-      },
-      {
-        equation: "x² + 6x + 9 - 9 + 5",
-        desc: "Complete the Square: Calculate (6 / 2)² = 9. Add and subtract 9 to keep the expression balanced.",
-        left: { type: "expression", action: null, terms: [{ val: "x² + 6x + 9", color: "blue", active: true }, { val: " - 9 + 5", color: "slate" }] },
-        right: { type: "expression", action: null, terms: [{ val: "Added/subtracted 9", color: "green" }] }
-      },
-      {
-        equation: "(x + 3)² - 9 + 5",
-        desc: "Factor Trinomial: Factor the perfect square trinomial x² + 6x + 9 into (x + 3)².",
-        left: { type: "expression", action: null, terms: [{ val: "(x + 3)²", color: "blue" }, { val: " - 9 + 5", color: "slate" }] },
-        right: { type: "expression", action: null, terms: [{ val: "Perfect square binomial", color: "green" }] }
-      },
-      {
-        equation: "(x + 3)² - 4",
-        desc: "Simplify Constants: Combine -9 + 5 to get -4. The minimum value is -4, occurring at x = -3 (Vertex: -3, -4).",
-        left: { type: "expression", action: null, terms: [{ val: "(x + 3)²", color: "blue" }, { val: " - 4", color: "green", active: true }] },
-        right: { type: "expression", action: null, terms: [{ val: "Minimum value: -4", color: "green" }] }
-      }
-    ],
-    practiceQuestions: [
-      {
-        question: "Complete the square for x² + 8x. What is the value that completes the square?",
-        options: ["4", "8", "16", "64"],
-        correctIndex: 2,
-        explanation: "Take b = 8, divide by 2 to get 4, and square it: 4² = 16."
-      },
-      {
-        question: "Rewrite x² - 10x + 30 in vertex form.",
-        options: ["(x - 5)² + 5", "(x - 5)² - 25", "(x + 5)² + 5", "(x - 10)² + 30"],
-        correctIndex: 0,
-        explanation: "(b/2)² = (-10/2)² = 25. Add/subtract 25: x² - 10x + 25 - 25 + 30 = (x - 5)² + 5."
-      },
-      {
-        question: "For the function f(x) = (x - 4)² + 7, what is the minimum value of f(x)?",
-        options: ["4", "-4", "7", "-7"],
-        correctIndex: 2,
-        explanation: "The vertex form reveals the minimum value is the constant term outside, which is 7."
-      }
-    ]
+    }
   },
   "hsa-sse-3c": {
     id: "hsa-sse-3c",

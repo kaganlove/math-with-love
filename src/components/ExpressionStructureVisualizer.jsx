@@ -65,6 +65,15 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
       explanation2: "Now 'slide' the original leading coefficient (2) back under the constants. Simplify the fractions (2/2 = 1) and move any remaining denominators to the front of x: (x + 1)(2x + 3)."
     },
     {
+      title: "Completing the Square (a = 1)",
+      original: "x² + 6x + 5",
+      structured: "(x² + 6x + 9 - 9) + 5",
+      factored: "(x + 3)² - 4",
+      explanation0: "Take half of the linear coefficient 6 (which is 3), square it (9), and both add and subtract it to keep the expression balanced.",
+      explanation1: "Group the perfect square trinomial part: (x² + 6x + 9) factors to (x + 3)².",
+      explanation2: "Combine the remaining constants outside the parentheses: -9 + 5 = -4. This gives the vertex form: (x + 3)² - 4."
+    },
+    {
       title: "Completing the Square (a ≠ 1)",
       original: "2x² + 8x + 6",
       structured: "2(x² + 4x + 4 - 4) + 6",
