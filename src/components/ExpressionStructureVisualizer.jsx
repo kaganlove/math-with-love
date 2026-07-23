@@ -436,8 +436,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
         <h3 style={{ fontSize: "1.25rem", fontWeight: "700", marginTop: "0.5rem", color: "#ffffff", marginBottom: "0.25rem" }}>
           {isDragPage ? "Interactive Factoring Sandbox" : "Step-by-Step Factoring Pattern"}
         </h3>
-        <div style={{ fontSize: "1rem", color: "#94a3b8", fontWeight: "600", fontFamily: "Outfit, sans-serif" }}>
-          Original: <span style={{ color: "#3b82f6" }}>{pageIndex === 3 ? "2x² + 7x + 6" : config.original}</span>
+        <div style={{ fontSize: "1.45rem", color: "#3b82f6", fontWeight: "700", fontFamily: "Outfit, sans-serif", marginTop: "0.5rem" }}>
+          {pageIndex === 3 ? "2x² + 7x + 6" : config.original}
         </div>
       </div>
 
