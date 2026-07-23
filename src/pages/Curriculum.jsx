@@ -432,11 +432,11 @@ export default function Curriculum() {
                         <ArrowLeft size={14} /> Back
                       </button>
                       
-                      <div style={{ textAlign: "center" }}>
-                        <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: "1.2" }}>
                           Topic {activePageIdx + 1} of {activeLesson.pages.length}
                         </span>
-                        <h4 style={{ margin: "2px 0 0 0", fontSize: "1rem", color: "#ffffff", fontWeight: "700" }}>
+                        <h4 style={{ margin: "0.2rem 0 0 0", fontSize: "1.25rem", color: "#ffffff", fontWeight: "700", fontFamily: "Outfit, sans-serif", letterSpacing: "0.01em" }}>
                           {currentPage.title}
                         </h4>
                       </div>
@@ -567,11 +567,11 @@ export default function Curriculum() {
                           <ArrowLeft size={14} /> Back
                         </button>
                         
-                        <div style={{ textAlign: "center" }}>
-                          <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: "1.2" }}>
                             Topic {activePageIdx + 1} of {activeLesson.pages.length}
                           </span>
-                          <h4 style={{ margin: "2px 0 0 0", fontSize: "1rem", color: "#ffffff", fontWeight: "700" }}>
+                          <h4 style={{ margin: "0.2rem 0 0 0", fontSize: "1.25rem", color: "#ffffff", fontWeight: "700", fontFamily: "Outfit, sans-serif", letterSpacing: "0.01em" }}>
                             {currentPage.title}
                           </h4>
                         </div>
@@ -693,11 +693,11 @@ export default function Curriculum() {
                           <ArrowLeft size={14} /> Back
                         </button>
                         
-                        <div style={{ textAlign: "center" }}>
-                          <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ fontSize: "0.75rem", fontWeight: "bold", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", lineHeight: "1.2" }}>
                             Topic {activePageIdx + 1} of {activeLesson.pages.length}
                           </span>
-                          <h4 style={{ margin: "2px 0 0 0", fontSize: "1rem", color: "#ffffff", fontWeight: "700" }}>
+                          <h4 style={{ margin: "0.2rem 0 0 0", fontSize: "1.25rem", color: "#ffffff", fontWeight: "700", fontFamily: "Outfit, sans-serif", letterSpacing: "0.01em" }}>
                             {currentPage.title}
                           </h4>
                         </div>

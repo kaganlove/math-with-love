@@ -1281,14 +1281,14 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                       Multiply the leading coefficient (2) by the constant (3):
                     </span>
 
-                    <div style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "100px", minWidth: "300px", userSelect: "none" }}>
+                    <div style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", fontSize: "2.2rem", fontWeight: "bold", fontFamily: "Outfit, sans-serif", color: "#ffffff", height: "100px", minWidth: "300px", userSelect: "none" }}>
                       
-                      {/* SVG Curved arrow from 2 to 3 */}
+                      {/* SVG Curved arrow from 2 to 3 - Over Arch */}
                       <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible", pointerEvents: "none" }}>
-                        {slipAnimationState === "slipping" && (
+                        {(slipAnimationState === "slipping" || slipAnimationState === "multiplying") && (
                           <>
                             <path
-                              d="M 68 35 Q 150 100 232 35"
+                              d="M 72 25 Q 150 -25 228 25"
                               fill="none"
                               stroke="#3b82f6"
                               strokeWidth="3.5"
@@ -1297,20 +1297,30 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                             />
                             {/* Arrow head */}
                             <path
-                              d="M 232 35 L 220 38 L 226 27 Z"
+                              d="M 228 25 L 216 22 L 222 34 Z"
                               fill="#3b82f6"
                             />
                           </>
                         )}
                       </svg>
 
-                      <span style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#60a5fa" : "#ffffff", fontWeight: "bold", marginRight: "0.25rem" }}>2</span>
-                      <span>x² + 5x + </span>
-                      <span style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#60a5fa" : "#ffffff", fontWeight: "bold", marginLeft: "0.25rem" }}>3</span>
+                      {slipAnimationState === "multiplying" ? (
+                        <>
+                          <span style={{ textDecoration: "line-through", color: "#ef4444", opacity: 0.4, marginRight: "0.25rem", transition: "all 0.3s ease" }}>2</span>
+                          <span>x² + 5x + </span>
+                          <span style={{ color: "#4ade80", fontWeight: "bold", fontSize: "2.5rem", transition: "all 0.3s ease", animation: "pulse 1s infinite" }}>6</span>
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#3b82f6" : "#ffffff", fontWeight: "bold", marginRight: "0.25rem" }}>2</span>
+                          <span>x² + 5x + </span>
+                          <span style={{ transition: "all 0.5s ease", transform: slipAnimationState === "slipping" ? "scale(1.2)" : "none", color: slipAnimationState === "slipping" ? "#3b82f6" : "#ffffff", fontWeight: "bold", marginLeft: "0.25rem" }}>3</span>
+                        </>
+                      )}
                     </div>
 
-                    {slipAnimationState === "slipping" && (
-                      <div className="animate-fade-in" style={{ fontSize: "1.2rem", color: "#60a5fa", fontWeight: "bold", marginTop: "1rem" }}>
+                    {(slipAnimationState === "slipping" || slipAnimationState === "multiplying") && (
+                      <div className="animate-fade-in" style={{ fontSize: "1.25rem", color: "#60a5fa", fontWeight: "bold", marginTop: "1rem", fontFamily: "Outfit, sans-serif" }}>
                         2 × 3 = 6
                       </div>
                     )}
@@ -1321,9 +1331,12 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                           onClick={() => {
                             setSlipAnimationState("slipping");
                             setTimeout(() => {
+                              setSlipAnimationState("multiplying");
+                            }, 1600);
+                            setTimeout(() => {
                               setSlipAnimationState("slipped");
                               setSlipStep(1);
-                            }, 2500);
+                            }, 3400);
                           }}
                           className="btn-primary"
                           style={{ padding: "0.6rem 1.5rem", fontWeight: "bold" }}
@@ -1336,7 +1349,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                           className="btn-secondary"
                           style={{ padding: "0.6rem 1.5rem", fontWeight: "bold", opacity: 0.7, cursor: "not-allowed" }}
                         >
-                          Slipping...
+                          {slipAnimationState === "slipping" ? "Slipping..." : "Multiplying..."}
                         </button>
                       )}
                     </div>
@@ -1475,6 +1488,11 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                 {slipStep === 2 && !finalFactored && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
                     
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", borderRadius: "8px", backgroundColor: "rgba(59, 130, 246, 0.1)", border: "1px solid rgba(59, 130, 246, 0.2)", fontSize: "0.85rem", color: "#60a5fa", marginBottom: "1.5rem" }}>
+                      <span>💡</span>
+                      <span><strong>Reminder:</strong> The coefficient we initially slipped off was <strong>2</strong>.</span>
+                    </div>
+
                     {slideAnimationState === "idle" && (
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
                         <span style={{ fontSize: "1rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "1.5rem" }}>
@@ -1554,7 +1572,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                           {/* SVG arrow sliding the denominator 2 to the front */}
                           <svg style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible", pointerEvents: "none" }}>
                             <path
-                              d="M 230 65 Q 185 105 142 50"
+                              d="M 240 70 Q 187 115 135 55"
                               fill="none"
                               stroke="#eab308"
                               strokeWidth="3.5"
@@ -1563,7 +1581,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                             />
                             {/* Arrow marker */}
                             <path
-                              d="M 142 50 L 153 52 L 148 61 Z"
+                              d="M 135 55 L 147 57 L 140 68 Z"
                               fill="#eab308"
                             />
                           </svg>
