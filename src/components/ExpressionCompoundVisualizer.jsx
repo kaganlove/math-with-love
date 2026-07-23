@@ -170,7 +170,7 @@ export default function ExpressionCompoundVisualizer() {
                 cursor: "grab",
                 userSelect: "none",
                 touchAction: "none",
-                opacity: isDragging ? 0.3 : 1,
+                opacity: isDragging ? 0.55 : 1,
                 boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
                 border: "1.5px solid rgba(255,255,255,0.2)"
               }}
@@ -193,7 +193,7 @@ export default function ExpressionCompoundVisualizer() {
               display: "inline-flex",
               alignItems: "center",
               gap: "0.5rem",
-              backgroundColor: isHovered ? "#22c55e" : "#4f46e5",
+              backgroundColor: isHovered ? "#22c55e" : "#6366f1",
               color: "#ffffff",
               padding: "0.5rem 1rem",
               borderRadius: "8px",
@@ -203,6 +203,7 @@ export default function ExpressionCompoundVisualizer() {
               border: "1.5px solid rgba(255,255,255,0.3)"
             }}
           >
+            <span style={{ fontSize: "1.1rem" }}>☰</span>
             <span>u = (x + 3)</span>
           </div>
         )}

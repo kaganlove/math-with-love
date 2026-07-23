@@ -1178,7 +1178,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                           border: leftGCFDropped ? "1.5px dashed rgba(59, 130, 246, 0.3)" : "1.5px solid #3b82f6",
                           color: leftGCFDropped ? "#475569" : "#60a5fa",
                           cursor: leftGCFDropped ? "default" : "grab",
-                          opacity: leftGCFDropped ? 0.35 : 1,
+                          opacity: leftGCFDropped ? 0.35 : (isDragging && activeDragValue === "2x" ? 0.55 : 1),
                           pointerEvents: leftGCFDropped ? "none" : "auto",
                           transition: "all 0.2s"
                         }}
@@ -1200,7 +1200,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                           border: finalCommonFactorDropped ? "1.5px dashed rgba(168, 85, 247, 0.3)" : "1.5px solid #a855f7",
                           color: finalCommonFactorDropped ? "#475569" : "#c084fc",
                           cursor: finalCommonFactorDropped ? "default" : "grab",
-                          opacity: finalCommonFactorDropped ? 0.35 : 1,
+                          opacity: finalCommonFactorDropped ? 0.35 : (isDragging && activeDragValue === "x+2" ? 0.55 : 1),
                           pointerEvents: finalCommonFactorDropped ? "none" : "auto",
                           transition: "all 0.2s"
                         }}
@@ -1224,7 +1224,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                           border: rightGCFDropped ? "1.5px dashed rgba(59, 130, 246, 0.3)" : "1.5px solid #3b82f6",
                           color: rightGCFDropped ? "#475569" : "#60a5fa",
                           cursor: rightGCFDropped ? "default" : "grab",
-                          opacity: rightGCFDropped ? 0.35 : 1,
+                          opacity: rightGCFDropped ? 0.35 : (isDragging && activeDragValue === "3" ? 0.55 : 1),
                           pointerEvents: rightGCFDropped ? "none" : "auto",
                           transition: "all 0.2s"
                         }}
@@ -1246,7 +1246,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                           border: finalCommonFactorDropped ? "1.5px dashed rgba(168, 85, 247, 0.3)" : "1.5px solid #a855f7",
                           color: finalCommonFactorDropped ? "#475569" : "#c084fc",
                           cursor: finalCommonFactorDropped ? "default" : "grab",
-                          opacity: finalCommonFactorDropped ? 0.35 : 1,
+                          opacity: finalCommonFactorDropped ? 0.35 : (isDragging && activeDragValue === "x+2" ? 0.55 : 1),
                           pointerEvents: finalCommonFactorDropped ? "none" : "auto",
                           transition: "all 0.2s"
                         }}
@@ -1837,7 +1837,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                     cursor: "grab",
                     userSelect: "none",
                     touchAction: "none",
-                    opacity: isDragging ? 0.3 : 1,
+                    opacity: isDragging ? 0.55 : 1,
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
                     border: "1.5px solid rgba(255,255,255,0.2)"
                   }}
@@ -1873,25 +1873,70 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
             {/* Fixed Floating Clone during Dragging */}
             {isDragging && (
               <div
-                style={{
-                  position: "fixed",
-                  left: `${dragPosition.x - dragStartOffset.current.x}px`,
-                  top: `${dragPosition.y - dragStartOffset.current.y}px`,
-                  zIndex: 9999,
-                  pointerEvents: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  backgroundColor: hoveredZone ? "#22c55e" : "#2563eb",
-                  color: "#ffffff",
-                  padding: "0.5rem 1.25rem",
-                  borderRadius: "8px",
-                  fontSize: "1rem",
-                  fontWeight: "bold",
-                  boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.5)",
-                  border: "1.5px solid rgba(255,255,255,0.3)"
-                }}
+                style={
+                  (pageIndex === 2 || (pageIndex === 4 && slipStep === 1))
+                    ? {
+                        position: "fixed",
+                        left: `${dragPosition.x - dragStartOffset.current.x}px`,
+                        top: `${dragPosition.y - dragStartOffset.current.y}px`,
+                        zIndex: 9999,
+                        pointerEvents: "none",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: hoveredZone ? "#22c55e" : "#3b82f6",
+                        color: "#ffffff",
+                        width: "42px",
+                        height: "42px",
+                        borderRadius: "50%",
+                        fontSize: "1.1rem",
+                        fontWeight: "bold",
+                        boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.5)",
+                        border: "1.5px solid rgba(255,255,255,0.3)"
+                      }
+                    : (pageIndex === 3)
+                    ? {
+                        position: "fixed",
+                        left: `${dragPosition.x - dragStartOffset.current.x}px`,
+                        top: `${dragPosition.y - dragStartOffset.current.y}px`,
+                        zIndex: 9999,
+                        pointerEvents: "none",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "0.2rem 0.6rem",
+                        borderRadius: "6px",
+                        fontSize: "1.2rem",
+                        fontWeight: "bold",
+                        fontFamily: "Outfit, sans-serif",
+                        border: activeDragValue === "x+2" ? "1.5px solid #a855f7" : "1.5px solid #3b82f6",
+                        backgroundColor: hoveredZone ? "#22c55e" : (activeDragValue === "x+2" ? "#a855f7" : "#3b82f6"),
+                        color: "#ffffff",
+                        boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.5)"
+                      }
+                    : {
+                        position: "fixed",
+                        left: `${dragPosition.x - dragStartOffset.current.x}px`,
+                        top: `${dragPosition.y - dragStartOffset.current.y}px`,
+                        zIndex: 9999,
+                        pointerEvents: "none",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                        backgroundColor: hoveredZone ? "#22c55e" : "#3b82f6",
+                        color: "#ffffff",
+                        padding: "0.5rem 1.25rem",
+                        borderRadius: "8px",
+                        fontSize: "1rem",
+                        fontWeight: "bold",
+                        boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.5)",
+                        border: "1.5px solid rgba(255,255,255,0.3)"
+                      }
+                }
               >
+                {!(pageIndex === 2 || (pageIndex === 4 && slipStep === 1) || pageIndex === 3) && (
+                  <span style={{ fontSize: "1.1rem" }}>☰</span>
+                )}
                 <span>{activeDragValue === "x+2" ? "x + 2" : activeDragValue === "2x+3" ? "2x + 3" : activeDragValue}</span>
               </div>
             )}
