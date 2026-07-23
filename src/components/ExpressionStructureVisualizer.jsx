@@ -336,6 +336,41 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   // Determine if this is a custom drag-and-drop page
   const isDragPage = pageIndex === 0 || pageIndex === 1 || pageIndex === 2 || pageIndex === 3;
 
+  // Helper to render draggable factor pills for Trinomials a=1 (pageIndex = 2)
+  const renderFactorPill = (val) => {
+    const isUsed = leftFactor === val || rightFactor === val;
+    return (
+      <div
+        key={val}
+        onPointerDown={(e) => startDrag(e, val)}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#3b82f6",
+          color: "#ffffff",
+          width: "42px",
+          height: "42px",
+          borderRadius: "50%",
+          fontSize: "1.1rem",
+          fontWeight: "bold",
+          cursor: isUsed ? "not-allowed" : "grab",
+          userSelect: "none",
+          touchAction: "none",
+          opacity: isUsed ? 0.25 : (isDragging && activeDragValue === val ? 0.3 : 1),
+          pointerEvents: isUsed ? "none" : "auto",
+          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+          border: "1.5px solid rgba(255,255,255,0.2)",
+          transition: "all 0.2s"
+        }}
+      >
+        {val}
+      </div>
+    );
+  };
+
   return (
     <div className="interactive-parts-card" style={{ touchAction: "none" }}>
       <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
@@ -1114,40 +1149,20 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
             {pageIndex === 2 && !finalFactored && (
               <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}>
                 <span style={{ fontSize: "0.85rem", color: "#94a3b8", fontWeight: "600" }}>Drag the correct factor pair of 6:</span>
-                <div style={{ display: "flex", gap: "1rem" }}>
-                  {[1, 2, 3, 6].map((val) => {
-                    const isUsed = leftFactor === val || rightFactor === val;
-                    return (
-                      <div
-                        key={val}
-                        onPointerDown={(e) => startDrag(e, val)}
-                        onPointerMove={handlePointerMove}
-                        onPointerUp={handlePointerUp}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: "#3b82f6",
-                          color: "#ffffff",
-                          width: "42px",
-                          height: "42px",
-                          borderRadius: "50%",
-                          fontSize: "1.1rem",
-                          fontWeight: "bold",
-                          cursor: isUsed ? "not-allowed" : "grab",
-                          userSelect: "none",
-                          touchAction: "none",
-                          opacity: isUsed ? 0.25 : (isDragging && activeDragValue === val ? 0.3 : 1),
-                          pointerEvents: isUsed ? "none" : "auto",
-                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                          border: "1.5px solid rgba(255,255,255,0.2)",
-                          transition: "all 0.2s"
-                        }}
-                      >
-                        {val}
-                      </div>
-                    );
-                  })}
+                <div style={{ display: "flex", gap: "2rem", justifyContent: "center" }}>
+                  {/* Pair 1: 1 x 6 */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "8px", border: "1px solid #1e293b", backgroundColor: "rgba(30, 41, 59, 0.4)" }}>
+                    {renderFactorPill(1)}
+                    <span style={{ fontSize: "1.1rem", color: "#64748b", fontWeight: "bold" }}>×</span>
+                    {renderFactorPill(6)}
+                  </div>
+
+                  {/* Pair 2: 2 x 3 */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "8px", border: "1px solid #1e293b", backgroundColor: "rgba(30, 41, 59, 0.4)" }}>
+                    {renderFactorPill(2)}
+                    <span style={{ fontSize: "1.1rem", color: "#64748b", fontWeight: "bold" }}>×</span>
+                    {renderFactorPill(3)}
+                  </div>
                 </div>
               </div>
             )}
