@@ -16,9 +16,21 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const [rightFactor, setRightFactor] = useState(null);
   const [activeDragValue, setActiveDragValue] = useState(null);
 
+  // Grouping states for pageIndex = 3
+  const [groupingStep, setGroupingStep] = useState(0);
+  const [splitChoiceError, setSplitChoiceError] = useState(null);
+  const [leftGCFExtracted, setLeftGCFExtracted] = useState(false);
+  const [rightGCFExtracted, setRightGCFExtracted] = useState(false);
+  const [leftGCFSelectionOpen, setLeftGCFSelectionOpen] = useState(false);
+  const [rightGCFSelectionOpen, setRightGCFSelectionOpen] = useState(false);
+  const [leftGCFError, setLeftGCFError] = useState(null);
+  const [rightGCFError, setRightGCFError] = useState(null);
+  const [finalCommonFactorDropped, setFinalCommonFactorDropped] = useState(false);
+  const [finalLeftoversDropped, setFinalLeftoversDropped] = useState(false);
+
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [hoveredZone, setHoveredZone] = useState(null); // "6x" | "9" | "blank" | "blank1" | "blank2" | "leftZone" | "rightZone"
+  const [hoveredZone, setHoveredZone] = useState(null); // "6x" | "9" | "blank" | "blank1" | "blank2" | "leftZone" | "rightZone" | "commonZone" | "leftoversZone"
   const [finalFactored, setFinalFactored] = useState(false);
 
   const zone9Ref = useRef(null);
@@ -28,6 +40,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const blank2Ref = useRef(null);
   const leftZoneRef = useRef(null);
   const rightZoneRef = useRef(null);
+  const commonZoneRef = useRef(null);
+  const leftoversZoneRef = useRef(null);
   const dragRef = useRef(null);
   const dragStartOffset = useRef({ x: 0, y: 0 });
 
@@ -42,6 +56,16 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setLeftFactor(null);
     setRightFactor(null);
     setActiveDragValue(null);
+    setGroupingStep(0);
+    setSplitChoiceError(null);
+    setLeftGCFExtracted(false);
+    setRightGCFExtracted(false);
+    setLeftGCFSelectionOpen(false);
+    setRightGCFSelectionOpen(false);
+    setLeftGCFError(null);
+    setRightGCFError(null);
+    setFinalCommonFactorDropped(false);
+    setFinalLeftoversDropped(false);
     setFinalFactored(false);
     setIsDragging(false);
     setHoveredZone(null);
@@ -61,6 +85,13 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     }
   }, [leftFactor, rightFactor, pageIndex]);
 
+  // Self-heal/sync finalFactored for Grouping pageIndex = 3 once both final factors are placed
+  useEffect(() => {
+    if (pageIndex === 3 && finalCommonFactorDropped && finalLeftoversDropped) {
+      setFinalFactored(true);
+    }
+  }, [finalCommonFactorDropped, finalLeftoversDropped, pageIndex]);
+
   const handleNextStep = () => {
     setStep((prev) => (prev < 2 ? prev + 1 : 0));
   };
@@ -75,6 +106,16 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setLeftFactor(null);
     setRightFactor(null);
     setActiveDragValue(null);
+    setGroupingStep(0);
+    setSplitChoiceError(null);
+    setLeftGCFExtracted(false);
+    setRightGCFExtracted(false);
+    setLeftGCFSelectionOpen(false);
+    setRightGCFSelectionOpen(false);
+    setLeftGCFError(null);
+    setRightGCFError(null);
+    setFinalCommonFactorDropped(false);
+    setFinalLeftoversDropped(false);
     setFinalFactored(false);
     setIsDragging(false);
     setHoveredZone(null);
@@ -85,6 +126,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     if (pageIndex === 0 && factoredBlankReplaced) return;
     if (pageIndex === 1 && factoredBlank1Replaced && factoredBlank2Replaced) return;
     if (pageIndex === 2 && leftFactor !== null && rightFactor !== null) return;
+    if (pageIndex === 3 && finalCommonFactorDropped && finalLeftoversDropped) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     dragStartOffset.current = {
@@ -162,6 +204,21 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
           hover = "rightZone";
         }
       }
+    } else if (pageIndex === 3) {
+      if (groupingStep === 2) {
+        if (!finalCommonFactorDropped && commonZoneRef.current) {
+          const rect = commonZoneRef.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "commonZone";
+          }
+        }
+        if (!finalLeftoversDropped && leftoversZoneRef.current) {
+          const rect = leftoversZoneRef.current.getBoundingClientRect();
+          if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+            hover = "leftoversZone";
+          }
+        }
+      }
     }
     setHoveredZone(hover);
   };
@@ -193,6 +250,14 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
         if (leftFactor !== activeDragValue) {
           setRightFactor(activeDragValue);
         }
+      }
+    } else if (hoveredZone === "commonZone") {
+      if (activeDragValue === "x+2") {
+        setFinalCommonFactorDropped(true);
+      }
+    } else if (hoveredZone === "leftoversZone") {
+      if (activeDragValue === "2x+3") {
+        setFinalLeftoversDropped(true);
       }
     }
     setHoveredZone(null);
@@ -269,7 +334,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const config = pagesConfig[pageIndex] || pagesConfig[0];
 
   // Determine if this is a custom drag-and-drop page
-  const isDragPage = pageIndex === 0 || pageIndex === 1 || pageIndex === 2;
+  const isDragPage = pageIndex === 0 || pageIndex === 1 || pageIndex === 2 || pageIndex === 3;
 
   return (
     <div className="interactive-parts-card" style={{ touchAction: "none" }}>
@@ -403,9 +468,12 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                     </>
                   )}
                 </>
-              ) : (
+              ) : pageIndex === 2 ? (
                 /* TRINOMIALS A = 1 */
                 <span style={{ fontSize: "2rem" }}>x² + 5x + 6</span>
+              ) : (
+                /* GROUPING (pageIndex === 3) */
+                <span style={{ fontSize: "2rem" }}>2x² + 7x + 6</span>
               )}
             </div>
 
@@ -489,6 +557,397 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                 >
                   {rightFactor !== null ? rightFactor : "?"}
                 </div>
+              </div>
+            )}
+
+            {/* Factoring by Grouping Game Layout (Only for pageIndex === 3) */}
+            {pageIndex === 3 && (
+              <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }} className="animate-fade-in">
+                
+                {/* Stage 0: Split Choice */}
+                {groupingStep === 0 && (
+                  <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "0.75rem", width: "100%", maxWidth: "340px" }}>
+                    <span style={{ fontSize: "0.9rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "0.25rem" }}>
+                      Choose how to split the middle term 7x:
+                    </span>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                      {[
+                        { label: "x + 6x", correct: false },
+                        { label: "2x + 5x", correct: false },
+                        { label: "3x + 4x", correct: true },
+                        { label: "5x + 2x", correct: false },
+                        { label: "6x + x", correct: false }
+                      ].map((opt, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            if (opt.correct) {
+                              setGroupingStep(1);
+                              setSplitChoiceError(null);
+                            } else {
+                              setSplitChoiceError(`Incorrect! We need a split where factors of a·c (2·6 = 12) add to b (7). Only 3 and 4 multiply to 12 and add to 7.`);
+                            }
+                          }}
+                          className="btn-secondary"
+                          style={{
+                            padding: "0.5rem",
+                            borderRadius: "8px",
+                            border: "1.5px solid #1e293b",
+                            backgroundColor: "rgba(30, 41, 59, 0.6)",
+                            color: "#ffffff",
+                            fontWeight: "600",
+                            fontSize: "0.95rem",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease"
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                    {splitChoiceError && (
+                      <div 
+                        style={{ 
+                          marginTop: "0.5rem", 
+                          color: "#f87171", 
+                          fontSize: "0.8rem", 
+                          backgroundColor: "rgba(248, 113, 113, 0.08)", 
+                          padding: "0.5rem 0.75rem", 
+                          borderRadius: "6px",
+                          border: "1px solid rgba(248, 113, 113, 0.25)",
+                          lineHeight: "1.4"
+                        }}
+                      >
+                        {splitChoiceError}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Stage 1: Click Groups to extract GCF */}
+                {groupingStep === 1 && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%", marginTop: "1rem" }}>
+                    <span style={{ fontSize: "0.9rem", color: "#cbd5e1", fontWeight: "600", marginBottom: "1.5rem" }}>
+                      Click on each group to factor out its GCF:
+                    </span>
+                    <div 
+                      style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        gap: "0.75rem", 
+                        fontSize: "1.6rem", 
+                        fontWeight: "bold", 
+                        fontFamily: "Outfit, sans-serif" 
+                      }}
+                    >
+                      {/* Left Group Card */}
+                      <div style={{ position: "relative" }}>
+                        {leftGCFExtracted ? (
+                          <span 
+                            style={{ 
+                              color: "#a855f7", 
+                              border: "1.5px solid rgba(168, 85, 247, 0.3)", 
+                              padding: "0.4rem 0.8rem", 
+                              borderRadius: "8px", 
+                              backgroundColor: "rgba(168, 85, 247, 0.08)",
+                              display: "inline-block"
+                            }}
+                          >
+                            2x(x + 2)
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setLeftGCFSelectionOpen(!leftGCFSelectionOpen);
+                              setRightGCFSelectionOpen(false);
+                            }}
+                            className="pulse-border"
+                            style={{
+                              fontSize: "1.5rem",
+                              fontWeight: "bold",
+                              color: "#60a5fa",
+                              background: "rgba(15, 23, 42, 0.8)",
+                              border: leftGCFSelectionOpen ? "2px solid #3b82f6" : "2px dashed rgba(96, 165, 250, 0.4)",
+                              padding: "0.4rem 0.8rem",
+                              borderRadius: "8px",
+                              cursor: "pointer",
+                              outline: "none"
+                            }}
+                          >
+                            (2x² + 4x)
+                          </button>
+                        )}
+                        
+                        {leftGCFSelectionOpen && (
+                          <div 
+                            style={{
+                              position: "absolute",
+                              top: "100%",
+                              left: "50%",
+                              transform: "translateX(-50%) translateY(8px)",
+                              backgroundColor: "#1e293b",
+                              border: "1.5px solid #3b82f6",
+                              borderRadius: "10px",
+                              padding: "0.75rem",
+                              zIndex: 10,
+                              width: "180px",
+                              boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)"
+                            }}
+                          >
+                            <span style={{ fontSize: "0.75rem", color: "#94a3b8", display: "block", marginBottom: "0.5rem", fontWeight: "bold" }}>GCF of (2x² + 4x):</span>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
+                              {["2", "x", "2x", "4"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  onClick={() => {
+                                    if (opt === "2x") {
+                                      setLeftGCFExtracted(true);
+                                      setLeftGCFSelectionOpen(false);
+                                      setLeftGCFError(null);
+                                    } else {
+                                      setLeftGCFError("Choose the complete GCF of both number and variable.");
+                                    }
+                                  }}
+                                  style={{
+                                    backgroundColor: "rgba(15, 23, 42, 0.6)",
+                                    border: "1px solid #475569",
+                                    color: "#ffffff",
+                                    padding: "0.3rem",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontSize: "0.85rem",
+                                    fontWeight: "bold"
+                                  }}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                            {leftGCFError && (
+                              <span style={{ fontSize: "0.7rem", color: "#f87171", display: "block", marginTop: "0.5rem", lineHeight: "1.3" }}>{leftGCFError}</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <span>+</span>
+
+                      {/* Right Group Card */}
+                      <div style={{ position: "relative" }}>
+                        {rightGCFExtracted ? (
+                          <span 
+                            style={{ 
+                              color: "#a855f7", 
+                              border: "1.5px solid rgba(168, 85, 247, 0.3)", 
+                              padding: "0.4rem 0.8rem", 
+                              borderRadius: "8px", 
+                              backgroundColor: "rgba(168, 85, 247, 0.08)",
+                              display: "inline-block"
+                            }}
+                          >
+                            3(x + 2)
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setRightGCFSelectionOpen(!rightGCFSelectionOpen);
+                              setLeftGCFSelectionOpen(false);
+                            }}
+                            className="pulse-border"
+                            style={{
+                              fontSize: "1.5rem",
+                              fontWeight: "bold",
+                              color: "#60a5fa",
+                              background: "rgba(15, 23, 42, 0.8)",
+                              border: rightGCFSelectionOpen ? "2px solid #3b82f6" : "2px dashed rgba(96, 165, 250, 0.4)",
+                              padding: "0.4rem 0.8rem",
+                              borderRadius: "8px",
+                              cursor: "pointer",
+                              outline: "none"
+                            }}
+                          >
+                            (3x + 6)
+                          </button>
+                        )}
+
+                        {rightGCFSelectionOpen && (
+                          <div 
+                            style={{
+                              position: "absolute",
+                              top: "100%",
+                              left: "50%",
+                              transform: "translateX(-50%) translateY(8px)",
+                              backgroundColor: "#1e293b",
+                              border: "1.5px solid #3b82f6",
+                              borderRadius: "10px",
+                              padding: "0.75rem",
+                              zIndex: 10,
+                              width: "180px",
+                              boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)"
+                            }}
+                          >
+                            <span style={{ fontSize: "0.75rem", color: "#94a3b8", display: "block", marginBottom: "0.5rem", fontWeight: "bold" }}>GCF of (3x + 6):</span>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
+                              {["3", "6", "x", "3x"].map((opt) => (
+                                <button
+                                  key={opt}
+                                  onClick={() => {
+                                    if (opt === "3") {
+                                      setRightGCFExtracted(true);
+                                      setRightGCFSelectionOpen(false);
+                                      setRightGCFError(null);
+                                    } else {
+                                      setRightGCFError("Choose the largest common factor that divides both 3 and 6.");
+                                    }
+                                  }}
+                                  style={{
+                                    backgroundColor: "rgba(15, 23, 42, 0.6)",
+                                    border: "1px solid #475569",
+                                    color: "#ffffff",
+                                    padding: "0.3rem",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontSize: "0.85rem",
+                                    fontWeight: "bold"
+                                  }}
+                                >
+                                  {opt}
+                                </button>
+                              ))}
+                            </div>
+                            {rightGCFError && (
+                              <span style={{ fontSize: "0.7rem", color: "#f87171", display: "block", marginTop: "0.5rem", lineHeight: "1.3" }}>{rightGCFError}</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {leftGCFExtracted && rightGCFExtracted && (
+                      <button
+                        onClick={() => setGroupingStep(2)}
+                        className="btn-primary animate-fade-in"
+                        style={{ marginTop: "2.5rem", padding: "0.5rem 1.25rem", fontWeight: "bold", fontSize: "0.95rem" }}
+                      >
+                        GCFs Extracted! Proceed
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Stage 2: Drag and drop final common / leftovers */}
+                {groupingStep === 2 && !finalFactored && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+                    <div style={{ fontSize: "1.5rem", color: "#cbd5e1", fontWeight: "bold", marginBottom: "1rem", fontFamily: "Outfit, sans-serif" }}>
+                      2x(x + 2) + 3(x + 2)
+                    </div>
+
+                    <div 
+                      style={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        fontSize: "2rem", 
+                        marginTop: "1.5rem", 
+                        color: "#d8b4fe", 
+                        gap: "0.2rem",
+                        fontFamily: "Outfit, sans-serif" 
+                      }}
+                    >
+                      <span>(</span>
+                      {finalCommonFactorDropped ? (
+                        <span style={{ color: "#4ade80", fontWeight: "bold", padding: "0 0.2rem" }}>x + 2</span>
+                      ) : (
+                        <span 
+                          ref={commonZoneRef}
+                          style={{
+                            border: hoveredZone === "commonZone" ? "2.5px dashed #22c55e" : "2px dashed #a855f7",
+                            backgroundColor: hoveredZone === "commonZone" ? "rgba(34, 197, 94, 0.15)" : "rgba(168, 85, 247, 0.08)",
+                            padding: "0.1rem 0.6rem",
+                            borderRadius: "8px",
+                            color: hoveredZone === "commonZone" ? "#4ade80" : "#cbd5e1",
+                            fontSize: "1.4rem",
+                            transition: "all 0.15s ease",
+                            transform: hoveredZone === "commonZone" ? "scale(1.05)" : "none",
+                            margin: "0 0.25rem",
+                            minWidth: "75px",
+                            display: "inline-block",
+                            textAlign: "center"
+                          }}
+                        >
+                          common
+                        </span>
+                      )}
+                      <span>)(</span>
+                      {finalLeftoversDropped ? (
+                        <span style={{ color: "#4ade80", fontWeight: "bold", padding: "0 0.2rem" }}>2x + 3</span>
+                      ) : (
+                        <span 
+                          ref={leftoversZoneRef}
+                          style={{
+                            border: hoveredZone === "leftoversZone" ? "2.5px dashed #22c55e" : "2px dashed #a855f7",
+                            backgroundColor: hoveredZone === "leftoversZone" ? "rgba(34, 197, 94, 0.15)" : "rgba(168, 85, 247, 0.08)",
+                            padding: "0.1rem 0.6rem",
+                            borderRadius: "8px",
+                            color: hoveredZone === "leftoversZone" ? "#4ade80" : "#cbd5e1",
+                            fontSize: "1.4rem",
+                            transition: "all 0.15s ease",
+                            transform: hoveredZone === "leftoversZone" ? "scale(1.05)" : "none",
+                            margin: "0 0.25rem",
+                            minWidth: "75px",
+                            display: "inline-block",
+                            textAlign: "center"
+                          }}
+                        >
+                          leftovers
+                        </span>
+                      )}
+                      <span>)</span>
+                    </div>
+
+                    <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}>
+                      <span style={{ fontSize: "0.85rem", color: "#94a3b8", fontWeight: "600" }}>Drag common factor and leftovers (coefficients):</span>
+                      <div style={{ display: "flex", gap: "1rem" }}>
+                        {[
+                          { value: "x+2", label: "x + 2" },
+                          { value: "2x+3", label: "2x + 3" }
+                        ].map((item) => {
+                          const isUsed = (item.value === "x+2" && finalCommonFactorDropped) || (item.value === "2x+3" && finalLeftoversDropped);
+                          return (
+                            <div
+                              key={item.value}
+                              onPointerDown={(e) => startDrag(e, item.value)}
+                              onPointerMove={handlePointerMove}
+                              onPointerUp={handlePointerUp}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                backgroundColor: "#3b82f6",
+                                color: "#ffffff",
+                                padding: "0.5rem 1rem",
+                                borderRadius: "8px",
+                                fontSize: "1rem",
+                                fontWeight: "bold",
+                                cursor: isUsed ? "not-allowed" : "grab",
+                                userSelect: "none",
+                                touchAction: "none",
+                                opacity: isUsed ? 0.25 : (isDragging && activeDragValue === item.value ? 0.3 : 1),
+                                pointerEvents: isUsed ? "none" : "auto",
+                                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                border: "1.5px solid rgba(255,255,255,0.2)",
+                                transition: "all 0.2s"
+                              }}
+                            >
+                              {item.label}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                  </div>
+                )}
               </div>
             )}
 
@@ -715,7 +1174,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                   border: "1.5px solid rgba(255,255,255,0.3)"
                 }}
               >
-                <span>{activeDragValue}</span>
+                <span>{activeDragValue === "x+2" ? "x + 2" : activeDragValue === "2x+3" ? "2x + 3" : activeDragValue}</span>
               </div>
             )}
 
@@ -723,7 +1182,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
             {finalFactored && (
               <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <div style={{ fontSize: "2.25rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif" }}>
-                  {pageIndex === 0 ? "(x + 3)²" : pageIndex === 1 ? "(x - 3)(x + 3)" : `(x + ${leftFactor})(x + ${rightFactor})`}
+                  {pageIndex === 0 ? "(x + 3)²" : pageIndex === 1 ? "(x - 3)(x + 3)" : pageIndex === 2 ? `(x + ${leftFactor})(x + ${rightFactor})` : "(x + 2)(2x + 3)"}
                 </div>
                 <button
                   onClick={handleReset}
@@ -821,10 +1280,18 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                   finalFactored 
                     ? "Factored Equivalent Form" 
                     : (zone9Replaced ? "Stage 2: Factor Binomial" : "Stage 1: Rewrite Structure")
-                ) : (
+                ) : pageIndex === 2 ? (
                   finalFactored
                     ? "Factored Equivalent Form"
                     : "The Big X Method"
+                ) : (
+                  finalFactored
+                    ? "Factored Equivalent Form"
+                    : groupingStep === 0
+                      ? "Stage 1: Split Middle Term"
+                      : groupingStep === 1
+                        ? "Stage 2: Click to Extract GCFs"
+                        : "Stage 3: Group and Factor"
                 )
               ) : (
                 <>
@@ -848,10 +1315,18 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                     : (zone9Replaced
                         ? "Awesome! The structured form is revealed. Now, drag the number 3 into both blank spaces inside the binomials to factor it completely!"
                         : "A difference of squares follows the template a² - b² = (a - b)(a + b). Drag the number 3 (since √9 = 3) into the constant term 9 to rewrite it as a perfect square: (3)².")
-                ) : (
+                ) : pageIndex === 2 ? (
                   finalFactored
                     ? "Trinomials factor into the product of binomials: (x + 2)(x + 3)."
                     : "The Big X Method helps us find factors. The top number is the product (c = 6) and the bottom number is the sum (b = 5). Drag the correct factor pair (2 and 3) of 6 into the left and right spots to populate the binomial form!"
+                ) : (
+                  finalFactored
+                    ? "Factoring by grouping splits the terms and factors out their GCFs, yielding: (x + 2)(2x + 3)."
+                    : groupingStep === 0
+                      ? "To factor 2x² + 7x + 6, we need to split 7x into two terms whose coefficients multiply to a·c (2·6 = 12) and add to b (7). Select the correct split from the choices!"
+                      : groupingStep === 1
+                        ? "Great! 7x is split into 3x + 4x, giving groups (2x² + 4x) and (3x + 6). Click on each group button and select its Greatest Common Factor (GCF) to pull it out!"
+                        : "Fantastic! GCFs are pulled out to reveal common binomial factor (x + 2). Drag the common factor '(x + 2)' and leftovers '(2x + 3)' into their zones to factor completely!"
                 )
               ) : (
                 <>
