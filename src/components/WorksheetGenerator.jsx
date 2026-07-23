@@ -75,28 +75,74 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
         ];
       } else if (lessonId === "hsa-sse-2") {
         if (i % 2 === 0) {
-          const bases = [3, 4, 5, 2];
-          const b = bases[i % bases.length];
-          const bSq = b * b;
-          const bQuad = bSq * bSq;
-          equationText = `Factor completely using difference of squares:\nx⁴ - ${bQuad}`;
-          solutionText = `(x - ${b})(x + ${b})(x² + ${bSq})`;
-          stepsText = [
-            `Original: x⁴ - ${bQuad}`,
-            `Rewrite as squares: (x²)² - (${bSq})²`,
-            `First factor step: (x² - ${bSq})(x² + ${bSq})`,
-            `Factor (x² - ${bSq}) further: (x - ${b})(x + ${b})(x² + ${bSq})`
-          ];
+          // Difference of Squares
+          const subType = i % 3;
+          if (subType === 0) {
+            // Simple x² - k²
+            const k = Math.floor(Math.random() * 11) + 2; // 2 to 12
+            const kSq = k * k;
+            equationText = `Factor completely using difference of squares:\nx² - ${kSq}`;
+            solutionText = `(x - ${k})(x + ${k})`;
+            stepsText = [
+              `Original expression: x² - ${kSq}`,
+              `Rewrite as perfect squares: (x)² - (${k})²`,
+              `Apply template a² - b² = (a - b)(a + b): (x - ${k})(x + ${k})`
+            ];
+          } else if (subType === 1) {
+            // Advanced c²x² - k²
+            const coeffs = [2, 3, 4, 5];
+            const c = coeffs[Math.floor(Math.random() * coeffs.length)];
+            const k = Math.floor(Math.random() * 8) + 2; // 2 to 9
+            const cSq = c * c;
+            const kSq = k * k;
+            equationText = `Factor completely using difference of squares:\n${cSq}x² - ${kSq}`;
+            solutionText = `(${c}x - ${k})(${c}x + ${k})`;
+            stepsText = [
+              `Original expression: ${cSq}x² - ${kSq}`,
+              `Rewrite terms as squared bases: (${c}x)² - (${k})²`,
+              `Apply template a² - b² = (a - b)(a + b): (${c}x - ${k})(${c}x + ${k})`
+            ];
+          } else {
+            // Advanced x⁴ - k⁴
+            const bases = [3, 4, 5, 2];
+            const b = bases[i % bases.length];
+            const bSq = b * b;
+            const bQuad = bSq * bSq;
+            equationText = `Factor completely using difference of squares:\nx⁴ - ${bQuad}`;
+            solutionText = `(x - ${b})(x + ${b})(x² + ${bSq})`;
+            stepsText = [
+              `Original expression: x⁴ - ${bQuad}`,
+              `Rewrite as squares: (x²)² - (${bSq})²`,
+              `First factor step: (x² - ${bSq})(x² + ${bSq})`,
+              `Factor (x² - ${bSq}) further: (x - ${b})(x + ${b})(x² + ${bSq})`
+            ];
+          }
         } else {
-          const a = Math.floor(Math.random() * 4) + 2;
-          const b = Math.floor(Math.random() * 3) + 2;
-          equationText = `Factor by grouping:\nx³ + ${a}x² + ${b}x + ${a*b}`;
-          solutionText = `(x² + ${b})(x + ${a})`;
-          stepsText = [
-            `Original: x³ + ${a}x² + ${b}x + ${a*b}`,
-            `Group first two and last two terms: x²(x + ${a}) + ${b}(x + ${a})`,
-            `Factor out the common binomial (x + ${a}): (x² + ${b})(x + ${a})`
-          ];
+          // Perfect Square Trinomials (x² ± 2kx + k²)
+          const k = Math.floor(Math.random() * 9) + 2; // 2 to 10
+          const kSq = k * k;
+          const middle = 2 * k;
+          const isAddition = Math.random() > 0.5;
+
+          if (isAddition) {
+            equationText = `Factor the perfect square trinomial:\nx² + ${middle}x + ${kSq}`;
+            solutionText = `(x + ${k})²`;
+            stepsText = [
+              `Original trinomial: x² + ${middle}x + ${kSq}`,
+              `Identify square bases: first term is (x)² and last term is (${k})²`,
+              `Verify middle term: 2 · (x) · (${k}) = ${middle}x`,
+              `Apply perfect square rule: (x + ${k})²`
+            ];
+          } else {
+            equationText = `Factor the perfect square trinomial:\nx² - ${middle}x + ${kSq}`;
+            solutionText = `(x - ${k})²`;
+            stepsText = [
+              `Original trinomial: x² - ${middle}x + ${kSq}`,
+              `Identify square bases: first term is (x)² and last term is (${k})²`,
+              `Verify middle term: -2 · (x) · (${k}) = -${middle}x`,
+              `Apply perfect square rule: (x - ${k})²`
+            ];
+          }
         }
       } else if (lessonId === "hsa-sse-3b") {
         const b = (Math.floor(Math.random() * 5) + 2) * 2; // 4, 6, 8, 10, 12
@@ -151,21 +197,53 @@ export default function WorksheetGenerator({ lessonId, lessonTitle, ccss, fullWi
           `Result: Sn = ${sumVal}`
         ];
       } else if (lessonId === "hsa-sse-3a") {
-        const p = Math.floor(Math.random() * 8) - 4 || 2; // -4 to 4, non-zero
-        const q = Math.floor(Math.random() * 8) - 4 || 3; // -4 to 4, non-zero
-        const b = p + q;
-        const c = p * q;
-        const bSign = b > 0 ? `+ ${b}` : b < 0 ? `- ${Math.abs(b)}` : "";
-        const cSign = c > 0 ? `+ ${c}` : `- ${Math.abs(c)}`;
-        
-        equationText = `Factor the trinomial:\nx² ${bSign ? `${bSign}x` : ""} ${cSign}`;
-        solutionText = `(x ${p >= 0 ? `+ ${p}` : `- ${Math.abs(p)}`})(x ${q >= 0 ? `+ ${q}` : `- ${Math.abs(q)}`})`;
-        
-        stepsText = [
-          `Trinomial: x² ${bSign ? `${bSign}x` : ""} ${cSign}`,
-          `Find numbers that multiply to ${c} and add to ${b}: ${p} and ${q}`,
-          `Rewrite as binomial product: ${solutionText}`
-        ];
+        const subType = i % 3;
+        if (subType === 0) {
+          // Trinomials (a = 1)
+          const p = Math.floor(Math.random() * 8) - 4 || 2; // -4 to 4, non-zero
+          const q = Math.floor(Math.random() * 8) - 4 || 3; // -4 to 4, non-zero
+          const b = p + q;
+          const c = p * q;
+          const bSign = b > 0 ? `+ ${b}` : b < 0 ? `- ${Math.abs(b)}` : "";
+          const cSign = c > 0 ? `+ ${c}` : `- ${Math.abs(c)}`;
+          
+          equationText = `Factor the trinomial (a = 1):\nx² ${bSign ? `${bSign}x` : ""} ${cSign}`;
+          solutionText = `(x ${p >= 0 ? `+ ${p}` : `- ${Math.abs(p)}`})(x ${q >= 0 ? `+ ${q}` : `- ${Math.abs(q)}`})`;
+          
+          stepsText = [
+            `Trinomial: x² ${bSign ? `${bSign}x` : ""} ${cSign}`,
+            `Find two numbers that multiply to ${c} and add to ${b}: ${p} and ${q}`,
+            `Write factored binomial form: ${solutionText}`
+          ];
+        } else if (subType === 1) {
+          // Factoring by Grouping (a ≠ 1)
+          const a = Math.floor(Math.random() * 4) + 2;
+          const b = Math.floor(Math.random() * 3) + 2;
+          equationText = `Factor by grouping:\nx³ + ${a}x² + ${b}x + ${a*b}`;
+          solutionText = `(x² + ${b})(x + ${a})`;
+          stepsText = [
+            `Original expression: x³ + ${a}x² + ${b}x + ${a*b}`,
+            `Group first two and last two terms: x²(x + ${a}) + ${b}(x + ${a})`,
+            `Factor out the common binomial (x + ${a}): (x² + ${b})(x + ${a})`
+          ];
+        } else {
+          // Slip 'n Slide Method (a ≠ 1)
+          const p = 2;
+          const r = Math.random() > 0.5 ? 1 : 3;
+          const s = Math.random() > 0.5 ? 2 : 1;
+          const a = p;
+          const b = 2 * s + r;
+          const c = r * s;
+          equationText = `Factor using Slip 'n Slide:\n${a}x² + ${b}x + ${c}`;
+          solutionText = `(${a}x + ${r})(x + ${s})`;
+          stepsText = [
+            `Original quadratic: ${a}x² + ${b}x + ${c}`,
+            `'Slip' ${a} to the end (multiply by c): x² + ${b}x + ${a*c}`,
+            `Factor new trinomial: (x + ${a*s})(x + ${r})`,
+            `'Slide' ${a} back under constants: (x + ${a*s}/${a})(x + ${r}/${a})`,
+            `Simplify fractions: (x + ${s})(${a}x + ${r})`
+          ];
+        }
       } else if (lessonId === "hsa-rei-6") {
         const xVal = Math.floor(Math.random() * 6) - 3 || 2; // -3 to 3
         const a = Math.floor(Math.random() * 3) + 1; // 1 to 3
