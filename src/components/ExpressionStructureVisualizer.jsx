@@ -11,9 +11,14 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const [factoredBlank1Replaced, setFactoredBlank1Replaced] = useState(false);
   const [factoredBlank2Replaced, setFactoredBlank2Replaced] = useState(false);
 
+  // Big X states for Trinomials a=1 (pageIndex = 2)
+  const [leftFactor, setLeftFactor] = useState(null);
+  const [rightFactor, setRightFactor] = useState(null);
+  const [activeDragValue, setActiveDragValue] = useState(null);
+
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [hoveredZone, setHoveredZone] = useState(null); // "6x" | "9" | "blank" | "blank1" | "blank2"
+  const [hoveredZone, setHoveredZone] = useState(null); // "6x" | "9" | "blank" | "blank1" | "blank2" | "leftZone" | "rightZone"
   const [finalFactored, setFinalFactored] = useState(false);
 
   const zone9Ref = useRef(null);
@@ -21,6 +26,8 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const blankRef = useRef(null);
   const blank1Ref = useRef(null);
   const blank2Ref = useRef(null);
+  const leftZoneRef = useRef(null);
+  const rightZoneRef = useRef(null);
   const dragRef = useRef(null);
   const dragStartOffset = useRef({ x: 0, y: 0 });
 
@@ -32,6 +39,9 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setFactoredBlankReplaced(false);
     setFactoredBlank1Replaced(false);
     setFactoredBlank2Replaced(false);
+    setLeftFactor(null);
+    setRightFactor(null);
+    setActiveDragValue(null);
     setFinalFactored(false);
     setIsDragging(false);
     setHoveredZone(null);
@@ -44,6 +54,13 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     }
   }, [factoredBlank1Replaced, factoredBlank2Replaced, pageIndex]);
 
+  // Self-heal/sync finalFactored for Trinomials a=1 once both factors are placed in Big X
+  useEffect(() => {
+    if (pageIndex === 2 && leftFactor !== null && rightFactor !== null) {
+      setFinalFactored(true);
+    }
+  }, [leftFactor, rightFactor, pageIndex]);
+
   const handleNextStep = () => {
     setStep((prev) => (prev < 2 ? prev + 1 : 0));
   };
@@ -55,24 +72,29 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
     setFactoredBlankReplaced(false);
     setFactoredBlank1Replaced(false);
     setFactoredBlank2Replaced(false);
+    setLeftFactor(null);
+    setRightFactor(null);
+    setActiveDragValue(null);
     setFinalFactored(false);
     setIsDragging(false);
     setHoveredZone(null);
   };
 
-  const handlePointerDown = (e) => {
+  const startDrag = (e, value) => {
     e.preventDefault();
     if (pageIndex === 0 && factoredBlankReplaced) return;
     if (pageIndex === 1 && factoredBlank1Replaced && factoredBlank2Replaced) return;
+    if (pageIndex === 2 && leftFactor !== null && rightFactor !== null) return;
 
-    const rect = dragRef.current.getBoundingClientRect();
+    const rect = e.currentTarget.getBoundingClientRect();
     dragStartOffset.current = {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     };
+    setActiveDragValue(value);
     setIsDragging(true);
     setDragPosition({ x: e.clientX, y: e.clientY });
-    e.target.setPointerCapture(e.pointerId);
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e) => {
@@ -127,6 +149,19 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
           }
         }
       }
+    } else if (pageIndex === 2) {
+      if (leftFactor === null && leftZoneRef.current) {
+        const rect = leftZoneRef.current.getBoundingClientRect();
+        if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+          hover = "leftZone";
+        }
+      }
+      if (rightFactor === null && rightZoneRef.current) {
+        const rect = rightZoneRef.current.getBoundingClientRect();
+        if (x >= rect.left - 25 && x <= rect.right + 25 && y >= rect.top - 25 && y <= rect.bottom + 25) {
+          hover = "rightZone";
+        }
+      }
     }
     setHoveredZone(hover);
   };
@@ -147,6 +182,18 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
       setFactoredBlank1Replaced(true);
     } else if (hoveredZone === "blank2") {
       setFactoredBlank2Replaced(true);
+    } else if (hoveredZone === "leftZone") {
+      if (activeDragValue === 2 || activeDragValue === 3) {
+        if (rightFactor !== activeDragValue) {
+          setLeftFactor(activeDragValue);
+        }
+      }
+    } else if (hoveredZone === "rightZone") {
+      if (activeDragValue === 2 || activeDragValue === 3) {
+        if (leftFactor !== activeDragValue) {
+          setRightFactor(activeDragValue);
+        }
+      }
     }
     setHoveredZone(null);
   };
@@ -222,7 +269,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
   const config = pagesConfig[pageIndex] || pagesConfig[0];
 
   // Determine if this is a custom drag-and-drop page
-  const isDragPage = pageIndex === 0 || pageIndex === 1;
+  const isDragPage = pageIndex === 0 || pageIndex === 1 || pageIndex === 2;
 
   return (
     <div className="interactive-parts-card" style={{ touchAction: "none" }}>
@@ -280,81 +327,170 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                 userSelect: "none"
               }}
             >
-              <span>x²</span>
-
-              {pageIndex === 0 ? (
-                /* PERFECT SQUARES */
+              {pageIndex === 0 || pageIndex === 1 ? (
                 <>
-                  <span>+</span>
-                  {zone6xReplaced ? (
-                    <span style={{ color: "#d8b4fe", padding: "0 0.2rem" }}>2(x)(3)</span>
+                  <span>x²</span>
+                  {pageIndex === 0 ? (
+                    /* PERFECT SQUARES */
+                    <>
+                      <span>+</span>
+                      {zone6xReplaced ? (
+                        <span style={{ color: "#d8b4fe", padding: "0 0.2rem" }}>2(x)(3)</span>
+                      ) : (
+                        <span 
+                          ref={zone6xRef}
+                          style={{
+                            border: hoveredZone === "6x" ? "2.5px dashed #22c55e" : "2px dashed #ef4444",
+                            backgroundColor: hoveredZone === "6x" ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.05)",
+                            padding: "0.1rem 0.8rem",
+                            borderRadius: "8px",
+                            color: hoveredZone === "6x" ? "#4ade80" : "#e2e8f0",
+                            fontSize: "1.75rem",
+                            transition: "all 0.15s ease",
+                            transform: hoveredZone === "6x" ? "scale(1.05)" : "none",
+                            margin: "0 0.25rem"
+                          }}
+                        >
+                          6x
+                        </span>
+                      )}
+                      <span>+</span>
+                      {zone9Replaced ? (
+                        <span style={{ color: "#d8b4fe", padding: "0 0.2rem" }}>(3)²</span>
+                      ) : (
+                        <span 
+                          ref={zone9Ref}
+                          style={{
+                            border: hoveredZone === "9" ? "2.5px dashed #22c55e" : "2px dashed #ef4444",
+                            backgroundColor: hoveredZone === "9" ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.05)",
+                            padding: "0.1rem 0.8rem",
+                            borderRadius: "8px",
+                            color: hoveredZone === "9" ? "#4ade80" : "#e2e8f0",
+                            fontSize: "1.75rem",
+                            transition: "all 0.15s ease",
+                            transform: hoveredZone === "9" ? "scale(1.05)" : "none",
+                            margin: "0 0.25rem"
+                          }}
+                        >
+                          9
+                        </span>
+                      )}
+                    </>
                   ) : (
-                    <span 
-                      ref={zone6xRef}
-                      style={{
-                        border: hoveredZone === "6x" ? "2.5px dashed #22c55e" : "2px dashed #ef4444",
-                        backgroundColor: hoveredZone === "6x" ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.05)",
-                        padding: "0.1rem 0.8rem",
-                        borderRadius: "8px",
-                        color: hoveredZone === "6x" ? "#4ade80" : "#e2e8f0",
-                        fontSize: "1.75rem",
-                        transition: "all 0.15s ease",
-                        transform: hoveredZone === "6x" ? "scale(1.05)" : "none",
-                        margin: "0 0.25rem"
-                      }}
-                    >
-                      6x
-                    </span>
-                  )}
-                  <span>+</span>
-                  {zone9Replaced ? (
-                    <span style={{ color: "#d8b4fe", padding: "0 0.2rem" }}>(3)²</span>
-                  ) : (
-                    <span 
-                      ref={zone9Ref}
-                      style={{
-                        border: hoveredZone === "9" ? "2.5px dashed #22c55e" : "2px dashed #ef4444",
-                        backgroundColor: hoveredZone === "9" ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.05)",
-                        padding: "0.1rem 0.8rem",
-                        borderRadius: "8px",
-                        color: hoveredZone === "9" ? "#4ade80" : "#e2e8f0",
-                        fontSize: "1.75rem",
-                        transition: "all 0.15s ease",
-                        transform: hoveredZone === "9" ? "scale(1.05)" : "none",
-                        margin: "0 0.25rem"
-                      }}
-                    >
-                      9
-                    </span>
+                    /* DIFFERENCE OF SQUARES */
+                    <>
+                      <span>-</span>
+                      {zone9Replaced ? (
+                        <span style={{ color: "#d8b4fe", padding: "0 0.2rem" }}>(3)²</span>
+                      ) : (
+                        <span 
+                          ref={zone9Ref}
+                          style={{
+                            border: hoveredZone === "9" ? "2.5px dashed #22c55e" : "2px dashed #ef4444",
+                            backgroundColor: hoveredZone === "9" ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.05)",
+                            padding: "0.1rem 0.8rem",
+                            borderRadius: "8px",
+                            color: hoveredZone === "9" ? "#4ade80" : "#e2e8f0",
+                            fontSize: "1.75rem",
+                            transition: "all 0.15s ease",
+                            transform: hoveredZone === "9" ? "scale(1.05)" : "none",
+                            margin: "0 0.25rem"
+                          }}
+                        >
+                          9
+                        </span>
+                      )}
+                    </>
                   )}
                 </>
               ) : (
-                /* DIFFERENCE OF SQUARES */
-                <>
-                  <span>-</span>
-                  {zone9Replaced ? (
-                    <span style={{ color: "#d8b4fe", padding: "0 0.2rem" }}>(3)²</span>
-                  ) : (
-                    <span 
-                      ref={zone9Ref}
-                      style={{
-                        border: hoveredZone === "9" ? "2.5px dashed #22c55e" : "2px dashed #ef4444",
-                        backgroundColor: hoveredZone === "9" ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.05)",
-                        padding: "0.1rem 0.8rem",
-                        borderRadius: "8px",
-                        color: hoveredZone === "9" ? "#4ade80" : "#e2e8f0",
-                        fontSize: "1.75rem",
-                        transition: "all 0.15s ease",
-                        transform: hoveredZone === "9" ? "scale(1.05)" : "none",
-                        margin: "0 0.25rem"
-                      }}
-                    >
-                      9
-                    </span>
-                  )}
-                </>
+                /* TRINOMIALS A = 1 */
+                <span style={{ fontSize: "2rem" }}>x² + 5x + 6</span>
               )}
             </div>
+
+            {/* Big X Layout (Only for pageIndex === 2) */}
+            {pageIndex === 2 && (
+              <div 
+                style={{ 
+                  position: "relative", 
+                  width: "220px", 
+                  height: "220px", 
+                  margin: "1.5rem 0", 
+                  userSelect: "none" 
+                }} 
+                className="animate-fade-in"
+              >
+                <svg width="220" height="220" viewBox="0 0 220 220" style={{ overflow: "visible" }}>
+                  <line x1="40" y1="40" x2="180" y2="180" stroke="#475569" strokeWidth="4" strokeLinecap="round" />
+                  <line x1="180" y1="40" x2="40" y2="180" stroke="#475569" strokeWidth="4" strokeLinecap="round" />
+                </svg>
+                
+                {/* Top Term (c = 6, Multiply) */}
+                <div style={{ position: "absolute", top: "10px", left: "50%", transform: "translateX(-50%)", textAlign: "center" }}>
+                  <span style={{ fontSize: "0.7rem", color: "#4ade80", fontWeight: "bold", display: "block", textTransform: "uppercase", letterSpacing: "0.05em" }}>Multiply (·)</span>
+                  <span style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#ffffff", fontFamily: "Outfit, sans-serif" }}>6</span>
+                </div>
+
+                {/* Bottom Term (b = 5, Add) */}
+                <div style={{ position: "absolute", bottom: "10px", left: "50%", transform: "translateX(-50%)", textAlign: "center" }}>
+                  <span style={{ fontSize: "1.75rem", fontWeight: "bold", color: "#ffffff", fontFamily: "Outfit, sans-serif" }}>5</span>
+                  <span style={{ fontSize: "0.7rem", color: "#60a5fa", fontWeight: "bold", display: "block", textTransform: "uppercase", letterSpacing: "0.05em" }}>Add (+)</span>
+                </div>
+
+                {/* Left Zone Box */}
+                <div 
+                  ref={leftZoneRef}
+                  style={{
+                    position: "absolute",
+                    left: "15px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: "48px",
+                    height: "48px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "8px",
+                    border: leftFactor !== null ? "2px solid #22c55e" : hoveredZone === "leftZone" ? "2.5px dashed #22c55e" : "2px dashed #475569",
+                    backgroundColor: leftFactor !== null ? "rgba(34, 197, 94, 0.15)" : hoveredZone === "leftZone" ? "rgba(34, 197, 94, 0.1)" : "rgba(15, 23, 42, 0.6)",
+                    color: leftFactor !== null ? "#4ade80" : "#64748b",
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                    transition: "all 0.15s ease",
+                    fontFamily: "Outfit, sans-serif"
+                  }}
+                >
+                  {leftFactor !== null ? leftFactor : "?"}
+                </div>
+
+                {/* Right Zone Box */}
+                <div 
+                  ref={rightZoneRef}
+                  style={{
+                    position: "absolute",
+                    right: "15px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: "48px",
+                    height: "48px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "8px",
+                    border: rightFactor !== null ? "2px solid #22c55e" : hoveredZone === "rightZone" ? "2.5px dashed #22c55e" : "2px dashed #475569",
+                    backgroundColor: rightFactor !== null ? "rgba(34, 197, 94, 0.15)" : hoveredZone === "rightZone" ? "rgba(34, 197, 94, 0.1)" : "rgba(15, 23, 42, 0.6)",
+                    color: rightFactor !== null ? "#4ade80" : "#64748b",
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                    transition: "all 0.15s ease",
+                    fontFamily: "Outfit, sans-serif"
+                  }}
+                >
+                  {rightFactor !== null ? rightFactor : "?"}
+                </div>
+              </div>
+            )}
 
             {/* Factored Blanks Row (Phase 2 - Visible when structure is revealed but not fully completed) */}
             {pageIndex === 0 && zone6xReplaced && zone9Replaced && !finalFactored && (
@@ -459,14 +595,36 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
               </div>
             )}
 
-            {/* Draggable Number Pill */}
+            {pageIndex === 2 && !finalFactored && (
+              <div 
+                style={{ 
+                  display: "flex", 
+                  alignItems: "center", 
+                  fontSize: "1.8rem", 
+                  marginTop: "1.5rem", 
+                  color: "#d8b4fe", 
+                  gap: "0.2rem",
+                  fontFamily: "Outfit, sans-serif" 
+                }}
+                className="animate-fade-in"
+              >
+                <span>(x + </span>
+                <span style={{ color: leftFactor !== null ? "#4ade80" : "#64748b", fontWeight: "bold" }}>
+                  {leftFactor !== null ? leftFactor : "_"}
+                </span>
+                <span>)(x + </span>
+                <span style={{ color: rightFactor !== null ? "#4ade80" : "#64748b", fontWeight: "bold" }}>
+                  {rightFactor !== null ? rightFactor : "_"}
+                </span>
+                <span>)</span>
+              </div>
+            )}
+
+            {/* Draggable Number Pill (For pageIndex 0 & 1) */}
             {((pageIndex === 0 && !factoredBlankReplaced) || (pageIndex === 1 && !(factoredBlank1Replaced && factoredBlank2Replaced))) && (
               <div style={{ marginTop: "2.5rem", minHeight: "55px", display: "flex", alignItems: "center" }}>
                 <div
-                  ref={dragRef}
-                  onPointerDown={handlePointerDown}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
+                  onPointerDown={(e) => startDrag(e, 3)}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -487,6 +645,46 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                 >
                   <span style={{ fontSize: "1.1rem" }}>☰</span>
                   <span>3</span>
+                </div>
+              </div>
+            )}
+
+            {/* Draggable Factors bank (For pageIndex 2) */}
+            {pageIndex === 2 && !finalFactored && (
+              <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}>
+                <span style={{ fontSize: "0.85rem", color: "#94a3b8", fontWeight: "600" }}>Drag the correct factor pair of 6:</span>
+                <div style={{ display: "flex", gap: "1rem" }}>
+                  {[1, 2, 3, 6].map((val) => {
+                    const isUsed = leftFactor === val || rightFactor === val;
+                    return (
+                      <div
+                        key={val}
+                        onPointerDown={(e) => startDrag(e, val)}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: "#3b82f6",
+                          color: "#ffffff",
+                          width: "42px",
+                          height: "42px",
+                          borderRadius: "50%",
+                          fontSize: "1.1rem",
+                          fontWeight: "bold",
+                          cursor: isUsed ? "not-allowed" : "grab",
+                          userSelect: "none",
+                          touchAction: "none",
+                          opacity: isUsed ? 0.25 : (isDragging && activeDragValue === val ? 0.3 : 1),
+                          pointerEvents: isUsed ? "none" : "auto",
+                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                          border: "1.5px solid rgba(255,255,255,0.2)",
+                          transition: "all 0.2s"
+                        }}
+                      >
+                        {val}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -513,7 +711,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                   border: "1.5px solid rgba(255,255,255,0.3)"
                 }}
               >
-                <span>3</span>
+                <span>{activeDragValue}</span>
               </div>
             )}
 
@@ -521,7 +719,7 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
             {finalFactored && (
               <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <div style={{ fontSize: "2.25rem", fontWeight: "bold", color: "#4ade80", fontFamily: "Outfit, sans-serif" }}>
-                  {pageIndex === 0 ? "(x + 3)²" : "(x - 3)(x + 3)"}
+                  {pageIndex === 0 ? "(x + 3)²" : pageIndex === 1 ? "(x - 3)(x + 3)" : `(x + ${leftFactor})(x + ${rightFactor})`}
                 </div>
                 <button
                   onClick={handleReset}
@@ -615,10 +813,14 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                   finalFactored 
                     ? "Factored Equivalent Form" 
                     : (zone6xReplaced && zone9Replaced ? "Stage 2: Factor Binomial" : "Stage 1: Rewrite Structure")
-                ) : (
+                ) : pageIndex === 1 ? (
                   finalFactored 
                     ? "Factored Equivalent Form" 
                     : (zone9Replaced ? "Stage 2: Factor Binomial" : "Stage 1: Rewrite Structure")
+                ) : (
+                  finalFactored
+                    ? "Factored Equivalent Form"
+                    : "The Big X Method"
                 )
               ) : (
                 <>
@@ -636,12 +838,16 @@ export default function ExpressionStructureVisualizer({ pageIndex = 0 }) {
                     : (zone6xReplaced && zone9Replaced
                         ? "Great job! The structured form is revealed. Now, drag the number 3 into the blank space inside (x + _)² to factor it completely!"
                         : "A perfect square trinomial follows the template a² + 2ab + b² = (a + b)². Drag the number 3 (since √9 = 3) into 9 to make it (3)² and into 6x to make it 2(x)(3).")
-                ) : (
+                ) : pageIndex === 1 ? (
                   finalFactored
                     ? "The difference of two perfect squares factors cleanly into the product of conjugate binomials: (x - 3)(x + 3)."
                     : (zone9Replaced
                         ? "Awesome! The structured form is revealed. Now, drag the number 3 into both blank spaces inside the binomials to factor it completely!"
                         : "A difference of squares follows the template a² - b² = (a - b)(a + b). Drag the number 3 (since √9 = 3) into the constant term 9 to rewrite it as a perfect square: (3)².")
+                ) : (
+                  finalFactored
+                    ? "Trinomials factor into the product of binomials: (x + 2)(x + 3)."
+                    : "The Big X Method helps us find factors. The top number is the product (c = 6) and the bottom number is the sum (b = 5). Drag the correct factor pair (2 and 3) of 6 into the left and right spots to populate the binomial form!"
                 )
               ) : (
                 <>
