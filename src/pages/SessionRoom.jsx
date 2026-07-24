@@ -13,11 +13,12 @@ export default function SessionRoom() {
   // resizable layout split states
   const [videoWidthPercent, setVideoWidthPercent] = useState(40); // default 40% Jitsi
   const [isResizing, setIsResizing] = useState(false);
+  const isPreview = searchParams.get("preview") === "true";
 
   useEffect(() => {
     const room = searchParams.get("room");
     if (!room) {
-      navigate("/classroom");
+      navigate("/meet");
     } else {
       setRoomName(room);
     }
@@ -34,7 +35,7 @@ export default function SessionRoom() {
 
   const handleExit = () => {
     if (window.confirm("Are you sure you want to end this tutoring session and exit?")) {
-      navigate("/classroom");
+      navigate("/meet");
     }
   };
 
@@ -77,6 +78,7 @@ export default function SessionRoom() {
 
   useEffect(() => {
     if (!roomName) return;
+    if (isPreview) return;
     if (!inCall) {
       if (window.jitsiApi) {
         window.jitsiApi.dispose();
@@ -191,7 +193,18 @@ export default function SessionRoom() {
       >
         {/* Left pane: Jitsi Meet Call */}
         <section className="session-video-pane">
-          {inCall ? (
+          {isPreview ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", padding: "2rem", textAlign: "center", backgroundColor: "#0f172a", color: "#cbd5e1" }}>
+              <Video size={48} style={{ color: "#3b82f6", marginBottom: "1.2rem" }} />
+              <h3 style={{ fontSize: "1.3rem", color: "#ffffff", fontWeight: "bold", marginBottom: "0.8rem", fontFamily: "Outfit, sans-serif" }}>Classroom Preview Mode</h3>
+              <p style={{ fontSize: "0.95rem", color: "#94a3b8", maxWidth: "340px", lineHeight: "1.6", marginBottom: "1.5rem" }}>
+                You are previewing the student workspace. In a live session, a fully encrypted, peer-to-peer audio and video conference (powered by Jitsi Meet) will appear in this pane.
+              </p>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "#60a5fa", backgroundColor: "rgba(59, 130, 246, 0.1)", padding: "0.5rem 1rem", borderRadius: "8px", border: "1px solid rgba(59, 130, 246, 0.2)" }}>
+                <span>Whiteboard on the right is fully active!</span>
+              </div>
+            </div>
+          ) : inCall ? (
             <div 
               id="jitsi-iframe-container"
               className="session-iframe-container"

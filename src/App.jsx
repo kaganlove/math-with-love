@@ -8,6 +8,7 @@ import PrivateTutoring from "./pages/PrivateTutoring";
 import OnlineClassroom from "./pages/OnlineClassroom";
 import SessionRoom from "./pages/SessionRoom";
 import Resources from "./pages/Resources";
+import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -30,7 +31,9 @@ function AppContent() {
           <Route path="/curriculum" element={<Curriculum />} />
           <Route path="/tutoring" element={<PrivateTutoring />} />
           <Route path="/classroom" element={<OnlineClassroom />} />
+          <Route path="/meet" element={<OnlineClassroom />} />
           <Route path="/session" element={<SessionRoom />} />
+          <Route path="/blog" element={<Blog />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />

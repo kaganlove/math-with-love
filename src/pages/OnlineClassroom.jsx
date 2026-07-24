@@ -6,6 +6,8 @@ import AdsSlot from "../components/AdsSlot";
 export default function OnlineClassroom() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [roomName, setRoomName] = useState("");
+  const [passcode, setPasscode] = useState("");
+  const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 
@@ -36,9 +38,26 @@ export default function OnlineClassroom() {
   };
 
   const startSession = () => {
-    if (roomName.trim()) {
-      navigate(`/session?room=${roomName}&server=${activeServer}`);
+    if (!roomName.trim()) {
+      setError("Please enter a room name.");
+      return;
     }
+
+    const cleanCode = passcode.trim();
+    const isPrivatePass = cleanCode === "KaganTest2026" || cleanCode === "KaganMeetPrivate";
+    const isBookingCode = /^MEET-[A-Z0-9]{4,8}$/i.test(cleanCode) || /^LOVE-[A-Z0-9]{4,8}$/i.test(cleanCode);
+
+    if (isPrivatePass || isBookingCode) {
+      setError("");
+      navigate(`/session?room=${roomName}&server=${activeServer}&code=${cleanCode}`);
+    } else {
+      setError("Please enter a valid session booking code to start a live meeting. Booking codes are provided upon scheduling a tutoring session. Alternatively, click 'Preview Classroom' below to explore the whiteboard lobby.");
+    }
+  };
+
+  const startPreviewSession = () => {
+    const targetRoom = roomName.trim() || "Preview-Room";
+    navigate(`/session?room=${targetRoom}&server=${activeServer}&preview=true`);
   };
 
   return (
@@ -76,9 +95,39 @@ export default function OnlineClassroom() {
               </div>
             </div>
 
-            <button onClick={startSession} className="btn-primary w-full mt-8 flex-center gap-2">
-              <Video size={20} /> Launch Fullscreen Session
-            </button>
+            <div className="form-group mt-6">
+              <label className="form-label">3. Booking Passcode / Password</label>
+              <input
+                type="text"
+                value={passcode}
+                onChange={(e) => setPasscode(e.target.value)}
+                placeholder="Enter booking code (e.g., MEET-1234) or private test password"
+                className="form-input-field"
+                style={{ borderColor: error ? "#ef4444" : "var(--border-color)" }}
+              />
+              {error && (
+                <span className="input-helper" style={{ color: "#f87171", display: "block", marginTop: "0.5rem", lineHeight: "1.4" }}>
+                  {error}
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
+              <button 
+                onClick={startPreviewSession} 
+                className="btn-secondary" 
+                style={{ flex: 1, padding: "0.85rem 1rem", fontSize: "0.95rem", fontWeight: "600" }}
+              >
+                Preview Classroom
+              </button>
+              <button 
+                onClick={startSession} 
+                className="btn-primary flex-center gap-2" 
+                style={{ flex: 1.2, padding: "0.85rem 1rem", fontSize: "0.95rem", fontWeight: "600" }}
+              >
+                <Video size={20} /> Start Live Session
+              </button>
+            </div>
           </div>
         </div>
 

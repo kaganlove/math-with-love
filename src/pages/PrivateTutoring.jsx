@@ -215,7 +215,7 @@ export default function PrivateTutoring() {
           </div>
 
           <div className="text-center mt-8">
-            <Link to="/classroom" className="btn-primary">
+            <Link to="/meet" className="btn-primary">
               Preview the Online Classroom
             </Link>
           </div>
