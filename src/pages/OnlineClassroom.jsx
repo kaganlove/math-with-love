@@ -96,12 +96,12 @@ export default function OnlineClassroom() {
             </div>
 
             <div className="form-group mt-6">
-              <label className="form-label">3. Booking Passcode / Password</label>
+              <label className="form-label">3. Session Booking Code</label>
               <input
                 type="text"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
-                placeholder="Enter booking code (e.g., MEET-1234) or private test password"
+                placeholder="Enter booking code (e.g., MEET-1234)"
                 className="form-input-field"
                 style={{ borderColor: error ? "#ef4444" : "var(--border-color)" }}
               />
