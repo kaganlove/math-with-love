@@ -9,17 +9,35 @@ export default function PrivateTutoring() {
       title: "One-on-One Tutoring",
       price: "$100",
       period: "per hour",
-      subtitle: "Personalized, targeted 1-on-1 instruction",
-      description: "Ideal for students needing dedicated help catching up, mastering difficult subjects, preparing for exams, or building foundational math skills.",
+      subtitle: "Flexible hourly 1-on-1 instruction",
+      description: "Perfect for students needing targeted homework help, exam review, or immediate support on specific class assignments.",
       features: [
         "100% personalized learning pace",
-        "Targeted homework help & test review",
-        "Custom worksheet creation for practice",
-        "Direct access to interactive online whiteboard",
-        "Progress tracking shared with parents",
-        "Flexible scheduling options"
+        "Targeted school homework & test review",
+        "Direct access to active whiteboard tools",
+        "No long-term commitments or prep requirements",
+        "Flexible scheduling and calendar booking",
+        "Personal session notes provided after class"
       ],
       btnText: "Book 1-on-1 Session",
+      popular: false
+    },
+    {
+      title: "Multi-Session Packages",
+      price: "$380",
+      period: "for 4 sessions",
+      subtitle: "Structured progress & parent updates",
+      description: "Designed for students seeking consistent weekly support to rebuild foundations, get ahead in class, or prepare for exams.",
+      features: [
+        "4-Session Plan: $380 ($95/hr)",
+        "8-Session Plan: $720 ($90/hr)",
+        "Includes custom homework preparation",
+        "Weekly parent progress communication",
+        "Rollover session credits that never expire",
+        "Direct email/text Q&A support between classes",
+        "Personalized study tools and checklists"
+      ],
+      btnText: "Book a Package Plan",
       popular: true
     },
     {
@@ -27,13 +45,13 @@ export default function PrivateTutoring() {
       price: "$160",
       period: "per session",
       subtitle: "Collaborative, small-group instruction",
-      description: "Great for friends, siblings, or classmates studying the same topic who benefit from collaborative learning and shared problem-solving.",
+      description: "Great for friends, siblings, or classmates studying the same course who benefit from collaborative solving and shared pricing.",
       features: [
         "Small group (typically 2-4 students)",
         "Collaborative problem-solving worksheets",
+        "Shared cost splits among families",
         "ACT/SAT prep study groups",
         "Interactive math reviews & STAAR prep",
-        "Cost-effective per-student pricing",
         "Scheduled around the group's availability"
       ],
       btnText: "Book Group Session",

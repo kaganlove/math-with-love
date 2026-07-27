@@ -10,16 +10,16 @@ export default function Home() {
       <section className="hero-section">
         <div className="hero-overlay" />
         <div className="hero-content">
-          <span className="hero-tagline">Math Tutoring & Free Resources</span>
+          <span className="hero-tagline">Private Math Tutoring with Kagan Love | North Dallas & Online</span>
           <h1 className="hero-title">
-            Math help that <span className="text-gradient">actually helps.</span>
+            Math finally <span className="text-gradient">makes sense.</span>
           </h1>
           <p className="hero-desc">
-            Whether your student is struggling, aiming to excel, or preparing for high-stakes exams, we build real confidence, master core concepts, and make math finally make sense.
+            One-to-one math tutoring with an experienced mathematics educator helping middle school, high school, and college students build skills, confidence, and independence.
           </p>
           <div className="hero-cta-group">
             <Link to="/tutoring" className="btn-primary">
-              Tutoring Services <ArrowRight size={18} />
+              Tutoring Services & Pricing <ArrowRight size={18} />
             </Link>
             <Link to="/curriculum" className="btn-secondary">
               Browse Free Lessons
@@ -63,32 +63,32 @@ export default function Home() {
       {/* Core Method/Mission Section */}
       <section className="method-section">
         <div className="section-header">
-          <h2 className="section-title">The Math with Love Method</h2>
-          <p className="section-subtitle">We believe math should be a tool of empowerment, not a source of anxiety.</p>
+          <h2 className="section-title">The Math with Love Difference</h2>
+          <p className="section-subtitle">Dedicated, expert tutoring designed to build skill and long-term academic independence.</p>
         </div>
 
         <div className="method-grid">
           <div className="method-card">
             <div className="method-number">01</div>
-            <h3 className="method-title">Confidence is the Goal</h3>
+            <h3 className="method-title">One Consistent Expert</h3>
             <p className="method-text">
-              Confidence changes everything. We work side-by-side with students to grow in skill and self-belief. Every session builds trust and clarity, transforming fear into capability.
+              Students work directly with a senior math educator and instructional designer from the very first session. No rotating learning center staff, group distractions, or matched-tutor uncertainty.
             </p>
           </div>
 
           <div className="method-card">
             <div className="method-number">02</div>
-            <h3 className="method-title">Mastery Through Method</h3>
+            <h3 className="method-title">Explanation Over Memorization</h3>
             <p className="method-text">
-              We go beyond blind memorization of formulas to help students understand the "why" behind every step. Teaching math as an understandable system forms a mental foundation that lasts.
+              We focus on the conceptual logic behind math formulas. By understanding the "why," students learn to recognize mathematical patterns and discover the simplest correct way to solve any problem.
             </p>
           </div>
 
           <div className="method-card">
             <div className="method-number">03</div>
-            <h3 className="method-title">Focused Test Prep</h3>
+            <h3 className="method-title">Independence is the Goal</h3>
             <p className="method-text">
-              Test prep is about strategy, pacing, and specific problem-solving models. We prepare students for the ACT, SAT, STAAR, and college placement tests to build calm, prepared performers.
+              Tutoring should not be a permanent crutch. We identify the foundational gaps causing struggle so students build self-reliance, raise their grades, and require less tutoring over time.
             </p>
           </div>
         </div>
