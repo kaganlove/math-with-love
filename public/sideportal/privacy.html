@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SidePortal - Privacy Policy & Terms of Service</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #1e293b;
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      border: 1px solid #e2e8f0;
+    }
+    h1 {
+      color: #003366; /* TSTC Blue */
+      font-size: 2.2rem;
+      margin-bottom: 5px;
+    }
+    h2 {
+      color: #003366;
+      font-size: 1.5rem;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 8px;
+      margin-top: 40px;
+    }
+    h3 {
+      color: #334155;
+      font-size: 1.1rem;
+      margin-top: 20px;
+    }
+    p, li {
+      color: #475569;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .footer {
+      margin-top: 60px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .badge {
+      display: inline-block;
+      background: #e31b23; /* TSTC Red */
+      color: #ffffff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>SidePortal</h1>
+  <span class="badge">Official Policy Page</span>
+  <p><strong>Last Updated: August 18, 2026</strong></p>
+
+  <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 30px 0;">
+
+  <h2>Privacy Policy</h2>
+  <p>Your privacy is of the utmost importance to us. This Privacy Policy describes how <strong>SidePortal</strong> (the "Extension") collects, processes, and protects your information when you use our services.</p>
+
+  <h3>1. Information We Access and Process</h3>
+  <p>To provide its core productivity features, SidePortal requests authorization to access certain data from your Google Account. <strong>All Google data is retrieved and processed entirely locally within your browser's extension sandbox. No Google user data is ever transmitted to, or stored on, any external servers.</strong></p>
+  <ul>
+    <li><strong>Gmail:</strong> The Extension queries your inbox labels (via the Gmail API) solely to calculate and display your unread email count badge in the sidebar UI. No email content or headers are read, stored, or transmitted.</li>
+    <li><strong>Google Calendar:</strong> The Extension retrieves your upcoming calendar events to display a schedule preview inside the sidebar. None of your event details are stored or shared.</li>
+    <li><strong>Google Drive:</strong> The Extension conducts metadata searches of your files when you input query terms into the sidebar's search bar. Search queries and results are handled entirely client-side.</li>
+    <li><strong>Google Profile Email:</strong> Used locally to identify the active connected account in the Extension header.</li>
+  </ul>
+
+  <h3>2. Shared Information (Organization Links)</h3>
+  <p>SidePortal allows users to create or join group workspaces (e.g. for CMEs and Instructors) to share web bookmarks ("Quick Links").</p>
+  <ul>
+    <li><strong>Database Storage:</strong> Group bookmarks (title and URL) and group memberships are stored securely in our Supabase database instance.</li>
+    <li><strong>Role Separation:</strong> Only the group creator (Admin) has the ability to write, modify, or delete group bookmarks. General members have read-only access to bookmarks.</li>
+    <li><strong>No Personal Data Harvesting:</strong> We do not collect, harvest, or sell personal group activity logs.</li>
+  </ul>
+
+  <h3>3. Data Security</h3>
+  <p>We use industry-standard security protocols to protect all stored group bookmarks and database rows. Access is secured using Supabase Row-Level Security (RLS) policies, ensuring that only authenticated members of a group can view the bookmarks associated with that group.</p>
+
+  <h3>4. Contact Information</h3>
+  <p>If you have any questions or feedback regarding this privacy policy, please contact the developer at <strong>kagan.love@gmail.com</strong>.</p>
+
+  <h2>Terms of Service</h2>
+  <p>By installing and using the SidePortal extension, you agree to the following terms and conditions:</p>
+
+  <h3>1. Use of Service</h3>
+  <p>SidePortal is provided as a productivity sidebar utility for educational and organizational purposes. You agree to use the Extension in accordance with all applicable local, state, and federal laws and institutional policies.</p>
+
+  <h3>2. Prohibited Conduct</h3>
+  <p>You agree not to use the Extension to store, distribute, or share bookmarks containing malicious, offensive, copyrighted, or inappropriate content.</p>
+
+  <h3>3. Limitation of Liability</h3>
+  <p>The Extension is provided "as is" without warranty of any kind, either express or implied. In no event shall the developers be liable for any direct, indirect, incidental, or consequential damages arising out of the use or inability to use the Extension.</p>
+
+  <h3>4. Changes to Terms</h3>
+  <p>We reserve the right to update these terms as needed to reflect functional changes to the Extension or compliance policies.</p>
+
+  <div class="footer">
+    <p>&copy; 2026 SidePortal. All rights reserved.</p>
+  </div>
+</div>
+
+</body>
+</html>
