@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Paintbrush, Eraser, Trash2, Download, Circle, Type, Image as ImageIcon, Move, Upload } from "lucide-react";
+import { Paintbrush, Eraser, Trash2, Download, Circle, Type, Image as ImageIcon, Move, Upload, Grid3X3, Compass } from "lucide-react";
 
 // Helper function to calculate distance from point p to line segment v-w
 const distanceToSegment = (p, v, w) => {
@@ -114,6 +114,12 @@ export default function Whiteboard() {
   const [color, setColor] = useState("#6366f1"); // Primary indigo
   const [lineWidth, setLineWidth] = useState(3);
   const [tool, setTool] = useState("pen"); // "pen" | "eraser" | "text" | "select"
+  const [background, setBackground] = useState("none"); // "none" | "grid" | "axes"
+  const backgroundRef = useRef("none");
+
+  useEffect(() => {
+    backgroundRef.current = background;
+  }, [background]);
 
   // Interaction helper states
   const [canvasSize, setCanvasSize] = useState({ width: 2400, height: 1800 });
@@ -175,14 +181,17 @@ export default function Whiteboard() {
         } else if (msg.type === "CLEAR_BOARD") {
           setElements([]);
           setEditingText(null);
+        } else if (msg.type === "SET_BACKGROUND") {
+          setBackground(msg.background || "none");
         } else if (msg.type === "REQUEST_STATE") {
-          // If we have elements on our board, reply with our state
+          // If we have elements or an active background on our board, reply with our state
           setElements((currentElements) => {
-            if (currentElements.length > 0 && window.jitsiApi) {
+            if ((currentElements.length > 0 || backgroundRef.current !== "none") && window.jitsiApi) {
               try {
                 const reply = {
                   type: "INITIAL_STATE",
                   elements: currentElements,
+                  background: backgroundRef.current,
                   senderId: myClientId,
                   mathWithLoveWhiteboard: true
                 };
@@ -198,7 +207,8 @@ export default function Whiteboard() {
             return currentElements;
           });
         } else if (msg.type === "INITIAL_STATE") {
-          setElements(msg.elements);
+          if (msg.elements) setElements(msg.elements);
+          if (msg.background !== undefined) setBackground(msg.background);
         }
       } catch (err) {
         // Ignore non-whiteboard JSON payloads
@@ -220,11 +230,12 @@ export default function Whiteboard() {
     const handleParticipantJoined = () => {
       // Send current state to newly joined participant
       setElements((currentElements) => {
-        if (currentElements.length > 0 && window.jitsiApi) {
+        if ((currentElements.length > 0 || backgroundRef.current !== "none") && window.jitsiApi) {
           try {
             const payload = {
               type: "INITIAL_STATE",
               elements: currentElements,
+              background: backgroundRef.current,
               senderId: myClientId,
               mathWithLoveWhiteboard: true
             };
@@ -321,6 +332,155 @@ export default function Whiteboard() {
     // Fill white board background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
+
+    // Draw optional Grid Paper or Coordinate Plane background
+    if (background === "grid" || background === "axes") {
+      const gridSize = 28;
+      const originX = 420; // 15 * 28 (centered nicely in the initial viewport)
+      const originY = 364; // 13 * 28
+
+      ctx.save();
+
+      // 1. Minor grid lines (every 1 unit = 28px)
+      ctx.beginPath();
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= canvasSize.width; x += gridSize) {
+        if (Math.round((x - originX) / gridSize) % 5 !== 0) {
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvasSize.height);
+        }
+      }
+      for (let y = 0; y <= canvasSize.height; y += gridSize) {
+        if (Math.round((y - originY) / gridSize) % 5 !== 0) {
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvasSize.width, y);
+        }
+      }
+      ctx.stroke();
+
+      // 2. Major grid lines (every 5 units = 140px)
+      ctx.beginPath();
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 1.25;
+      for (let x = 0; x <= canvasSize.width; x += gridSize) {
+        if (Math.round((x - originX) / gridSize) % 5 === 0) {
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvasSize.height);
+        }
+      }
+      for (let y = 0; y <= canvasSize.height; y += gridSize) {
+        if (Math.round((y - originY) / gridSize) % 5 === 0) {
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvasSize.width, y);
+        }
+      }
+      ctx.stroke();
+
+      // 3. Coordinate Plane axes, arrowheads, ticks, and labels (-10 to 10)
+      if (background === "axes") {
+        const axisExtent = 11 * gridSize; // ±11 units for axis arrows
+        const leftX = originX - axisExtent;
+        const rightX = originX + axisExtent;
+        const topY = originY - axisExtent;
+        const bottomY = originY + axisExtent;
+
+        // Draw primary X and Y axes
+        ctx.beginPath();
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 2;
+        // X-axis
+        ctx.moveTo(leftX, originY);
+        ctx.lineTo(rightX, originY);
+        // Y-axis
+        ctx.moveTo(originX, topY);
+        ctx.lineTo(originX, bottomY);
+        ctx.stroke();
+
+        // Draw arrowheads at all 4 ends
+        const drawArrowhead = (tipX, tipY, dirX, dirY) => {
+          const headLen = 9;
+          const headWidth = 5;
+          ctx.beginPath();
+          ctx.fillStyle = "#1e293b";
+          ctx.moveTo(tipX, tipY);
+          ctx.lineTo(
+            tipX - dirX * headLen - dirY * headWidth,
+            tipY - dirY * headLen + dirX * headWidth
+          );
+          ctx.lineTo(
+            tipX - dirX * headLen + dirY * headWidth,
+            tipY - dirY * headLen - dirX * headWidth
+          );
+          ctx.closePath();
+          ctx.fill();
+        };
+
+        drawArrowhead(rightX, originY, 1, 0);
+        drawArrowhead(leftX, originY, -1, 0);
+        drawArrowhead(originX, topY, 0, -1);
+        drawArrowhead(originX, bottomY, 0, 1);
+
+        // Draw tick marks and integer labels from -10 to 10
+        ctx.font = "600 11px Outfit, sans-serif";
+        ctx.fillStyle = "#334155";
+        ctx.strokeStyle = "#1e293b";
+        ctx.lineWidth = 1.5;
+
+        for (let i = -10; i <= 10; i++) {
+          if (i === 0) continue;
+
+          // X-axis tick & number
+          const tx = originX + i * gridSize;
+          ctx.beginPath();
+          ctx.moveTo(tx, originY - 4);
+          ctx.lineTo(tx, originY + 4);
+          ctx.stroke();
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.save();
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 3;
+          ctx.strokeText(String(i), tx, originY + 7);
+          ctx.fillText(String(i), tx, originY + 7);
+          ctx.restore();
+
+          // Y-axis tick & number (up is positive, so -i * gridSize)
+          const ty = originY - i * gridSize;
+          ctx.beginPath();
+          ctx.moveTo(originX - 4, ty);
+          ctx.lineTo(originX + 4, ty);
+          ctx.stroke();
+
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          ctx.save();
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 3;
+          ctx.strokeText(String(i), originX - 8, ty);
+          ctx.fillText(String(i), originX - 8, ty);
+          ctx.restore();
+        }
+
+        // Origin "0" label
+        ctx.textAlign = "right";
+        ctx.textBaseline = "top";
+        ctx.fillText("0", originX - 6, originY + 6);
+
+        // Axis labels "x" and "y"
+        ctx.font = "italic bold 15px Outfit, sans-serif";
+        ctx.fillStyle = "#0f172a";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText("x", rightX + 8, originY);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "bottom";
+        ctx.fillText("y", originX, topY - 6);
+      }
+
+      ctx.restore();
+    }
 
     // Draw all active elements
     elements.forEach((el) => {
@@ -440,7 +600,7 @@ export default function Whiteboard() {
     contextRef.current = context;
 
     drawCanvas();
-  }, [canvasSize, elements, currentPoints, tool, color, lineWidth, editingText]);
+  }, [canvasSize, elements, currentPoints, tool, color, lineWidth, editingText, background]);
 
   // Click outside textarea window listener to save typing
   useEffect(() => {
@@ -995,6 +1155,12 @@ export default function Whiteboard() {
     e.target.value = "";
   };
 
+  const toggleBackground = (mode) => {
+    const nextBg = background === mode ? "none" : mode;
+    setBackground(nextBg);
+    broadcast({ type: "SET_BACKGROUND", background: nextBg });
+  };
+
   const clearCanvas = () => {
     if (window.confirm("Are you sure you want to clear the whiteboard?")) {
       setElements([]);
@@ -1086,6 +1252,33 @@ export default function Whiteboard() {
             ))}
           </div>
         )}
+
+        {/* Background Toggles: Grid Paper & Coordinate Plane */}
+        <div className="toolbar-group">
+          <button
+            className={`toolbar-btn ${background === "grid" ? "active" : ""}`}
+            onClick={() => toggleBackground("grid")}
+            title="Toggle Grid Paper Background"
+            style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+          >
+            <Grid3X3 size={17} />
+            <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Grid Paper</span>
+          </button>
+          <button
+            className={`toolbar-btn ${background === "axes" ? "active" : ""}`}
+            onClick={() => toggleBackground("axes")}
+            title="Toggle Coordinate Plane Background"
+            style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="2" x2="12" y2="22" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <polyline points="9 5 12 2 15 5" />
+              <polyline points="19 9 22 12 19 15" />
+            </svg>
+            <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Coordinate Plane</span>
+          </button>
+        </div>
 
         {/* Document/Image Upload Button */}
         <div className="toolbar-group">
