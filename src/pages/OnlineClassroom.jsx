@@ -44,12 +44,11 @@ export default function OnlineClassroom() {
     }
 
     const cleanCode = passcode.trim();
-    const isPrivatePass = cleanCode === "KaganTest2026" || cleanCode === "KaganMeetPrivate";
-    const isBookingCode = /^MEET-[A-Z0-9]{4,8}$/i.test(cleanCode) || /^LOVE-[A-Z0-9]{4,8}$/i.test(cleanCode);
+    const isValidCode = cleanCode === "TutorWithLove**1212";
 
-    if (isPrivatePass || isBookingCode) {
+    if (isValidCode) {
       setError("");
-      navigate(`/session?room=${roomName}&server=${activeServer}&code=${cleanCode}`);
+      navigate(`/session?room=${roomName}&server=${activeServer}&code=${encodeURIComponent(cleanCode)}`);
     } else {
       setError("Please enter a valid session booking code to start a live meeting. Booking codes are provided upon scheduling a tutoring session. Alternatively, click 'Preview Classroom' below to explore the whiteboard lobby.");
     }
@@ -98,10 +97,10 @@ export default function OnlineClassroom() {
             <div className="form-group mt-6">
               <label className="form-label">3. Session Booking Code</label>
               <input
-                type="text"
+                type="password"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
-                placeholder="Enter booking code (e.g., MEET-1234)"
+                placeholder="Enter session booking code"
                 className="form-input-field"
                 style={{ borderColor: error ? "#ef4444" : "var(--border-color)" }}
               />

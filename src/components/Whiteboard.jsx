@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Paintbrush, Eraser, Trash2, Download, Circle, Type, Image as ImageIcon, Move, Upload, Grid3X3, Compass } from "lucide-react";
+import { Paintbrush, Eraser, Trash2, Download, Circle, Type, Image as ImageIcon, Move, Upload, Grid3X3, Compass, Undo2 } from "lucide-react";
 
 // Helper function to calculate distance from point p to line segment v-w
 const distanceToSegment = (p, v, w) => {
@@ -107,9 +107,12 @@ export default function Whiteboard() {
   const canvasRef = useRef(null);
   const contextRef = useRef(null);
   const fileInputRef = useRef(null);
+  const imageCacheRef = useRef(new Map());
+  const incomingChunksRef = useRef({});
 
   // Core whiteboard states
   const [elements, setElements] = useState([]);
+  const [history, setHistory] = useState([]);
   const [currentPoints, setCurrentPoints] = useState(null);
   const [color, setColor] = useState("#6366f1"); // Primary indigo
   const [lineWidth, setLineWidth] = useState(3);
@@ -121,6 +124,10 @@ export default function Whiteboard() {
     backgroundRef.current = background;
   }, [background]);
 
+  const pushHistory = (snapshot) => {
+    setHistory((prev) => [...prev.slice(-29), snapshot]);
+  };
+
   // Interaction helper states
   const [canvasSize, setCanvasSize] = useState({ width: 2400, height: 1800 });
   const [isDrawing, setIsDrawing] = useState(false);
@@ -129,32 +136,72 @@ export default function Whiteboard() {
   // Helper to identify our own messages to prevent feedback loops
   const myClientId = window.mathWithLoveClientId || (window.mathWithLoveClientId = Date.now().toString() + Math.random().toString(36).substr(2, 9));
 
-  // Helper to broadcast messages via Jitsi Data Channels and Group Chat fallback
-  const broadcast = (cmd) => {
-    if (window.jitsiApi) {
-      try {
-        const payload = { ...cmd, senderId: myClientId, mathWithLoveWhiteboard: true };
-        const payloadStr = JSON.stringify(payload);
-        
-        // 1. Try Jitsi WebRTC broadcast command
-        window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, payloadStr);
-        window.jitsiApi.executeCommand('sendEndpointTextMessage', '', payloadStr);
+  // Low-level packet sender via Jitsi WebRTC Data Channels and Group Chat fallback
+  const sendRawString = (str, targetParticipantId = null) => {
+    if (!window.jitsiApi) return;
+    try {
+      if (targetParticipantId) {
+        window.jitsiApi.executeCommand('sendEndpointTextMessage', targetParticipantId, str);
+      } else {
+        window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, str);
+        window.jitsiApi.executeCommand('sendEndpointTextMessage', '', str);
 
-        // 2. Try Jitsi WebRTC direct message to each participant as fallback
-        const participants = window.jitsiApi.getParticipantsInfo();
+        const participants = window.jitsiApi.getParticipantsInfo?.();
         if (participants && participants.length > 0) {
-          participants.forEach(p => {
+          participants.forEach((p) => {
             if (p.id) {
-              window.jitsiApi.executeCommand('sendEndpointTextMessage', p.id, payloadStr);
+              window.jitsiApi.executeCommand('sendEndpointTextMessage', p.id, str);
             }
           });
         }
-
-        // 3. Fallback: Jitsi XMPP Group Chat
-        window.jitsiApi.executeCommand('sendChatMessage', '[WB]:' + payloadStr);
-      } catch (e) {
-        console.error("Failed to broadcast whiteboard command:", e);
       }
+
+      // Fallback: Jitsi XMPP Group Chat
+      window.jitsiApi.executeCommand('sendChatMessage', '[WB]:' + str);
+    } catch (e) {
+      console.error("Failed to send raw whiteboard packet:", e);
+    }
+  };
+
+  // Helper to broadcast messages (with automatic chunking for large PDF/image documents)
+  const broadcast = (cmd, targetParticipantId = null) => {
+    if (!window.jitsiApi) return;
+    try {
+      const cleanCmd = { ...cmd };
+      if (cleanCmd.element && cleanCmd.element.img) {
+        const { img, ...rest } = cleanCmd.element;
+        cleanCmd.element = rest;
+      }
+      if (Array.isArray(cleanCmd.elements)) {
+        cleanCmd.elements = cleanCmd.elements.map(({ img, ...rest }) => rest);
+      }
+
+      const payload = { ...cleanCmd, senderId: myClientId, mathWithLoveWhiteboard: true };
+      const payloadStr = JSON.stringify(payload);
+
+      const CHUNK_SIZE = 3000;
+      if (payloadStr.length <= CHUNK_SIZE) {
+        sendRawString(payloadStr, targetParticipantId);
+      } else {
+        const msgId = Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+        const total = Math.ceil(payloadStr.length / CHUNK_SIZE);
+        for (let i = 0; i < total; i++) {
+          const chunkPayload = JSON.stringify({
+            mathWithLoveWhiteboard: true,
+            mathWithLoveChunk: true,
+            senderId: myClientId,
+            msgId,
+            index: i,
+            total,
+            data: payloadStr.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+          });
+          setTimeout(() => {
+            sendRawString(chunkPayload, targetParticipantId);
+          }, i * 35);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to broadcast whiteboard command:", e);
     }
   };
 
@@ -164,6 +211,27 @@ export default function Whiteboard() {
         const msg = JSON.parse(payloadStr);
         if (!msg || !msg.mathWithLoveWhiteboard) return;
         if (msg.senderId === myClientId) return; // Ignore our own broadcasted actions
+
+        // Reassemble chunked payloads (for shared PDFs and images)
+        if (msg.mathWithLoveChunk) {
+          const bucket = incomingChunksRef.current[msg.msgId] || {
+            chunks: new Array(msg.total),
+            receivedCount: 0,
+            total: msg.total
+          };
+          if (bucket.chunks[msg.index] === undefined) {
+            bucket.chunks[msg.index] = msg.data;
+            bucket.receivedCount += 1;
+          }
+          incomingChunksRef.current[msg.msgId] = bucket;
+
+          if (bucket.receivedCount === bucket.total) {
+            const fullPayloadStr = bucket.chunks.join("");
+            delete incomingChunksRef.current[msg.msgId];
+            processIncomingPayload(fullPayloadStr, remoteSenderId);
+          }
+          return;
+        }
 
         console.log("Whiteboard collaborative command received:", msg.type, msg);
 
@@ -177,32 +245,35 @@ export default function Whiteboard() {
             prev.map((el) => (el.id === msg.id ? { ...el, ...msg.updates } : el))
           );
         } else if (msg.type === "DELETE_ELEMENT") {
-          setElements((prev) => prev.filter((el) => el.id !== msg.id));
+          setElements((prev) => {
+            pushHistory(prev);
+            return prev.filter((el) => el.id !== msg.id);
+          });
         } else if (msg.type === "CLEAR_BOARD") {
-          setElements([]);
+          setElements((prev) => {
+            if (prev.length > 0) pushHistory(prev);
+            return [];
+          });
           setEditingText(null);
+        } else if (msg.type === "SYNC_ELEMENTS") {
+          if (Array.isArray(msg.elements)) {
+            setElements(msg.elements);
+            setEditingText(null);
+          }
         } else if (msg.type === "SET_BACKGROUND") {
           setBackground(msg.background || "none");
         } else if (msg.type === "REQUEST_STATE") {
           // If we have elements or an active background on our board, reply with our state
           setElements((currentElements) => {
             if ((currentElements.length > 0 || backgroundRef.current !== "none") && window.jitsiApi) {
-              try {
-                const reply = {
+              broadcast(
+                {
                   type: "INITIAL_STATE",
                   elements: currentElements,
-                  background: backgroundRef.current,
-                  senderId: myClientId,
-                  mathWithLoveWhiteboard: true
-                };
-                const replyStr = JSON.stringify(reply);
-                if (remoteSenderId) {
-                  window.jitsiApi.executeCommand('sendEndpointTextMessage', remoteSenderId, replyStr);
-                }
-                window.jitsiApi.executeCommand('sendChatMessage', '[WB]:' + replyStr);
-              } catch (err) {
-                console.error("Failed to send initial state:", err);
-              }
+                  background: backgroundRef.current
+                },
+                remoteSenderId
+              );
             }
             return currentElements;
           });
@@ -231,20 +302,11 @@ export default function Whiteboard() {
       // Send current state to newly joined participant
       setElements((currentElements) => {
         if ((currentElements.length > 0 || backgroundRef.current !== "none") && window.jitsiApi) {
-          try {
-            const payload = {
-              type: "INITIAL_STATE",
-              elements: currentElements,
-              background: backgroundRef.current,
-              senderId: myClientId,
-              mathWithLoveWhiteboard: true
-            };
-            const payloadStr = JSON.stringify(payload);
-            window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, payloadStr);
-            window.jitsiApi.executeCommand('sendChatMessage', '[WB]:' + payloadStr);
-          } catch (err) {
-            console.error("Failed to broadcast initial state on participant join:", err);
-          }
+          broadcast({
+            type: "INITIAL_STATE",
+            elements: currentElements,
+            background: backgroundRef.current
+          });
         }
         return currentElements;
       });
@@ -523,20 +585,25 @@ export default function Whiteboard() {
           }
         });
       } else if (el.type === "image") {
-        if (el.img) {
+        const cachedImg =
+          el.img instanceof HTMLImageElement
+            ? el.img
+            : imageCacheRef.current.get(el.id);
+
+        if (cachedImg && cachedImg.complete && cachedImg.naturalWidth > 0) {
           try {
-            ctx.drawImage(el.img, el.x, el.y, el.width, el.height);
+            ctx.drawImage(cachedImg, el.x, el.y, el.width, el.height);
           } catch (e) {
             console.error("Failed to render image element:", e);
           }
-        } else {
-          // Re-instantiate image object if it was cleared/not cached
+        } else if (el.src && !cachedImg) {
+          // Instantiate and cache HTMLImageElement from base64 src (especially for remote shared documents)
           const img = new Image();
-          img.src = el.src;
+          imageCacheRef.current.set(el.id, img);
           img.onload = () => {
-            el.img = img;
-            drawCanvas(); // force redraw
+            drawCanvas(); // force redraw once loaded
           };
+          img.src = el.src;
         }
       }
     });
@@ -696,6 +763,7 @@ export default function Whiteboard() {
     if (hitIndex !== -1) {
       const elToDelete = elements[hitIndex];
       if (elToDelete) {
+        pushHistory(elements);
         setElements((prev) => prev.filter((_, idx) => idx !== hitIndex));
         broadcast({ type: 'DELETE_ELEMENT', id: elToDelete.id });
       }
@@ -877,6 +945,7 @@ export default function Whiteboard() {
         color: color,
         lineWidth: lineWidth
       };
+      pushHistory(elements);
       setElements((prev) => [...prev, newEl]);
       setCurrentPoints(null);
       broadcast({ type: 'ADD_ELEMENT', element: newEl });
@@ -957,6 +1026,7 @@ export default function Whiteboard() {
       if (editingText.value.trim() !== "") {
         if (editingText.id) {
           // Update existing text element
+          pushHistory(elements);
           setElements((prev) =>
             prev.map((el) => {
               if (el.id === editingText.id) {
@@ -990,12 +1060,14 @@ export default function Whiteboard() {
             italic: editingText.italic || false,
             underline: editingText.underline || false
           };
+          pushHistory(elements);
           setElements((prev) => [...prev, newEl]);
           broadcast({ type: 'ADD_ELEMENT', element: newEl });
         }
       } else {
         // If editing box is left empty, remove it
         if (editingText.id) {
+          pushHistory(elements);
           setElements((prev) => prev.filter((el) => el.id !== editingText.id));
           broadcast({ type: 'DELETE_ELEMENT', id: editingText.id });
         }
@@ -1059,8 +1131,8 @@ export default function Whiteboard() {
           const compressedImg = new Image();
           compressedImg.src = compressedDataUrl;
           compressedImg.onload = () => {
-            const maxW = canvasSize.width * 0.7;
-            const maxH = canvasSize.height * 0.7;
+            const maxW = 680;
+            const maxH = 560;
             let finalW = w;
             let finalH = h;
 
@@ -1073,16 +1145,23 @@ export default function Whiteboard() {
               finalH = maxH;
             }
 
+            const elId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+            imageCacheRef.current.set(elId, compressedImg);
+
+            const wrapper = canvasRef.current?.parentElement;
+            const scrollLeft = wrapper ? wrapper.scrollLeft : 0;
+            const scrollTop = wrapper ? wrapper.scrollTop : 0;
+
             const newEl = {
-              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+              id: elId,
               type: "image",
               src: compressedDataUrl,
-              img: compressedImg,
-              x: (canvasSize.width - finalW) / 2,
-              y: (canvasSize.height - finalH) / 2,
-              width: finalW,
-              height: finalH
+              x: scrollLeft + 60,
+              y: scrollTop + 40,
+              width: Math.round(finalW),
+              height: Math.round(finalH)
             };
+            pushHistory(elements);
             setElements((prev) => [...prev, newEl]);
             broadcast({ type: 'ADD_ELEMENT', element: newEl });
             setPdfLoading(false);
@@ -1119,8 +1198,8 @@ export default function Whiteboard() {
             const compressedImg = new Image();
             compressedImg.src = compressedDataUrl;
             compressedImg.onload = () => {
-              const maxW = canvasSize.width * 0.7;
-              const maxH = canvasSize.height * 0.7;
+              const maxW = 680;
+              const maxH = 560;
               let finalW = w;
               let finalH = h;
 
@@ -1133,16 +1212,23 @@ export default function Whiteboard() {
                 finalH = maxH;
               }
 
+              const elId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+              imageCacheRef.current.set(elId, compressedImg);
+
+              const wrapper = canvasRef.current?.parentElement;
+              const scrollLeft = wrapper ? wrapper.scrollLeft : 0;
+              const scrollTop = wrapper ? wrapper.scrollTop : 0;
+
               const newEl = {
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+                id: elId,
                 type: "image",
                 src: compressedDataUrl,
-                img: compressedImg,
-                x: (canvasSize.width - finalW) / 2,
-                y: (canvasSize.height - finalH) / 2,
-                width: finalW,
-                height: finalH
+                x: scrollLeft + 60,
+                y: scrollTop + 40,
+                width: Math.round(finalW),
+                height: Math.round(finalH)
               };
+              pushHistory(elements);
               setElements((prev) => [...prev, newEl]);
               broadcast({ type: 'ADD_ELEMENT', element: newEl });
               selectTool("select");
@@ -1161,8 +1247,38 @@ export default function Whiteboard() {
     broadcast({ type: "SET_BACKGROUND", background: nextBg });
   };
 
+  const undoAction = () => {
+    setHistory((prevHistory) => {
+      if (prevHistory.length === 0) return prevHistory;
+      const previousElements = prevHistory[prevHistory.length - 1];
+      setElements(previousElements);
+      setEditingText(null);
+      broadcast({
+        type: "SYNC_ELEMENTS",
+        elements: previousElements
+      });
+      return prevHistory.slice(0, -1);
+    });
+  };
+
+  // Keyboard shortcut Ctrl+Z / Cmd+Z to Undo
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (editingText) return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        undoAction();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [editingText]);
+
   const clearCanvas = () => {
     if (window.confirm("Are you sure you want to clear the whiteboard?")) {
+      if (elements.length > 0) {
+        pushHistory(elements);
+      }
       setElements([]);
       setEditingText(null);
       broadcast({ type: 'CLEAR_BOARD' });
@@ -1306,6 +1422,16 @@ export default function Whiteboard() {
         <div className="toolbar-spacer" />
 
         <div className="toolbar-group">
+          <button
+            className="toolbar-btn"
+            onClick={undoAction}
+            disabled={history.length === 0}
+            title="Undo Last Erase, Clear, or Action (Ctrl+Z)"
+            style={{ opacity: history.length === 0 ? 0.45 : 1 }}
+          >
+            <Undo2 size={18} />
+            <span className="btn-label-desktop">Undo</span>
+          </button>
           <button
             className="toolbar-btn text-danger"
             onClick={clearCanvas}
