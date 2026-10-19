@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Paintbrush, Eraser, Trash2, Download, Circle, Type, Image as ImageIcon, Move, Upload, Grid3X3, Compass, Undo2 } from "lucide-react";
+import { Paintbrush, Eraser, Trash2, Download, Circle, Type, Image as ImageIcon, Move, Upload, Grid3X3, Compass, Undo2, MonitorUp } from "lucide-react";
 
 // Helper function to calculate distance from point p to line segment v-w
 const distanceToSegment = (p, v, w) => {
@@ -1241,6 +1241,84 @@ export default function Whiteboard() {
     e.target.value = "";
   };
 
+  const captureScreenToBoard = async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      alert("Screen capture is not supported in this browser.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: "always" },
+        audio: false
+      });
+      const video = document.createElement("video");
+      video.srcObject = stream;
+      video.muted = true;
+      await video.play();
+
+      // Wait briefly to ensure the first frame is decoded
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = video.videoWidth || 1280;
+      tempCanvas.height = video.videoHeight || 720;
+      const tempCtx = tempCanvas.getContext("2d");
+      tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+      // Stop all screen capture tracks immediately after taking the snapshot
+      stream.getTracks().forEach((track) => track.stop());
+
+      const dataUrl = tempCanvas.toDataURL("image/png");
+      const img = new Image();
+      img.src = dataUrl;
+      img.onload = () => {
+        compressImage(img, (compressedDataUrl, w, h) => {
+          const compressedImg = new Image();
+          compressedImg.src = compressedDataUrl;
+          compressedImg.onload = () => {
+            const maxW = 680;
+            const maxH = 560;
+            let finalW = w;
+            let finalH = h;
+
+            if (finalW > maxW) {
+              finalH = (maxW / finalW) * finalH;
+              finalW = maxW;
+            }
+            if (finalH > maxH) {
+              finalW = (maxH / finalH) * finalW;
+              finalH = maxH;
+            }
+
+            const elId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+            imageCacheRef.current.set(elId, compressedImg);
+
+            const wrapper = canvasRef.current?.parentElement;
+            const scrollLeft = wrapper ? wrapper.scrollLeft : 0;
+            const scrollTop = wrapper ? wrapper.scrollTop : 0;
+
+            const newEl = {
+              id: elId,
+              type: "image",
+              src: compressedDataUrl,
+              x: scrollLeft + 60,
+              y: scrollTop + 40,
+              width: Math.round(finalW),
+              height: Math.round(finalH)
+            };
+            pushHistory(elements);
+            setElements((prev) => [...prev, newEl]);
+            broadcast({ type: "ADD_ELEMENT", element: newEl });
+            selectTool("select");
+          };
+        });
+      };
+    } catch (err) {
+      // User cancelled screen picker or permission denied
+      console.log("Screen capture cancelled or failed:", err);
+    }
+  };
+
   const toggleBackground = (mode) => {
     const nextBg = background === mode ? "none" : mode;
     setBackground(nextBg);
@@ -1396,7 +1474,7 @@ export default function Whiteboard() {
           </button>
         </div>
 
-        {/* Document/Image Upload Button */}
+        {/* Document/Image Upload & Screen Capture Buttons */}
         <div className="toolbar-group">
           <button
             className="toolbar-btn"
@@ -1409,6 +1487,15 @@ export default function Whiteboard() {
             <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>
               {pdfLoading ? "Rendering PDF..." : "Upload Document"}
             </span>
+          </button>
+          <button
+            className="toolbar-btn"
+            onClick={captureScreenToBoard}
+            title="Capture a Screen, Window, or Browser Tab directly onto the Whiteboard"
+            style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+          >
+            <MonitorUp size={18} />
+            <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Screen to Board</span>
           </button>
           <input
             type="file"

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { LogOut, Copy, Check, Video, VideoOff } from "lucide-react";
+import { LogOut, Copy, Check, Video, VideoOff, MonitorUp } from "lucide-react";
 import Whiteboard from "../components/Whiteboard";
 
 export default function SessionRoom() {
@@ -31,6 +31,16 @@ export default function SessionRoom() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
+  };
+
+  const toggleScreenShare = () => {
+    if (window.jitsiApi) {
+      try {
+        window.jitsiApi.executeCommand("toggleShareScreen");
+      } catch (err) {
+        console.error("Failed to toggle screen share:", err);
+      }
+    }
   };
 
   const handleExit = () => {
@@ -97,6 +107,49 @@ export default function SessionRoom() {
 
       container.innerHTML = "";
 
+      // Intercept appendChild on container so `display-capture` is injected into the
+      // Jitsi <iframe>'s `allow` attribute BEFORE the browser mounts the iframe in the DOM.
+      const origAppendChild = container.appendChild.bind(container);
+      container.appendChild = (child) => {
+        if (child && child.tagName === "IFRAME") {
+          const existingAllow = child.getAttribute("allow") || "";
+          const requiredPermissions = [
+            "camera",
+            "microphone",
+            "display-capture",
+            "fullscreen",
+            "autoplay",
+            "clipboard-write",
+            "clipboard-read",
+            "speaker-selection"
+          ];
+          const merged = Array.from(
+            new Set([
+              ...existingAllow
+                .split(";")
+                .map((s) => s.trim())
+                .filter(Boolean),
+              ...requiredPermissions
+            ])
+          ).join("; ");
+          child.setAttribute("allow", merged);
+        }
+        return origAppendChild(child);
+      };
+
+      const toolbarButtons = [
+        "microphone",
+        "camera",
+        "desktop",
+        "fullscreen",
+        "fodeviceselection",
+        "hangup",
+        "chat",
+        "raisehand",
+        "tileview",
+        "settings"
+      ];
+
       const options = {
         roomName: `MathWithLove_${roomName}`,
         width: "100%",
@@ -106,12 +159,14 @@ export default function SessionRoom() {
           prejoinPageEnabled: false,
           disableInviteFunctions: true,
           disabledSounds: ['INCOMING_MSG_SOUND'],
-          disabledNotifications: ['notify.chatMessages']
+          disabledNotifications: ['notify.chatMessages'],
+          toolbarButtons
         },
         interfaceConfigOverwrite: {
           SHOW_JITSI_WATERMARK: false,
           SHOW_BRAND_WATERMARK: false,
-          MOBILE_APP_PROMO: false
+          MOBILE_APP_PROMO: false,
+          TOOLBAR_BUTTONS: toolbarButtons
         }
       };
 
@@ -172,6 +227,18 @@ export default function SessionRoom() {
         </div>
 
         <div className="session-actions-group">
+          {/* Live Video Screen Share Toggle */}
+          {!isPreview && inCall && (
+            <button
+              onClick={toggleScreenShare}
+              className="btn-session btn-secondary-dark flex-center gap-1"
+              title="Share your screen in the video call"
+            >
+              <MonitorUp size={14} />
+              <span>Share Screen</span>
+            </button>
+          )}
+
           {/* Copy invite link */}
           <button onClick={copyInviteLink} className="btn-session btn-secondary-dark flex-center gap-1">
             {copied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
