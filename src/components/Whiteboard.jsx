@@ -340,9 +340,14 @@ export default function Whiteboard() {
   const customColorInputRef = useRef(null);
   const imageCacheRef = useRef(new Map());
   const incomingChunksRef = useRef({});
+  const seenPacketsRef = useRef(new Set());
+  const chatQueueRef = useRef([]);
+  const chatTimerRef = useRef(null);
+  const broadcastChannelRef = useRef(null);
 
   // Core whiteboard states
   const [elements, setElements] = useState([]);
+  const elementsRef = useRef([]);
   const [history, setHistory] = useState([]);
   const [currentPoints, setCurrentPoints] = useState(null);
   const [currentShape, setCurrentShape] = useState(null);
@@ -355,6 +360,10 @@ export default function Whiteboard() {
   const [showBackgroundMenu, setShowBackgroundMenu] = useState(false);
   const [background, setBackground] = useState("none"); // "none" | "grid" | "axes"
   const backgroundRef = useRef("none");
+
+  useEffect(() => {
+    elementsRef.current = elements;
+  }, [elements]);
 
   useEffect(() => {
     backgroundRef.current = background;
@@ -372,36 +381,67 @@ export default function Whiteboard() {
   // Helper to identify our own messages to prevent feedback loops
   const myClientId = window.mathWithLoveClientId || (window.mathWithLoveClientId = Date.now().toString() + Math.random().toString(36).substr(2, 9));
 
-  // Low-level packet sender via Jitsi WebRTC Data Channels and Group Chat fallback
-  const sendRawString = (str, targetParticipantId = null) => {
+  // Send single string over Jitsi WebRTC DataChannel (< 1KB limit per packet)
+  const sendDataChannelPacket = (str, targetParticipantId = null) => {
     if (!window.jitsiApi) return;
     try {
       if (targetParticipantId) {
-        window.jitsiApi.executeCommand('sendEndpointTextMessage', targetParticipantId, str);
+        window.jitsiApi.executeCommand("sendEndpointTextMessage", targetParticipantId, str);
       } else {
-        window.jitsiApi.executeCommand('sendEndpointTextMessage', undefined, str);
-        window.jitsiApi.executeCommand('sendEndpointTextMessage', '', str);
+        try {
+          window.jitsiApi.executeCommand("sendEndpointTextMessage", "", str);
+        } catch (e) {}
 
         const participants = window.jitsiApi.getParticipantsInfo?.();
-        if (participants && participants.length > 0) {
+        if (Array.isArray(participants) && participants.length > 0) {
           participants.forEach((p) => {
-            if (p.id) {
-              window.jitsiApi.executeCommand('sendEndpointTextMessage', p.id, str);
+            if (p && p.id) {
+              try {
+                window.jitsiApi.executeCommand("sendEndpointTextMessage", p.id, str);
+              } catch (e) {}
             }
           });
         }
       }
-
-      // Fallback: Jitsi XMPP Group Chat
-      window.jitsiApi.executeCommand('sendChatMessage', '[WB]:' + str);
     } catch (e) {
-      console.error("Failed to send raw whiteboard packet:", e);
+      // Ignore endpoint data channel errors; chat channel will also deliver
     }
   };
 
-  // Helper to broadcast messages (with automatic chunking for large PDF/image documents)
-  const broadcast = (cmd, targetParticipantId = null) => {
+  // Rate-limit-safe XMPP chat sender so Prosody MUC (mod_muc_limits) never drops or mutes rapid messages
+  const enqueueChatPacket = (str) => {
     if (!window.jitsiApi) return;
+    const processQueue = () => {
+      if (chatQueueRef.current.length === 0) {
+        chatTimerRef.current = null;
+        return;
+      }
+      const nextStr = chatQueueRef.current.shift();
+      try {
+        if (window.jitsiApi) {
+          window.jitsiApi.executeCommand("sendChatMessage", "[WB]:" + nextStr);
+        }
+      } catch (e) {
+        console.error("Failed to send chat whiteboard packet:", e);
+      }
+      chatTimerRef.current = setTimeout(processQueue, 450);
+    };
+
+    // If no timer is active, send immediately and start cooldown timer
+    if (!chatTimerRef.current) {
+      try {
+        window.jitsiApi.executeCommand("sendChatMessage", "[WB]:" + str);
+      } catch (e) {
+        console.error("Failed to send chat whiteboard packet:", e);
+      }
+      chatTimerRef.current = setTimeout(processQueue, 450);
+    } else {
+      chatQueueRef.current.push(str);
+    }
+  };
+
+  // Helper to broadcast messages across BroadcastChannel, Jitsi WebRTC DataChannel (600B chunks), and XMPP Chat (5000B chunks)
+  const broadcast = (cmd, targetParticipantId = null) => {
     try {
       const cleanCmd = { ...cmd };
       if (cleanCmd.element && cleanCmd.element.img) {
@@ -412,28 +452,67 @@ export default function Whiteboard() {
         cleanCmd.elements = cleanCmd.elements.map(({ img, ...rest }) => rest);
       }
 
-      const payload = { ...cleanCmd, senderId: myClientId, mathWithLoveWhiteboard: true };
+      const packetId = Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+      seenPacketsRef.current.add(packetId);
+
+      const payload = {
+        ...cleanCmd,
+        packetId,
+        senderId: myClientId,
+        mathWithLoveWhiteboard: true
+      };
       const payloadStr = JSON.stringify(payload);
 
-      const CHUNK_SIZE = 3000;
-      if (payloadStr.length <= CHUNK_SIZE) {
-        sendRawString(payloadStr, targetParticipantId);
+      // 1. Same-browser BroadcastChannel (instant sync if testing across tabs)
+      if (broadcastChannelRef.current) {
+        try {
+          broadcastChannelRef.current.postMessage(payloadStr);
+        } catch (e) {}
+      }
+
+      if (!window.jitsiApi) return;
+
+      // 2. Jitsi WebRTC DataChannel: chunk at 600 bytes to stay strictly under Jitsi's ~1KB bridge packet limit
+      const DC_CHUNK_SIZE = 600;
+      if (payloadStr.length <= DC_CHUNK_SIZE) {
+        sendDataChannelPacket(payloadStr, targetParticipantId);
       } else {
-        const msgId = Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
-        const total = Math.ceil(payloadStr.length / CHUNK_SIZE);
-        for (let i = 0; i < total; i++) {
+        const dcMsgId = "dc_" + packetId;
+        const dcTotal = Math.ceil(payloadStr.length / DC_CHUNK_SIZE);
+        for (let i = 0; i < dcTotal; i++) {
           const chunkPayload = JSON.stringify({
             mathWithLoveWhiteboard: true,
             mathWithLoveChunk: true,
             senderId: myClientId,
-            msgId,
+            msgId: dcMsgId,
             index: i,
-            total,
-            data: payloadStr.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+            total: dcTotal,
+            data: payloadStr.slice(i * DC_CHUNK_SIZE, (i + 1) * DC_CHUNK_SIZE)
           });
           setTimeout(() => {
-            sendRawString(chunkPayload, targetParticipantId);
-          }, i * 35);
+            sendDataChannelPacket(chunkPayload, targetParticipantId);
+          }, i * 20);
+        }
+      }
+
+      // 3. Jitsi XMPP Group Chat fallback: send normal strokes/shapes as 1 single stanza, or 5000B rate-limited chunks for images
+      const CHAT_CHUNK_SIZE = 5000;
+      if (payloadStr.length <= CHAT_CHUNK_SIZE) {
+        enqueueChatPacket(payloadStr);
+      } else {
+        const chatMsgId = "ch_" + packetId;
+        const chatTotal = Math.ceil(payloadStr.length / CHAT_CHUNK_SIZE);
+        for (let i = 0; i < chatTotal; i++) {
+          const chunkPayload = JSON.stringify({
+            mathWithLoveWhiteboard: true,
+            mathWithLoveChunk: true,
+            senderId: myClientId,
+            msgId: chatMsgId,
+            index: i,
+            total: chatTotal,
+            data: payloadStr.slice(i * CHAT_CHUNK_SIZE, (i + 1) * CHAT_CHUNK_SIZE)
+          });
+          enqueueChatPacket(chunkPayload);
         }
       }
     } catch (e) {
@@ -448,7 +527,7 @@ export default function Whiteboard() {
         if (!msg || !msg.mathWithLoveWhiteboard) return;
         if (msg.senderId === myClientId) return; // Ignore our own broadcasted actions
 
-        // Reassemble chunked payloads (for shared PDFs and images)
+        // Reassemble chunked payloads (from either DataChannel or Chat)
         if (msg.mathWithLoveChunk) {
           const bucket = incomingChunksRef.current[msg.msgId] || {
             chunks: new Array(msg.total),
@@ -469,7 +548,15 @@ export default function Whiteboard() {
           return;
         }
 
-        console.log("Whiteboard collaborative command received:", msg.type, msg);
+        // Deduplicate packets received across multiple transport channels
+        if (msg.packetId) {
+          if (seenPacketsRef.current.has(msg.packetId)) return;
+          seenPacketsRef.current.add(msg.packetId);
+          if (seenPacketsRef.current.size > 2000) {
+            const oldest = seenPacketsRef.current.values().next().value;
+            seenPacketsRef.current.delete(oldest);
+          }
+        }
 
         if (msg.type === "ADD_ELEMENT") {
           setElements((prev) => {
@@ -499,44 +586,78 @@ export default function Whiteboard() {
         } else if (msg.type === "SET_BACKGROUND") {
           setBackground(msg.background || "none");
         } else if (msg.type === "REQUEST_STATE") {
-          // If we have elements or an active background on our board, reply with our state
-          setElements((currentElements) => {
-            if ((currentElements.length > 0 || backgroundRef.current !== "none") && window.jitsiApi) {
-              broadcast(
-                {
-                  type: "INITIAL_STATE",
-                  elements: currentElements,
-                  background: backgroundRef.current
-                },
-                remoteSenderId
-              );
-            }
-            return currentElements;
-          });
+          const currentElements = elementsRef.current;
+          if ((currentElements.length > 0 || backgroundRef.current !== "none") && window.jitsiApi) {
+            broadcast(
+              {
+                type: "INITIAL_STATE",
+                elements: currentElements,
+                background: backgroundRef.current
+              },
+              remoteSenderId
+            );
+          }
         } else if (msg.type === "INITIAL_STATE") {
-          if (msg.elements) setElements(msg.elements);
-          if (msg.background !== undefined) setBackground(msg.background);
+          if (Array.isArray(msg.elements) && msg.elements.length > 0) {
+            setElements((prev) => {
+              if (prev.length === 0) return msg.elements;
+              const existingIds = new Set(prev.map((e) => e.id));
+              const merged = [...prev];
+              msg.elements.forEach((el) => {
+                if (!existingIds.has(el.id)) merged.push(el);
+              });
+              return merged;
+            });
+          }
+          if (msg.background && msg.background !== "none") {
+            setBackground(msg.background);
+          }
         }
       } catch (err) {
         // Ignore non-whiteboard JSON payloads
       }
     };
 
+    // Set up local BroadcastChannel for instant multi-tab syncing
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      try {
+        const bc = new BroadcastChannel("math_with_love_wb");
+        bc.onmessage = (ev) => {
+          if (ev && typeof ev.data === "string") {
+            processIncomingPayload(ev.data, null);
+          }
+        };
+        broadcastChannelRef.current = bc;
+      } catch (e) {}
+    }
+
     const handleSyncMessage = (event) => {
-      if (event && event.eventData && event.eventData.text) {
-        processIncomingPayload(event.eventData.text, event.senderInfo ? event.senderInfo.id : null);
+      if (!event) return;
+      const text =
+        event.eventData?.text ||
+        event.data?.eventData?.text ||
+        (typeof event.text === "string" ? event.text : null);
+      const senderId =
+        event.senderInfo?.id ||
+        event.data?.senderInfo?.id ||
+        null;
+      if (text) {
+        processIncomingPayload(text, senderId);
       }
     };
 
     const handleIncomingChatMessage = (event) => {
-      if (event && event.message && event.message.startsWith('[WB]:')) {
-        processIncomingPayload(event.message.substring(5), null);
+      if (!event || typeof event.message !== "string") return;
+      const trimmed = event.message.trim();
+      const idx = trimmed.indexOf("[WB]:");
+      if (idx !== -1) {
+        processIncomingPayload(trimmed.substring(idx + 5), null);
       }
     };
 
     const handleParticipantJoined = () => {
-      // Send current state to newly joined participant
-      setElements((currentElements) => {
+      setTimeout(() => {
+        const currentElements = elementsRef.current;
         if ((currentElements.length > 0 || backgroundRef.current !== "none") && window.jitsiApi) {
           broadcast({
             type: "INITIAL_STATE",
@@ -544,38 +665,34 @@ export default function Whiteboard() {
             background: backgroundRef.current
           });
         }
-        return currentElements;
-      });
+      }, 800);
     };
 
     const handleVideoConferenceJoined = () => {
-      console.log("Joined/reconnected to video conference, requesting whiteboard state...");
-      broadcast({ type: "REQUEST_STATE" });
+      setTimeout(() => {
+        broadcast({ type: "REQUEST_STATE" });
+      }, 600);
     };
 
-    // Periodically request state during initial connection settling
-    let requestCount = 0;
-    const requestInterval = setInterval(() => {
-      if (window.jitsiApi && requestCount < 3) {
-        broadcast({ type: "REQUEST_STATE" });
-        requestCount++;
-      } else if (requestCount >= 3) {
-        clearInterval(requestInterval);
+    let boundApi = null;
+    const bindJitsiListeners = () => {
+      if (window.jitsiApi && window.jitsiApi !== boundApi) {
+        if (boundApi) {
+          try {
+            boundApi.removeListener("endpointTextMessageReceived", handleSyncMessage);
+            boundApi.removeListener("incomingMessage", handleIncomingChatMessage);
+          } catch (e) {}
+        }
+        boundApi = window.jitsiApi;
+        boundApi.on("endpointTextMessageReceived", handleSyncMessage);
+        boundApi.on("incomingMessage", handleIncomingChatMessage);
       }
-    }, 3000);
+    };
 
-    if (window.jitsiApi) {
-      window.jitsiApi.on("endpointTextMessageReceived", handleSyncMessage);
-      window.jitsiApi.on("incomingMessage", handleIncomingChatMessage);
-      broadcast({ type: "REQUEST_STATE" });
-    }
+    bindJitsiListeners();
 
     const handleJitsiReady = () => {
-      if (window.jitsiApi) {
-        window.jitsiApi.on("endpointTextMessageReceived", handleSyncMessage);
-        window.jitsiApi.on("incomingMessage", handleIncomingChatMessage);
-        broadcast({ type: "REQUEST_STATE" });
-      }
+      bindJitsiListeners();
     };
 
     window.addEventListener("jitsi-ready", handleJitsiReady);
@@ -583,10 +700,21 @@ export default function Whiteboard() {
     window.addEventListener("jitsi-video-conference-joined", handleVideoConferenceJoined);
 
     return () => {
-      clearInterval(requestInterval);
-      if (window.jitsiApi) {
-        window.jitsiApi.removeListener("endpointTextMessageReceived", handleSyncMessage);
-        window.jitsiApi.removeListener("incomingMessage", handleIncomingChatMessage);
+      if (chatTimerRef.current) {
+        clearTimeout(chatTimerRef.current);
+        chatTimerRef.current = null;
+      }
+      if (broadcastChannelRef.current) {
+        try {
+          broadcastChannelRef.current.close();
+        } catch (e) {}
+        broadcastChannelRef.current = null;
+      }
+      if (boundApi) {
+        try {
+          boundApi.removeListener("endpointTextMessageReceived", handleSyncMessage);
+          boundApi.removeListener("incomingMessage", handleIncomingChatMessage);
+        } catch (e) {}
       }
       window.removeEventListener("jitsi-ready", handleJitsiReady);
       window.removeEventListener("jitsi-participant-joined", handleParticipantJoined);
@@ -994,14 +1122,14 @@ export default function Whiteboard() {
 
     if (e.touches && e.touches.length > 0) {
       return {
-        x: e.touches[0].clientX - rect.left,
-        y: e.touches[0].clientY - rect.top
+        x: Math.round((e.touches[0].clientX - rect.left) * 10) / 10,
+        y: Math.round((e.touches[0].clientY - rect.top) * 10) / 10
       };
     }
 
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: Math.round((e.clientX - rect.left) * 10) / 10,
+      y: Math.round((e.clientY - rect.top) * 10) / 10
     };
   };
 
@@ -1206,7 +1334,12 @@ export default function Whiteboard() {
     const { x, y } = getCoordinates(e);
 
     if (tool === "pen" && isDrawing) {
-      setCurrentPoints((prev) => [...prev, { x, y }]);
+      setCurrentPoints((prev) => {
+        if (!prev || prev.length === 0) return [{ x, y }];
+        const last = prev[prev.length - 1];
+        if (Math.hypot(x - last.x, y - last.y) < 1.8) return prev;
+        return [...prev, { x, y }];
+      });
     } else if (tool === "shape" && isDrawing && currentShape) {
       const box = normalizeShapeBox(
         currentShape.shapeType,
@@ -1343,7 +1476,7 @@ export default function Whiteboard() {
       pushHistory(elements);
       setElements((prev) => [...prev, newEl]);
       setCurrentPoints(null);
-      broadcast({ type: 'ADD_ELEMENT', element: newEl });
+      broadcast({ type: "ADD_ELEMENT", element: newEl });
     } else if (tool === "shape" && isDrawing && currentShape) {
       if (currentShape.shapeType?.startsWith("line-")) {
         let nx1 = typeof currentShape.x1 === "number" ? currentShape.x1 : currentShape.startX;
@@ -1423,35 +1556,39 @@ export default function Whiteboard() {
       }
     }
     if (tool === "select" && draggingElement) {
-      setElements((prev) => {
-        const el = prev.find(item => item.id === draggingElement.id);
-        if (el) {
-          const updates = el.type === "shape" && el.shapeType?.startsWith("line-")
+      const el = elementsRef.current.find((item) => item.id === draggingElement.id);
+      if (el) {
+        const updates =
+          el.type === "shape" && el.shapeType?.startsWith("line-")
             ? { x: el.x, y: el.y, x1: el.x1, y1: el.y1, x2: el.x2, y2: el.y2 }
             : { x: el.x, y: el.y };
-          broadcast({ type: 'UPDATE_ELEMENT', id: el.id, updates });
-        }
-        return prev;
-      });
+        broadcast({ type: "UPDATE_ELEMENT", id: el.id, updates });
+      }
     }
     if (tool === "select" && resizingElement) {
-      setElements((prev) => {
-        const el = prev.find(item => item.id === resizingElement.id);
-        if (el) {
-          let updates = { width: el.width };
-          if (el.type === "shape" && el.shapeType?.startsWith("line-")) {
-            updates = { x: el.x, y: el.y, width: el.width, height: el.height, x1: el.x1, y1: el.y1, x2: el.x2, y2: el.y2 };
-          } else if (el.type === "image" || el.type === "shape") {
-            updates = { width: el.width, height: el.height };
-          }
-          broadcast({
-            type: 'UPDATE_ELEMENT',
-            id: el.id,
-            updates
-          });
+      const el = elementsRef.current.find((item) => item.id === resizingElement.id);
+      if (el) {
+        let updates = { width: el.width };
+        if (el.type === "shape" && el.shapeType?.startsWith("line-")) {
+          updates = {
+            x: el.x,
+            y: el.y,
+            width: el.width,
+            height: el.height,
+            x1: el.x1,
+            y1: el.y1,
+            x2: el.x2,
+            y2: el.y2
+          };
+        } else if (el.type === "image" || el.type === "shape") {
+          updates = { width: el.width, height: el.height };
         }
-        return prev;
-      });
+        broadcast({
+          type: "UPDATE_ELEMENT",
+          id: el.id,
+          updates
+        });
+      }
     }
     setIsDrawing(false);
     setIsErasing(false);

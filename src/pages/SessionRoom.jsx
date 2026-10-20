@@ -66,24 +66,29 @@ export default function SessionRoom() {
     }
   }, [hasRemoteWebRTCStream, remoteSharingActive]);
 
-  const sendRawSS = (str, targetId = null) => {
+  const sendRawSS = (str, targetId = null, includeChat = false) => {
     if (!window.jitsiApi) return;
     try {
       if (targetId) {
         window.jitsiApi.executeCommand("sendEndpointTextMessage", targetId, str);
       } else {
-        window.jitsiApi.executeCommand("sendEndpointTextMessage", undefined, str);
-        window.jitsiApi.executeCommand("sendEndpointTextMessage", "", str);
+        try {
+          window.jitsiApi.executeCommand("sendEndpointTextMessage", "", str);
+        } catch (e) {}
         const participants = window.jitsiApi.getParticipantsInfo?.();
-        if (participants && participants.length > 0) {
+        if (Array.isArray(participants) && participants.length > 0) {
           participants.forEach((p) => {
-            if (p.id) {
-              window.jitsiApi.executeCommand("sendEndpointTextMessage", p.id, str);
+            if (p && p.id) {
+              try {
+                window.jitsiApi.executeCommand("sendEndpointTextMessage", p.id, str);
+              } catch (e) {}
             }
           });
         }
       }
-      window.jitsiApi.executeCommand("sendChatMessage", "[SS]:" + str);
+      if (includeChat) {
+        window.jitsiApi.executeCommand("sendChatMessage", "[SS]:" + str);
+      }
     } catch (e) {
       console.error("Failed to send screen share signal:", e);
     }
@@ -97,14 +102,22 @@ export default function SessionRoom() {
     try {
       const payload = { ...cmd, senderId: myClientId, mathWithLoveSS: true };
       const payloadStr = JSON.stringify(payload);
-      const CHUNK_SIZE = 3000;
+      const DC_CHUNK_SIZE = 600;
+      const isControlSignal = cmd.type !== "SS_FRAME";
 
-      if (payloadStr.length <= CHUNK_SIZE) {
-        sendRawSS(payloadStr, targetId);
+      // Send control signals (SS_START, SS_STOP, SS_OFFER, SS_ANSWER, SS_CANDIDATE, SS_REQUEST) as a single chat fallback stanza
+      if (isControlSignal && payloadStr.length <= 5000) {
+        try {
+          window.jitsiApi.executeCommand("sendChatMessage", "[SS]:" + payloadStr);
+        } catch (e) {}
+      }
+
+      if (payloadStr.length <= DC_CHUNK_SIZE) {
+        sendRawSS(payloadStr, targetId, false);
         if (onComplete) onComplete();
       } else {
         const msgId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-        const total = Math.ceil(payloadStr.length / CHUNK_SIZE);
+        const total = Math.ceil(payloadStr.length / DC_CHUNK_SIZE);
         for (let i = 0; i < total; i++) {
           const chunkStr = JSON.stringify({
             mathWithLoveSS: true,
@@ -113,14 +126,14 @@ export default function SessionRoom() {
             msgId,
             index: i,
             total,
-            data: payloadStr.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE)
+            data: payloadStr.slice(i * DC_CHUNK_SIZE, (i + 1) * DC_CHUNK_SIZE)
           });
           setTimeout(() => {
-            sendRawSS(chunkStr, targetId);
+            sendRawSS(chunkStr, targetId, false);
             if (i === total - 1 && onComplete) {
               onComplete();
             }
-          }, i * 30);
+          }, i * 20);
         }
       }
     } catch (err) {
@@ -361,27 +374,41 @@ export default function SessionRoom() {
     };
 
     const handleChatMsg = (event) => {
-      if (event?.message && event.message.startsWith("[SS]:")) {
-        processIncomingSS(event.message.substring(5), null);
+      if (!event || typeof event.message !== "string") return;
+      const trimmed = event.message.trim();
+      const idx = trimmed.indexOf("[SS]:");
+      if (idx !== -1) {
+        processIncomingSS(trimmed.substring(idx + 5), null);
       }
     };
 
     const handleParticipantJoined = () => {
       if (localStreamRef.current) {
-        broadcastSS({ type: "SS_START" });
-        startWebRTCOffer(localStreamRef.current);
+        setTimeout(() => {
+          broadcastSS({ type: "SS_START" });
+          startWebRTCOffer(localStreamRef.current);
+        }, 500);
       }
     };
 
     const handleJoined = () => {
-      broadcastSS({ type: "SS_REQUEST" });
+      setTimeout(() => {
+        broadcastSS({ type: "SS_REQUEST" });
+      }, 900);
     };
 
+    let boundApi = null;
     const bindListeners = () => {
-      if (window.jitsiApi) {
-        window.jitsiApi.on("endpointTextMessageReceived", handleEndpointMsg);
-        window.jitsiApi.on("incomingMessage", handleChatMsg);
-        broadcastSS({ type: "SS_REQUEST" });
+      if (window.jitsiApi && window.jitsiApi !== boundApi) {
+        if (boundApi) {
+          try {
+            boundApi.removeListener("endpointTextMessageReceived", handleEndpointMsg);
+            boundApi.removeListener("incomingMessage", handleChatMsg);
+          } catch (e) {}
+        }
+        boundApi = window.jitsiApi;
+        boundApi.on("endpointTextMessageReceived", handleEndpointMsg);
+        boundApi.on("incomingMessage", handleChatMsg);
       }
     };
 
@@ -391,9 +418,11 @@ export default function SessionRoom() {
     window.addEventListener("jitsi-video-conference-joined", handleJoined);
 
     return () => {
-      if (window.jitsiApi) {
-        window.jitsiApi.removeListener("endpointTextMessageReceived", handleEndpointMsg);
-        window.jitsiApi.removeListener("incomingMessage", handleChatMsg);
+      if (boundApi) {
+        try {
+          boundApi.removeListener("endpointTextMessageReceived", handleEndpointMsg);
+          boundApi.removeListener("incomingMessage", handleChatMsg);
+        } catch (e) {}
       }
       window.removeEventListener("jitsi-ready", bindListeners);
       window.removeEventListener("jitsi-participant-joined", handleParticipantJoined);
