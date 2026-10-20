@@ -14,6 +14,19 @@ const distanceToSegment = (p, v, w) => {
 
 // Computes normalized dimensions for shapes that require fixed mathematical aspect ratios
 const normalizeShapeBox = (shapeType, startX, startY, endX, endY) => {
+  if (shapeType && shapeType.startsWith("line-")) {
+    return {
+      x: Math.min(startX, endX),
+      y: Math.min(startY, endY),
+      width: Math.abs(endX - startX),
+      height: Math.abs(endY - startY),
+      x1: startX,
+      y1: startY,
+      x2: endX,
+      y2: endY
+    };
+  }
+
   const rawW = Math.abs(endX - startX);
   const rawH = Math.abs(endY - startY);
   const dirX = endX >= startX ? 1 : -1;
@@ -42,11 +55,19 @@ const normalizeShapeBox = (shapeType, startX, startY, endX, endY) => {
   return { x, y, width: w, height: h };
 };
 
-// Returns polygon vertices (or circle parameters) for any 2D shape element
+// Returns polygon vertices (or circle/line parameters) for any 2D shape element
 const getShapeGeometry = (el) => {
   const { shapeType, x, y, width: w, height: h } = el;
   const cx = x + w / 2;
   const cy = y + h / 2;
+
+  if (shapeType && shapeType.startsWith("line-")) {
+    const x1 = typeof el.x1 === "number" ? el.x1 : x;
+    const y1 = typeof el.y1 === "number" ? el.y1 : y + h;
+    const x2 = typeof el.x2 === "number" ? el.x2 : x + w;
+    const y2 = typeof el.y2 === "number" ? el.y2 : y;
+    return { isLine: true, x1, y1, x2, y2 };
+  }
 
   if (shapeType === "circle") {
     const r = Math.min(w, h) / 2;
@@ -82,8 +103,9 @@ const getShapeGeometry = (el) => {
       { x: sx, y: sy },
       { x: sx + s, y: sy },
       { x: sx + s, y: sy + s },
-      { x: sx, y: sy + s }
+      { x, y: sy + s }
     ];
+    points[3] = { x: sx, y: sy + s };
   } else if (shapeType === "quad-rectangle") {
     points = [
       { x, y },
@@ -140,13 +162,37 @@ const getShapeGeometry = (el) => {
 
 // Draws a 2D shape onto the canvas context
 const drawShapeOnCtx = (ctx, el) => {
-  if (!el || el.width < 2 || el.height < 2) return;
+  if (!el) return;
   const geom = getShapeGeometry(el);
+  if (geom.isLine) {
+    if (Math.hypot(geom.x2 - geom.x1, geom.y2 - geom.y1) < 2) return;
+  } else if (el.width < 2 || el.height < 2) {
+    return;
+  }
+
+  const lw = el.lineWidth || 3;
   ctx.save();
   ctx.strokeStyle = el.color || "#3b82f6";
-  ctx.lineWidth = el.lineWidth || 3;
+  ctx.lineWidth = lw;
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
+
+  if (geom.isLine) {
+    if (el.shapeType === "line-dashed") {
+      ctx.setLineDash([Math.max(10, lw * 2.8), Math.max(7, lw * 2)]);
+    } else if (el.shapeType === "line-dotted") {
+      ctx.setLineDash([Math.max(1, lw * 0.2), Math.max(6, lw * 2.3)]);
+    } else {
+      ctx.setLineDash([]);
+    }
+    ctx.beginPath();
+    ctx.moveTo(geom.x1, geom.y1);
+    ctx.lineTo(geom.x2, geom.y2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+    return;
+  }
 
   ctx.beginPath();
   if (geom.isCircle) {
@@ -164,7 +210,7 @@ const drawShapeOnCtx = (ctx, el) => {
   if (el.shapeType === "triangle-right" && el.width >= 28 && el.height >= 28) {
     const sq = Math.min(12, el.width * 0.18, el.height * 0.18);
     ctx.beginPath();
-    ctx.lineWidth = Math.max(1.5, (el.lineWidth || 3) * 0.65);
+    ctx.lineWidth = Math.max(1.5, lw * 0.65);
     ctx.moveTo(el.x, el.y + el.height - sq);
     ctx.lineTo(el.x + sq, el.y + el.height - sq);
     ctx.lineTo(el.x + sq, el.y + el.height);
@@ -178,6 +224,9 @@ const drawShapeOnCtx = (ctx, el) => {
 const isPointNearShape = (pt, el) => {
   const threshold = (el.lineWidth || 3) + 10;
   const geom = getShapeGeometry(el);
+  if (geom.isLine) {
+    return distanceToSegment(pt, { x: geom.x1, y: geom.y1 }, { x: geom.x2, y: geom.y2 }) <= threshold;
+  }
   if (geom.isCircle) {
     const distFromCenter = Math.sqrt((pt.x - geom.cx) ** 2 + (pt.y - geom.cy) ** 2);
     return Math.abs(distFromCenter - geom.r) <= threshold;
@@ -302,7 +351,8 @@ export default function Whiteboard() {
   const [lineWidth, setLineWidth] = useState(4);
   const [tool, setTool] = useState("pen"); // "pen" | "eraser" | "text" | "select" | "shape"
   const [selectedShape, setSelectedShape] = useState("triangle-equilateral");
-  const [openShapeCategory, setOpenShapeCategory] = useState(null); // "triangles" | "quadrilaterals" | null
+  const [openShapeCategory, setOpenShapeCategory] = useState(null); // "lines" | "triangles" | "quadrilaterals" | null
+  const [showBackgroundMenu, setShowBackgroundMenu] = useState(false);
   const [background, setBackground] = useState("none"); // "none" | "grid" | "axes"
   const backgroundRef = useRef("none");
 
@@ -587,45 +637,86 @@ export default function Whiteboard() {
 
       ctx.save();
 
-      // 1. Minor grid lines (every 1 unit = 28px)
-      ctx.beginPath();
-      ctx.strokeStyle = "#e2e8f0";
-      ctx.lineWidth = 1;
-      for (let x = 0; x <= canvasSize.width; x += gridSize) {
-        if (Math.round((x - originX) / gridSize) % 5 !== 0) {
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, canvasSize.height);
+      if (background === "grid") {
+        // Full-board Grid Paper
+        // 1. Minor grid lines (every 1 unit = 28px)
+        ctx.beginPath();
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= canvasSize.width; x += gridSize) {
+          if (Math.round((x - originX) / gridSize) % 5 !== 0) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvasSize.height);
+          }
         }
-      }
-      for (let y = 0; y <= canvasSize.height; y += gridSize) {
-        if (Math.round((y - originY) / gridSize) % 5 !== 0) {
-          ctx.moveTo(0, y);
-          ctx.lineTo(canvasSize.width, y);
+        for (let y = 0; y <= canvasSize.height; y += gridSize) {
+          if (Math.round((y - originY) / gridSize) % 5 !== 0) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvasSize.width, y);
+          }
         }
-      }
-      ctx.stroke();
+        ctx.stroke();
 
-      // 2. Major grid lines (every 5 units = 140px)
-      ctx.beginPath();
-      ctx.strokeStyle = "#cbd5e1";
-      ctx.lineWidth = 1.25;
-      for (let x = 0; x <= canvasSize.width; x += gridSize) {
-        if (Math.round((x - originX) / gridSize) % 5 === 0) {
-          ctx.moveTo(x, 0);
-          ctx.lineTo(x, canvasSize.height);
+        // 2. Major grid lines (every 5 units = 140px)
+        ctx.beginPath();
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1.25;
+        for (let x = 0; x <= canvasSize.width; x += gridSize) {
+          if (Math.round((x - originX) / gridSize) % 5 === 0) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvasSize.height);
+          }
         }
-      }
-      for (let y = 0; y <= canvasSize.height; y += gridSize) {
-        if (Math.round((y - originY) / gridSize) % 5 === 0) {
-          ctx.moveTo(0, y);
-          ctx.lineTo(canvasSize.width, y);
+        for (let y = 0; y <= canvasSize.height; y += gridSize) {
+          if (Math.round((y - originY) / gridSize) % 5 === 0) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvasSize.width, y);
+          }
         }
-      }
-      ctx.stroke();
+        ctx.stroke();
+      } else if (background === "axes") {
+        // Coordinate Plane: grid strictly bounded inside [-10, 10] plane
+        const planeHalf = 10 * gridSize;
+        const planeLeft = originX - planeHalf;
+        const planeRight = originX + planeHalf;
+        const planeTop = originY - planeHalf;
+        const planeBottom = originY + planeHalf;
 
-      // 3. Coordinate Plane axes, arrowheads, ticks, and labels (-10 to 10)
-      if (background === "axes") {
-        const axisExtent = 11 * gridSize; // ±11 units for axis arrows
+        // 1. Minor grid lines inside [-10, 10]
+        ctx.beginPath();
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.lineWidth = 1;
+        for (let i = -10; i <= 10; i++) {
+          if (i % 5 !== 0) {
+            const gx = originX + i * gridSize;
+            ctx.moveTo(gx, planeTop);
+            ctx.lineTo(gx, planeBottom);
+
+            const gy = originY + i * gridSize;
+            ctx.moveTo(planeLeft, gy);
+            ctx.lineTo(planeRight, gy);
+          }
+        }
+        ctx.stroke();
+
+        // 2. Major grid lines inside [-10, 10] (every 5 units + outer border)
+        ctx.beginPath();
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1.25;
+        for (let i = -10; i <= 10; i += 5) {
+          if (i === 0) continue;
+          const gx = originX + i * gridSize;
+          ctx.moveTo(gx, planeTop);
+          ctx.lineTo(gx, planeBottom);
+
+          const gy = originY + i * gridSize;
+          ctx.moveTo(planeLeft, gy);
+          ctx.lineTo(planeRight, gy);
+        }
+        ctx.stroke();
+
+        // 3. Coordinate Plane axes, arrowheads, ticks, and labels (-10 to 10)
+        const axisExtent = 10.85 * gridSize; // Arrowheads just beyond ±10
         const leftX = originX - axisExtent;
         const rightX = originX + axisExtent;
         const topY = originY - axisExtent;
@@ -813,6 +904,11 @@ export default function Whiteboard() {
           // Resize handle controls width (causing text to wrap instead of scaling font)
           ctx.fillStyle = "#6366f1";
           ctx.fillRect(el.x + el.width - 4, el.y + (lines.length - 1) * lineHeight - 4, 8, 8);
+        } else if (el.type === "shape" && el.shapeType?.startsWith("line-")) {
+          const geom = getShapeGeometry(el);
+          ctx.fillStyle = "#6366f1";
+          ctx.fillRect(geom.x1 - 3, geom.y1 - 3, 6, 6);
+          ctx.fillRect(geom.x2 - 4, geom.y2 - 4, 8, 8);
         } else if (el.type === "image" || el.type === "shape") {
           ctx.strokeStyle = "rgba(99, 102, 241, 0.45)";
           ctx.lineWidth = 1;
@@ -840,7 +936,7 @@ export default function Whiteboard() {
     }
 
     // Render active 2D shape preview while dragging
-    if (currentShape && currentShape.width > 1 && currentShape.height > 1) {
+    if (currentShape) {
       drawShapeOnCtx(ctx, currentShape);
     }
   };
@@ -968,6 +1064,8 @@ export default function Whiteboard() {
 
   const handlePointerDown = (e) => {
     const { x, y } = getCoordinates(e);
+    setShowBackgroundMenu(false);
+    setOpenShapeCategory(null);
 
     if (tool === "pen") {
       setIsDrawing(true);
@@ -980,6 +1078,10 @@ export default function Whiteboard() {
         shapeType: selectedShape,
         startX: x,
         startY: y,
+        x1: x,
+        y1: y,
+        x2: x,
+        y2: y,
         x,
         y,
         width: 0,
@@ -995,7 +1097,13 @@ export default function Whiteboard() {
       let handleFound = null;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
-        if (el.type === "image" || el.type === "shape") {
+        if (el.type === "shape" && el.shapeType?.startsWith("line-")) {
+          const geom = getShapeGeometry(el);
+          if (Math.abs(x - geom.x2) <= 10 && Math.abs(y - geom.y2) <= 10) {
+            handleFound = { element: el, type: "line" };
+            break;
+          }
+        } else if (el.type === "image" || el.type === "shape") {
           const rx = el.x + el.width;
           const ry = el.y + el.height;
           if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
@@ -1043,6 +1151,11 @@ export default function Whiteboard() {
             found = el;
             break;
           }
+        } else if (el.type === "shape" && el.shapeType?.startsWith("line-")) {
+          if (isPointNearShape({ x, y }, el)) {
+            found = el;
+            break;
+          }
         } else if (el.type === "image" || el.type === "shape") {
           if (
             x >= el.x - 4 &&
@@ -1058,7 +1171,17 @@ export default function Whiteboard() {
       if (found) {
         pushHistory(elements);
         setDraggingElement(found);
-        setDragOffset({ x: x - found.x, y: y - found.y });
+        const geom = found.type === "shape" && found.shapeType?.startsWith("line-")
+          ? getShapeGeometry(found)
+          : null;
+        setDragOffset({
+          x: x - found.x,
+          y: y - found.y,
+          dx1: geom ? x - geom.x1 : 0,
+          dy1: geom ? y - geom.y1 : 0,
+          dx2: geom ? x - geom.x2 : 0,
+          dy2: geom ? y - geom.y2 : 0
+        });
       }
     } else if (tool === "text") {
       if (editingText) {
@@ -1107,6 +1230,23 @@ export default function Whiteboard() {
               const newW = Math.max(30, resizeStartSize.width + dx);
               const newH = Math.max(30, resizeStartSize.height + dy);
               return { ...el, width: newW, height: newH };
+            } else if (el.type === "shape" && el.shapeType?.startsWith("line-")) {
+              const geom = getShapeGeometry(el);
+              const nx1 = geom.x1;
+              const ny1 = geom.y1;
+              const nx2 = x;
+              const ny2 = y;
+              return {
+                ...el,
+                x1: nx1,
+                y1: ny1,
+                x2: nx2,
+                y2: ny2,
+                x: Math.min(nx1, nx2),
+                y: Math.min(ny1, ny2),
+                width: Math.abs(nx2 - nx1),
+                height: Math.abs(ny2 - ny1)
+              };
             } else if (el.type === "shape") {
               let newW = Math.max(24, resizeStartSize.width + dx);
               let newH = Math.max(24, resizeStartSize.height + dy);
@@ -1136,6 +1276,17 @@ export default function Whiteboard() {
       setElements((prev) =>
         prev.map((el) => {
           if (el.id === draggingElement.id) {
+            if (el.type === "shape" && el.shapeType?.startsWith("line-")) {
+              return {
+                ...el,
+                x: x - dragOffset.x,
+                y: y - dragOffset.y,
+                x1: x - dragOffset.dx1,
+                y1: y - dragOffset.dy1,
+                x2: x - dragOffset.dx2,
+                y2: y - dragOffset.dy2
+              };
+            }
             return { ...el, x: x - dragOffset.x, y: y - dragOffset.y };
           }
           return el;
@@ -1148,7 +1299,13 @@ export default function Whiteboard() {
       let overHandle = false;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
-        if (el.type === "image" || el.type === "shape") {
+        if (el.type === "shape" && el.shapeType?.startsWith("line-")) {
+          const geom = getShapeGeometry(el);
+          if (Math.abs(x - geom.x2) <= 10 && Math.abs(y - geom.y2) <= 10) {
+            overHandle = true;
+            break;
+          }
+        } else if (el.type === "image" || el.type === "shape") {
           const rx = el.x + el.width;
           const ry = el.y + el.height;
           if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
@@ -1188,53 +1345,91 @@ export default function Whiteboard() {
       setCurrentPoints(null);
       broadcast({ type: 'ADD_ELEMENT', element: newEl });
     } else if (tool === "shape" && isDrawing && currentShape) {
-      let finalW = currentShape.width;
-      let finalH = currentShape.height;
-      let finalX = currentShape.x;
-      let finalY = currentShape.y;
+      if (currentShape.shapeType?.startsWith("line-")) {
+        let nx1 = typeof currentShape.x1 === "number" ? currentShape.x1 : currentShape.startX;
+        let ny1 = typeof currentShape.y1 === "number" ? currentShape.y1 : currentShape.startY;
+        let nx2 = typeof currentShape.x2 === "number" ? currentShape.x2 : currentShape.startX;
+        let ny2 = typeof currentShape.y2 === "number" ? currentShape.y2 : currentShape.startY;
 
-      // If the user clicked without dragging, stamp a clean default-sized shape centered at click
-      if (finalW < 10 && finalH < 10) {
-        if (currentShape.shapeType === "triangle-equilateral") {
-          finalW = 100;
-          finalH = Math.round(100 * (Math.sqrt(3) / 2));
-        } else if (
-          currentShape.shapeType === "quad-rectangle" ||
-          currentShape.shapeType === "quad-parallelogram" ||
-          currentShape.shapeType === "quad-trapezoid"
-        ) {
-          finalW = 128;
-          finalH = 84;
-        } else {
-          finalW = 96;
-          finalH = 96;
+        if (Math.hypot(nx2 - nx1, ny2 - ny1) < 10) {
+          nx1 = Math.max(10, currentShape.startX - 60);
+          ny1 = currentShape.startY;
+          nx2 = currentShape.startX + 60;
+          ny2 = currentShape.startY;
         }
-        finalX = Math.max(10, currentShape.startX - Math.round(finalW / 2));
-        finalY = Math.max(10, currentShape.startY - Math.round(finalH / 2));
+
+        const newLineEl = {
+          id: currentShape.id,
+          type: "shape",
+          shapeType: currentShape.shapeType,
+          x1: nx1,
+          y1: ny1,
+          x2: nx2,
+          y2: ny2,
+          x: Math.min(nx1, nx2),
+          y: Math.min(ny1, ny2),
+          width: Math.abs(nx2 - nx1),
+          height: Math.abs(ny2 - ny1),
+          color: currentShape.color,
+          lineWidth: currentShape.lineWidth
+        };
+
+        pushHistory(elements);
+        setElements((prev) => [...prev, newLineEl]);
+        setCurrentShape(null);
+        broadcast({ type: "ADD_ELEMENT", element: newLineEl });
+      } else {
+        let finalW = currentShape.width;
+        let finalH = currentShape.height;
+        let finalX = currentShape.x;
+        let finalY = currentShape.y;
+
+        // If the user clicked without dragging, stamp a clean default-sized shape centered at click
+        if (finalW < 10 && finalH < 10) {
+          if (currentShape.shapeType === "triangle-equilateral") {
+            finalW = 100;
+            finalH = Math.round(100 * (Math.sqrt(3) / 2));
+          } else if (
+            currentShape.shapeType === "quad-rectangle" ||
+            currentShape.shapeType === "quad-parallelogram" ||
+            currentShape.shapeType === "quad-trapezoid"
+          ) {
+            finalW = 128;
+            finalH = 84;
+          } else {
+            finalW = 96;
+            finalH = 96;
+          }
+          finalX = Math.max(10, currentShape.startX - Math.round(finalW / 2));
+          finalY = Math.max(10, currentShape.startY - Math.round(finalH / 2));
+        }
+
+        const newShapeEl = {
+          id: currentShape.id,
+          type: "shape",
+          shapeType: currentShape.shapeType,
+          x: finalX,
+          y: finalY,
+          width: finalW,
+          height: finalH,
+          color: currentShape.color,
+          lineWidth: currentShape.lineWidth
+        };
+
+        pushHistory(elements);
+        setElements((prev) => [...prev, newShapeEl]);
+        setCurrentShape(null);
+        broadcast({ type: "ADD_ELEMENT", element: newShapeEl });
       }
-
-      const newShapeEl = {
-        id: currentShape.id,
-        type: "shape",
-        shapeType: currentShape.shapeType,
-        x: finalX,
-        y: finalY,
-        width: finalW,
-        height: finalH,
-        color: currentShape.color,
-        lineWidth: currentShape.lineWidth
-      };
-
-      pushHistory(elements);
-      setElements((prev) => [...prev, newShapeEl]);
-      setCurrentShape(null);
-      broadcast({ type: "ADD_ELEMENT", element: newShapeEl });
     }
     if (tool === "select" && draggingElement) {
       setElements((prev) => {
         const el = prev.find(item => item.id === draggingElement.id);
         if (el) {
-          broadcast({ type: 'UPDATE_ELEMENT', id: el.id, updates: { x: el.x, y: el.y } });
+          const updates = el.type === "shape" && el.shapeType?.startsWith("line-")
+            ? { x: el.x, y: el.y, x1: el.x1, y1: el.y1, x2: el.x2, y2: el.y2 }
+            : { x: el.x, y: el.y };
+          broadcast({ type: 'UPDATE_ELEMENT', id: el.id, updates });
         }
         return prev;
       });
@@ -1243,12 +1438,16 @@ export default function Whiteboard() {
       setElements((prev) => {
         const el = prev.find(item => item.id === resizingElement.id);
         if (el) {
+          let updates = { width: el.width };
+          if (el.type === "shape" && el.shapeType?.startsWith("line-")) {
+            updates = { x: el.x, y: el.y, width: el.width, height: el.height, x1: el.x1, y1: el.y1, x2: el.x2, y2: el.y2 };
+          } else if (el.type === "image" || el.type === "shape") {
+            updates = { width: el.width, height: el.height };
+          }
           broadcast({
             type: 'UPDATE_ELEMENT',
             id: el.id,
-            updates: (el.type === "image" || el.type === "shape")
-              ? { width: el.width, height: el.height }
-              : { width: el.width }
+            updates
           });
         }
         return prev;
@@ -1655,6 +1854,12 @@ export default function Whiteboard() {
 
   const isPresetColor = colors.some((c) => c.value.toLowerCase() === color.toLowerCase());
 
+  const lineSubtypes = [
+    { id: "line-solid", label: "Solid" },
+    { id: "line-dashed", label: "Dashes" },
+    { id: "line-dotted", label: "Dots" }
+  ];
+
   const triangleSubtypes = [
     { id: "triangle-equilateral", label: "Equilateral" },
     { id: "triangle-isosceles", label: "Isosceles" },
@@ -1671,6 +1876,24 @@ export default function Whiteboard() {
 
   const renderShapeIcon = (typeId) => {
     switch (typeId) {
+      case "line-solid":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+            <line x1="3" y1="19" x2="21" y2="5" />
+          </svg>
+        );
+      case "line-dashed":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeDasharray="4 4">
+            <line x1="3" y1="19" x2="21" y2="5" />
+          </svg>
+        );
+      case "line-dotted":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeDasharray="1 5">
+            <line x1="3" y1="19" x2="21" y2="5" />
+          </svg>
+        );
       case "circle":
         return (
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -1742,6 +1965,22 @@ export default function Whiteboard() {
     }
   };
 
+  const dropdownPopupStyle = {
+    position: "absolute",
+    top: "calc(100% + 6px)",
+    left: 0,
+    display: "flex",
+    alignItems: "center",
+    gap: "0.25rem",
+    background: "#ffffff",
+    border: "1.5px solid #c7d2fe",
+    borderRadius: "8px",
+    padding: "0.3rem 0.4rem",
+    boxShadow: "0 8px 20px rgba(15, 23, 42, 0.14)",
+    zIndex: 150,
+    whiteSpace: "nowrap"
+  };
+
   return (
     <div className="whiteboard-container">
       {/* Whiteboard Toolbar Controls */}
@@ -1752,10 +1991,13 @@ export default function Whiteboard() {
           flexDirection: "column",
           alignItems: "stretch",
           gap: "0.45rem",
-          padding: "0.5rem 0.75rem"
+          padding: "0.5rem 0.75rem",
+          overflow: "visible",
+          position: "relative",
+          zIndex: 50
         }}
       >
-        {/* Top Row: Primary Tools, Background & Upload Controls, and Right Action Buttons (Never wraps) */}
+        {/* Top Row: Primary Tools, Background Dropdown, Upload Controls, and Right Action Buttons */}
         <div
           style={{
             display: "flex",
@@ -1763,14 +2005,17 @@ export default function Whiteboard() {
             flexWrap: "nowrap",
             gap: "0.45rem",
             width: "100%",
-            overflowX: "auto"
+            overflow: "visible"
           }}
         >
           <div className="toolbar-group" style={{ flexShrink: 0 }}>
             {/* Pencil / Brush Tool */}
             <button
               className={`toolbar-btn ${tool === "pen" ? "active" : ""}`}
-              onClick={() => selectTool("pen")}
+              onClick={() => {
+                selectTool("pen");
+                setOpenShapeCategory(null);
+              }}
               title="Draw (Brush)"
             >
               <Paintbrush size={18} />
@@ -1781,15 +2026,9 @@ export default function Whiteboard() {
               className={`toolbar-btn ${tool === "shape" ? "active" : ""}`}
               onClick={() => {
                 selectTool("shape");
-                if (!openShapeCategory) {
-                  if (selectedShape.startsWith("triangle-")) {
-                    setOpenShapeCategory("triangles");
-                  } else if (selectedShape.startsWith("quad-")) {
-                    setOpenShapeCategory("quadrilaterals");
-                  }
-                }
+                setShowBackgroundMenu(false);
               }}
-              title="2D Shapes (Circles, Triangles, Quadrilaterals, Pentagons, Hexagons)"
+              title="2D Shapes (Lines, Circles, Triangles, Quadrilaterals, Pentagons, Hexagons)"
               style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
             >
               <Shapes size={17} />
@@ -1799,7 +2038,10 @@ export default function Whiteboard() {
             {/* Select / Move / Resize Tool */}
             <button
               className={`toolbar-btn ${tool === "select" ? "active" : ""}`}
-              onClick={() => selectTool("select")}
+              onClick={() => {
+                selectTool("select");
+                setOpenShapeCategory(null);
+              }}
               title="Select, Move & Resize Objects"
             >
               <Move size={18} />
@@ -1808,7 +2050,10 @@ export default function Whiteboard() {
             {/* Text Tool */}
             <button
               className={`toolbar-btn ${tool === "text" ? "active" : ""}`}
-              onClick={() => selectTool("text")}
+              onClick={() => {
+                selectTool("text");
+                setOpenShapeCategory(null);
+              }}
               title="Type Text Box"
             >
               <Type size={18} />
@@ -1817,38 +2062,87 @@ export default function Whiteboard() {
             {/* Eraser Tool */}
             <button
               className={`toolbar-btn ${tool === "eraser" ? "active" : ""}`}
-              onClick={() => selectTool("eraser")}
+              onClick={() => {
+                selectTool("eraser");
+                setOpenShapeCategory(null);
+              }}
               title="Stroke Eraser (Click to erase any element)"
             >
               <Eraser size={18} />
             </button>
           </div>
 
-          {/* Background Toggles: Grid Paper & Coordinate Plane */}
-          <div className="toolbar-group" style={{ flexShrink: 0 }}>
+          {/* Background Button with Dropdown Options Directly Below */}
+          <div
+            className="toolbar-group"
+            style={{ flexShrink: 0, position: "relative" }}
+          >
             <button
-              className={`toolbar-btn ${background === "grid" ? "active" : ""}`}
-              onClick={() => toggleBackground("grid")}
-              title="Toggle Grid Paper Background"
-              style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+              type="button"
+              className={`toolbar-btn ${background !== "none" || showBackgroundMenu ? "active" : ""}`}
+              onClick={() => {
+                setShowBackgroundMenu((prev) => !prev);
+                setOpenShapeCategory(null);
+              }}
+              title="Choose Board Background (Grid Paper or Coordinate Plane)"
+              style={{ minWidth: "auto", padding: "0 0.55rem", gap: "0.25rem" }}
             >
               <Grid3X3 size={17} />
-              <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Grid Paper</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>
+                Background{background === "grid" ? ": Grid" : background === "axes" ? ": Plane" : ""}
+              </span>
+              <ChevronDown size={13} />
             </button>
-            <button
-              className={`toolbar-btn ${background === "axes" ? "active" : ""}`}
-              onClick={() => toggleBackground("axes")}
-              title="Toggle Coordinate Plane Background"
-              style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
-            >
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="2" x2="12" y2="22" />
-                <line x1="2" y1="12" x2="22" y2="12" />
-                <polyline points="9 5 12 2 15 5" />
-                <polyline points="19 9 22 12 19 15" />
-              </svg>
-              <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Coordinate Plane</span>
-            </button>
+
+            {showBackgroundMenu && (
+              <div style={dropdownPopupStyle}>
+                <button
+                  type="button"
+                  className={`toolbar-btn ${background === "grid" ? "active" : ""}`}
+                  onClick={() => {
+                    toggleBackground("grid");
+                    setShowBackgroundMenu(false);
+                  }}
+                  style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                  title="Toggle Full-Board Grid Paper"
+                >
+                  <Grid3X3 size={15} />
+                  <span>Grid Paper</span>
+                </button>
+                <button
+                  type="button"
+                  className={`toolbar-btn ${background === "axes" ? "active" : ""}`}
+                  onClick={() => {
+                    toggleBackground("axes");
+                    setShowBackgroundMenu(false);
+                  }}
+                  style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                  title="Toggle Coordinate Plane"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="2" x2="12" y2="22" />
+                    <line x1="2" y1="12" x2="22" y2="12" />
+                    <polyline points="9 5 12 2 15 5" />
+                    <polyline points="19 9 22 12 19 15" />
+                  </svg>
+                  <span>Coordinate Plane</span>
+                </button>
+                {background !== "none" && (
+                  <button
+                    type="button"
+                    className="toolbar-btn"
+                    onClick={() => {
+                      toggleBackground(background);
+                      setShowBackgroundMenu(false);
+                    }}
+                    style={{ minWidth: "auto", padding: "0 0.45rem", height: "28px", fontSize: "0.73rem", fontWeight: 700, color: "#64748b" }}
+                    title="Clear Background to Blank White"
+                  >
+                    <span>Blank</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Document/Image Upload & Screen Capture Buttons */}
@@ -1924,7 +2218,8 @@ export default function Whiteboard() {
               alignItems: "center",
               flexWrap: "wrap",
               gap: "0.5rem",
-              paddingTop: "0.1rem"
+              paddingTop: "0.1rem",
+              overflow: "visible"
             }}
           >
             {/* 5 Preset Colors (Red, Yellow, Green, Blue, Black) + Custom Color Chooser */}
@@ -1993,35 +2288,75 @@ export default function Whiteboard() {
               </div>
             )}
 
-            {/* 2D Shape Selector Categories & Sub-options */}
+            {/* 2D Shape Selector Categories with Sub-Options Popping Up Directly Below Each Category */}
             {tool === "shape" && (
               <div
+                className="toolbar-group"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: "0.4rem"
+                  gap: "0.25rem",
+                  overflow: "visible"
                 }}
               >
-                <div className="toolbar-group" style={{ gap: "0.25rem" }}>
-                  <span className="toolbar-label">2D Shape:</span>
+                <span className="toolbar-label">2D Shape:</span>
 
-                  {/* Circle */}
+                {/* Straight Line Category (Solid, Dashes, Dots pop up directly below Line) */}
+                <div style={{ position: "relative", display: "inline-flex" }}>
                   <button
                     type="button"
-                    className={`toolbar-btn ${selectedShape === "circle" ? "active" : ""}`}
+                    className={`toolbar-btn ${selectedShape.startsWith("line-") ? "active" : ""}`}
                     onClick={() => {
-                      setSelectedShape("circle");
-                      setOpenShapeCategory(null);
+                      if (!selectedShape.startsWith("line-")) {
+                        setSelectedShape("line-solid");
+                      }
+                      setOpenShapeCategory((prev) => (prev === "lines" ? null : "lines"));
+                      setShowBackgroundMenu(false);
                     }}
                     style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
-                    title="Circle"
+                    title="Straight Line (Solid, Dashes, Dots)"
                   >
-                    {renderShapeIcon("circle")}
-                    <span>Circle</span>
+                    {renderShapeIcon(selectedShape.startsWith("line-") ? selectedShape : "line-solid")}
+                    <span>Line</span>
+                    <ChevronDown size={13} />
                   </button>
 
-                  {/* Triangles Category Button */}
+                  {openShapeCategory === "lines" && (
+                    <div style={dropdownPopupStyle}>
+                      {lineSubtypes.map((sub) => (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          className={`toolbar-btn ${selectedShape === sub.id ? "active" : ""}`}
+                          onClick={() => {
+                            setSelectedShape(sub.id);
+                            setOpenShapeCategory(null);
+                          }}
+                          style={{ minWidth: "auto", padding: "0 0.45rem", height: "26px", gap: "0.25rem", fontSize: "0.73rem", fontWeight: 700 }}
+                        >
+                          {renderShapeIcon(sub.id)}
+                          <span>{sub.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Circle */}
+                <button
+                  type="button"
+                  className={`toolbar-btn ${selectedShape === "circle" ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedShape("circle");
+                    setOpenShapeCategory(null);
+                  }}
+                  style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                  title="Circle"
+                >
+                  {renderShapeIcon("circle")}
+                  <span>Circle</span>
+                </button>
+
+                {/* Triangles Category (Equilateral, Isosceles, Right pop up directly below Triangles) */}
+                <div style={{ position: "relative", display: "inline-flex" }}>
                   <button
                     type="button"
                     className={`toolbar-btn ${selectedShape.startsWith("triangle-") ? "active" : ""}`}
@@ -2030,6 +2365,7 @@ export default function Whiteboard() {
                         setSelectedShape("triangle-equilateral");
                       }
                       setOpenShapeCategory((prev) => (prev === "triangles" ? null : "triangles"));
+                      setShowBackgroundMenu(false);
                     }}
                     style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
                     title="Triangles (Equilateral, Isosceles, Right)"
@@ -2039,7 +2375,29 @@ export default function Whiteboard() {
                     <ChevronDown size={13} />
                   </button>
 
-                  {/* Quadrilaterals Category Button */}
+                  {openShapeCategory === "triangles" && (
+                    <div style={dropdownPopupStyle}>
+                      {triangleSubtypes.map((sub) => (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          className={`toolbar-btn ${selectedShape === sub.id ? "active" : ""}`}
+                          onClick={() => {
+                            setSelectedShape(sub.id);
+                            setOpenShapeCategory(null);
+                          }}
+                          style={{ minWidth: "auto", padding: "0 0.45rem", height: "26px", gap: "0.25rem", fontSize: "0.73rem", fontWeight: 700 }}
+                        >
+                          {renderShapeIcon(sub.id)}
+                          <span>{sub.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Quadrilaterals Category (Square, Rectangle, Parallelogram, Trapezoid, Rhombus pop up directly below Quadrilaterals) */}
+                <div style={{ position: "relative", display: "inline-flex" }}>
                   <button
                     type="button"
                     className={`toolbar-btn ${selectedShape.startsWith("quad-") ? "active" : ""}`}
@@ -2048,6 +2406,7 @@ export default function Whiteboard() {
                         setSelectedShape("quad-square");
                       }
                       setOpenShapeCategory((prev) => (prev === "quadrilaterals" ? null : "quadrilaterals"));
+                      setShowBackgroundMenu(false);
                     }}
                     style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
                     title="Quadrilaterals (Square, Rectangle, Parallelogram, Trapezoid, Rhombus)"
@@ -2057,88 +2416,56 @@ export default function Whiteboard() {
                     <ChevronDown size={13} />
                   </button>
 
-                  {/* Pentagon */}
-                  <button
-                    type="button"
-                    className={`toolbar-btn ${selectedShape === "pentagon" ? "active" : ""}`}
-                    onClick={() => {
-                      setSelectedShape("pentagon");
-                      setOpenShapeCategory(null);
-                    }}
-                    style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
-                    title="Pentagon"
-                  >
-                    {renderShapeIcon("pentagon")}
-                    <span>Pentagon</span>
-                  </button>
-
-                  {/* Hexagon */}
-                  <button
-                    type="button"
-                    className={`toolbar-btn ${selectedShape === "hexagon" ? "active" : ""}`}
-                    onClick={() => {
-                      setSelectedShape("hexagon");
-                      setOpenShapeCategory(null);
-                    }}
-                    style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
-                    title="Hexagon"
-                  >
-                    {renderShapeIcon("hexagon")}
-                    <span>Hexagon</span>
-                  </button>
+                  {openShapeCategory === "quadrilaterals" && (
+                    <div style={dropdownPopupStyle}>
+                      {quadSubtypes.map((sub) => (
+                        <button
+                          key={sub.id}
+                          type="button"
+                          className={`toolbar-btn ${selectedShape === sub.id ? "active" : ""}`}
+                          onClick={() => {
+                            setSelectedShape(sub.id);
+                            setOpenShapeCategory(null);
+                          }}
+                          style={{ minWidth: "auto", padding: "0 0.45rem", height: "26px", gap: "0.25rem", fontSize: "0.73rem", fontWeight: 700 }}
+                        >
+                          {renderShapeIcon(sub.id)}
+                          <span>{sub.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Expanded Triangle Sub-options */}
-                {openShapeCategory === "triangles" && (
-                  <div
-                    className="toolbar-group"
-                    style={{
-                      gap: "0.25rem",
-                      background: "#eef2ff",
-                      borderColor: "#c7d2fe"
-                    }}
-                  >
-                    <span className="toolbar-label" style={{ color: "#4338ca" }}>Triangle Type:</span>
-                    {triangleSubtypes.map((sub) => (
-                      <button
-                        key={sub.id}
-                        type="button"
-                        className={`toolbar-btn ${selectedShape === sub.id ? "active" : ""}`}
-                        onClick={() => setSelectedShape(sub.id)}
-                        style={{ minWidth: "auto", padding: "0 0.45rem", height: "26px", gap: "0.25rem", fontSize: "0.73rem", fontWeight: 700 }}
-                      >
-                        {renderShapeIcon(sub.id)}
-                        <span>{sub.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {/* Pentagon */}
+                <button
+                  type="button"
+                  className={`toolbar-btn ${selectedShape === "pentagon" ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedShape("pentagon");
+                    setOpenShapeCategory(null);
+                  }}
+                  style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                  title="Pentagon"
+                >
+                  {renderShapeIcon("pentagon")}
+                  <span>Pentagon</span>
+                </button>
 
-                {/* Expanded Quadrilateral Sub-options */}
-                {openShapeCategory === "quadrilaterals" && (
-                  <div
-                    className="toolbar-group"
-                    style={{
-                      gap: "0.25rem",
-                      background: "#eef2ff",
-                      borderColor: "#c7d2fe"
-                    }}
-                  >
-                    <span className="toolbar-label" style={{ color: "#4338ca" }}>Quadrilateral Type:</span>
-                    {quadSubtypes.map((sub) => (
-                      <button
-                        key={sub.id}
-                        type="button"
-                        className={`toolbar-btn ${selectedShape === sub.id ? "active" : ""}`}
-                        onClick={() => setSelectedShape(sub.id)}
-                        style={{ minWidth: "auto", padding: "0 0.45rem", height: "26px", gap: "0.25rem", fontSize: "0.73rem", fontWeight: 700 }}
-                      >
-                        {renderShapeIcon(sub.id)}
-                        <span>{sub.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {/* Hexagon */}
+                <button
+                  type="button"
+                  className={`toolbar-btn ${selectedShape === "hexagon" ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedShape("hexagon");
+                    setOpenShapeCategory(null);
+                  }}
+                  style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                  title="Hexagon"
+                >
+                  {renderShapeIcon("hexagon")}
+                  <span>Hexagon</span>
+                </button>
               </div>
             )}
           </div>
