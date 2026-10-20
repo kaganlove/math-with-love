@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /session
+
+Sitemap: https://www.mathwlove.com/sitemap.xml
