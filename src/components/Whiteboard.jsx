@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Paintbrush, Eraser, Trash2, Download, Circle, Type, Image as ImageIcon, Move, Upload, Grid3X3, Compass, Undo2, MonitorUp } from "lucide-react";
+import { Paintbrush, Eraser, Trash2, Download, Circle, Type, Image as ImageIcon, Move, Upload, Grid3X3, Compass, Undo2, MonitorUp, Shapes, ChevronDown } from "lucide-react";
 
 // Helper function to calculate distance from point p to line segment v-w
 const distanceToSegment = (p, v, w) => {
@@ -10,6 +10,187 @@ const distanceToSegment = (p, v, w) => {
   return Math.sqrt(
     (p.x - (v.x + t * (w.x - v.x))) ** 2 + (p.y - (v.y + t * (w.y - v.y))) ** 2
   );
+};
+
+// Computes normalized dimensions for shapes that require fixed mathematical aspect ratios
+const normalizeShapeBox = (shapeType, startX, startY, endX, endY) => {
+  const rawW = Math.abs(endX - startX);
+  const rawH = Math.abs(endY - startY);
+  const dirX = endX >= startX ? 1 : -1;
+  const dirY = endY >= startY ? 1 : -1;
+
+  let w = rawW;
+  let h = rawH;
+
+  if (
+    shapeType === "circle" ||
+    shapeType === "quad-square" ||
+    shapeType === "pentagon" ||
+    shapeType === "hexagon"
+  ) {
+    const side = Math.max(rawW, rawH);
+    w = side;
+    h = side;
+  } else if (shapeType === "triangle-equilateral") {
+    const side = Math.max(rawW, rawH);
+    w = side;
+    h = Math.round(side * (Math.sqrt(3) / 2));
+  }
+
+  const x = dirX >= 0 ? startX : startX - w;
+  const y = dirY >= 0 ? startY : startY - h;
+  return { x, y, width: w, height: h };
+};
+
+// Returns polygon vertices (or circle parameters) for any 2D shape element
+const getShapeGeometry = (el) => {
+  const { shapeType, x, y, width: w, height: h } = el;
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+
+  if (shapeType === "circle") {
+    const r = Math.min(w, h) / 2;
+    return { isCircle: true, cx, cy, r };
+  }
+
+  let points = [];
+  if (shapeType === "triangle-equilateral") {
+    const side = w;
+    const eqH = side * (Math.sqrt(3) / 2);
+    points = [
+      { x: cx, y: cy - eqH / 2 },
+      { x: cx + side / 2, y: cy + eqH / 2 },
+      { x: cx - side / 2, y: cy + eqH / 2 }
+    ];
+  } else if (shapeType === "triangle-isosceles") {
+    points = [
+      { x: cx, y },
+      { x: x + w, y: y + h },
+      { x, y: y + h }
+    ];
+  } else if (shapeType === "triangle-right") {
+    points = [
+      { x, y },
+      { x, y: y + h },
+      { x: x + w, y: y + h }
+    ];
+  } else if (shapeType === "quad-square") {
+    const s = Math.min(w, h);
+    const sx = cx - s / 2;
+    const sy = cy - s / 2;
+    points = [
+      { x: sx, y: sy },
+      { x: sx + s, y: sy },
+      { x: sx + s, y: sy + s },
+      { x: sx, y: sy + s }
+    ];
+  } else if (shapeType === "quad-rectangle") {
+    points = [
+      { x, y },
+      { x: x + w, y },
+      { x: x + w, y: y + h },
+      { x, y: y + h }
+    ];
+  } else if (shapeType === "quad-parallelogram") {
+    const offset = w * 0.22;
+    points = [
+      { x: x + offset, y },
+      { x: x + w, y },
+      { x: x + w - offset, y: y + h },
+      { x, y: y + h }
+    ];
+  } else if (shapeType === "quad-trapezoid") {
+    const inset = w * 0.22;
+    points = [
+      { x: x + inset, y },
+      { x: x + w - inset, y },
+      { x: x + w, y: y + h },
+      { x, y: y + h }
+    ];
+  } else if (shapeType === "quad-rhombus") {
+    points = [
+      { x: cx, y },
+      { x: x + w, y: cy },
+      { x: cx, y: y + h },
+      { x, y: cy }
+    ];
+  } else if (shapeType === "pentagon") {
+    const r = Math.min(w, h) / 2;
+    for (let k = 0; k < 5; k++) {
+      const angle = -Math.PI / 2 + (k * 2 * Math.PI) / 5;
+      points.push({ x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
+    }
+  } else if (shapeType === "hexagon") {
+    const r = Math.min(w, h) / 2;
+    for (let k = 0; k < 6; k++) {
+      const angle = -Math.PI / 2 + (k * 2 * Math.PI) / 6;
+      points.push({ x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
+    }
+  } else {
+    points = [
+      { x, y },
+      { x: x + w, y },
+      { x: x + w, y: y + h },
+      { x, y: y + h }
+    ];
+  }
+
+  return { isCircle: false, points };
+};
+
+// Draws a 2D shape onto the canvas context
+const drawShapeOnCtx = (ctx, el) => {
+  if (!el || el.width < 2 || el.height < 2) return;
+  const geom = getShapeGeometry(el);
+  ctx.save();
+  ctx.strokeStyle = el.color || "#3b82f6";
+  ctx.lineWidth = el.lineWidth || 3;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+
+  ctx.beginPath();
+  if (geom.isCircle) {
+    ctx.arc(geom.cx, geom.cy, Math.max(1, geom.r), 0, Math.PI * 2);
+  } else if (geom.points && geom.points.length > 0) {
+    ctx.moveTo(geom.points[0].x, geom.points[0].y);
+    for (let i = 1; i < geom.points.length; i++) {
+      ctx.lineTo(geom.points[i].x, geom.points[i].y);
+    }
+    ctx.closePath();
+  }
+  ctx.stroke();
+
+  // Draw small right-angle square indicator for right triangles if large enough
+  if (el.shapeType === "triangle-right" && el.width >= 28 && el.height >= 28) {
+    const sq = Math.min(12, el.width * 0.18, el.height * 0.18);
+    ctx.beginPath();
+    ctx.lineWidth = Math.max(1.5, (el.lineWidth || 3) * 0.65);
+    ctx.moveTo(el.x, el.y + el.height - sq);
+    ctx.lineTo(el.x + sq, el.y + el.height - sq);
+    ctx.lineTo(el.x + sq, el.y + el.height);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+};
+
+// Checks if point (x, y) is near a shape's boundary (for stroke eraser)
+const isPointNearShape = (pt, el) => {
+  const threshold = (el.lineWidth || 3) + 10;
+  const geom = getShapeGeometry(el);
+  if (geom.isCircle) {
+    const distFromCenter = Math.sqrt((pt.x - geom.cx) ** 2 + (pt.y - geom.cy) ** 2);
+    return Math.abs(distFromCenter - geom.r) <= threshold;
+  }
+  const pts = geom.points || [];
+  for (let i = 0; i < pts.length; i++) {
+    const p1 = pts[i];
+    const p2 = pts[(i + 1) % pts.length];
+    if (distanceToSegment(pt, p1, p2) <= threshold) {
+      return true;
+    }
+  }
+  return false;
 };
 
 // Helper function to split text into wrapped lines based on container width and styles
@@ -107,6 +288,7 @@ export default function Whiteboard() {
   const canvasRef = useRef(null);
   const contextRef = useRef(null);
   const fileInputRef = useRef(null);
+  const customColorInputRef = useRef(null);
   const imageCacheRef = useRef(new Map());
   const incomingChunksRef = useRef({});
 
@@ -114,9 +296,13 @@ export default function Whiteboard() {
   const [elements, setElements] = useState([]);
   const [history, setHistory] = useState([]);
   const [currentPoints, setCurrentPoints] = useState(null);
-  const [color, setColor] = useState("#6366f1"); // Primary indigo
-  const [lineWidth, setLineWidth] = useState(3);
-  const [tool, setTool] = useState("pen"); // "pen" | "eraser" | "text" | "select"
+  const [currentShape, setCurrentShape] = useState(null);
+  const [color, setColor] = useState("#3b82f6"); // Default Blue
+  const [customColor, setCustomColor] = useState("#8b5cf6"); // Custom picker color
+  const [lineWidth, setLineWidth] = useState(4);
+  const [tool, setTool] = useState("pen"); // "pen" | "eraser" | "text" | "select" | "shape"
+  const [selectedShape, setSelectedShape] = useState("triangle-equilateral");
+  const [openShapeCategory, setOpenShapeCategory] = useState(null); // "triangles" | "quadrilaterals" | null
   const [background, setBackground] = useState("none"); // "none" | "grid" | "axes"
   const backgroundRef = useRef("none");
 
@@ -375,14 +561,12 @@ export default function Whiteboard() {
   const [pdfLoading, setPdfLoading] = useState(false);
 
   const colors = [
-    { name: "Indigo", value: "#6366f1" },
     { name: "Red", value: "#ef4444" },
+    { name: "Yellow", value: "#eab308" },
     { name: "Green", value: "#22c55e" },
     { name: "Blue", value: "#3b82f6" },
-    { name: "Dark", value: "#0f172a" }
+    { name: "Black", value: "#0f172a" }
   ];
-
-  
 
   // Main drawing logic that clears and redraws all vector elements
   const drawCanvas = () => {
@@ -559,6 +743,8 @@ export default function Whiteboard() {
           ctx.lineTo(el.points[i].x, el.points[i].y);
         }
         ctx.stroke();
+      } else if (el.type === "shape") {
+        drawShapeOnCtx(ctx, el);
       } else if (el.type === "text") {
         ctx.fillStyle = el.color;
         const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
@@ -627,7 +813,7 @@ export default function Whiteboard() {
           // Resize handle controls width (causing text to wrap instead of scaling font)
           ctx.fillStyle = "#6366f1";
           ctx.fillRect(el.x + el.width - 4, el.y + (lines.length - 1) * lineHeight - 4, 8, 8);
-        } else if (el.type === "image") {
+        } else if (el.type === "image" || el.type === "shape") {
           ctx.strokeStyle = "rgba(99, 102, 241, 0.45)";
           ctx.lineWidth = 1;
           ctx.setLineDash([4, 4]);
@@ -652,6 +838,11 @@ export default function Whiteboard() {
       }
       ctx.stroke();
     }
+
+    // Render active 2D shape preview while dragging
+    if (currentShape && currentShape.width > 1 && currentShape.height > 1) {
+      drawShapeOnCtx(ctx, currentShape);
+    }
   };
 
   // Keep high DPI configurations updated on resize/state updates
@@ -667,7 +858,7 @@ export default function Whiteboard() {
     contextRef.current = context;
 
     drawCanvas();
-  }, [canvasSize, elements, currentPoints, tool, color, lineWidth, editingText, background]);
+  }, [canvasSize, elements, currentPoints, currentShape, tool, color, lineWidth, editingText, background]);
 
   // Click outside textarea window listener to save typing
   useEffect(() => {
@@ -734,6 +925,11 @@ export default function Whiteboard() {
           hitIndex = i;
           break;
         }
+      } else if (el.type === "shape") {
+        if (isPointNearShape({ x, y }, el)) {
+          hitIndex = i;
+          break;
+        }
       } else if (el.type === "text") {
         const fontStyle = `${el.italic ? "italic" : "normal"} ${el.bold ? "bold" : "normal"} ${el.fontSize}px Outfit, sans-serif`;
         const lines = getTextLines(contextRef.current, el.text, fontStyle, el.width);
@@ -776,6 +972,21 @@ export default function Whiteboard() {
     if (tool === "pen") {
       setIsDrawing(true);
       setCurrentPoints([{ x, y }]);
+    } else if (tool === "shape") {
+      setIsDrawing(true);
+      setCurrentShape({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        type: "shape",
+        shapeType: selectedShape,
+        startX: x,
+        startY: y,
+        x,
+        y,
+        width: 0,
+        height: 0,
+        color,
+        lineWidth
+      });
     } else if (tool === "eraser") {
       setIsErasing(true);
       eraseAt(x, y);
@@ -784,11 +995,11 @@ export default function Whiteboard() {
       let handleFound = null;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
-        if (el.type === "image") {
+        if (el.type === "image" || el.type === "shape") {
           const rx = el.x + el.width;
           const ry = el.y + el.height;
           if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
-            handleFound = { element: el, type: "image" };
+            handleFound = { element: el, type: el.type };
             break;
           }
         } else if (el.type === "text") {
@@ -804,6 +1015,7 @@ export default function Whiteboard() {
       }
 
       if (handleFound) {
+        pushHistory(elements);
         setResizingElement(handleFound.element);
         setResizeStartPos({ x, y });
         setResizeStartSize({
@@ -814,7 +1026,7 @@ export default function Whiteboard() {
         return; // prevent dragging trigger
       }
 
-      // 2. Check for draggable text or image elements
+      // 2. Check for draggable text, shape, or image elements
       let found = null;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
@@ -831,12 +1043,12 @@ export default function Whiteboard() {
             found = el;
             break;
           }
-        } else if (el.type === "image") {
+        } else if (el.type === "image" || el.type === "shape") {
           if (
-            x >= el.x &&
-            x <= el.x + el.width &&
-            y >= el.y &&
-            y <= el.y + el.height
+            x >= el.x - 4 &&
+            x <= el.x + el.width + 4 &&
+            y >= el.y - 4 &&
+            y <= el.y + el.height + 4
           ) {
             found = el;
             break;
@@ -844,6 +1056,7 @@ export default function Whiteboard() {
         }
       }
       if (found) {
+        pushHistory(elements);
         setDraggingElement(found);
         setDragOffset({ x: x - found.x, y: y - found.y });
       }
@@ -871,6 +1084,15 @@ export default function Whiteboard() {
 
     if (tool === "pen" && isDrawing) {
       setCurrentPoints((prev) => [...prev, { x, y }]);
+    } else if (tool === "shape" && isDrawing && currentShape) {
+      const box = normalizeShapeBox(
+        currentShape.shapeType,
+        currentShape.startX,
+        currentShape.startY,
+        x,
+        y
+      );
+      setCurrentShape((prev) => (prev ? { ...prev, ...box } : null));
     } else if (tool === "eraser" && isErasing) {
       eraseAt(x, y);
     } else if (tool === "select" && resizingElement) {
@@ -884,6 +1106,22 @@ export default function Whiteboard() {
             if (el.type === "image") {
               const newW = Math.max(30, resizeStartSize.width + dx);
               const newH = Math.max(30, resizeStartSize.height + dy);
+              return { ...el, width: newW, height: newH };
+            } else if (el.type === "shape") {
+              let newW = Math.max(24, resizeStartSize.width + dx);
+              let newH = Math.max(24, resizeStartSize.height + dy);
+              if (
+                el.shapeType === "circle" ||
+                el.shapeType === "quad-square" ||
+                el.shapeType === "pentagon" ||
+                el.shapeType === "hexagon"
+              ) {
+                const side = Math.max(newW, newH);
+                newW = side;
+                newH = side;
+              } else if (el.shapeType === "triangle-equilateral") {
+                newH = Math.round(newW * (Math.sqrt(3) / 2));
+              }
               return { ...el, width: newW, height: newH };
             } else if (el.type === "text") {
               // Resizing textbox changes width (causes text to wrap)
@@ -910,7 +1148,7 @@ export default function Whiteboard() {
       let overHandle = false;
       for (let i = elements.length - 1; i >= 0; i--) {
         const el = elements[i];
-        if (el.type === "image") {
+        if (el.type === "image" || el.type === "shape") {
           const rx = el.x + el.width;
           const ry = el.y + el.height;
           if (Math.abs(x - rx) <= 10 && Math.abs(y - ry) <= 10) {
@@ -949,6 +1187,48 @@ export default function Whiteboard() {
       setElements((prev) => [...prev, newEl]);
       setCurrentPoints(null);
       broadcast({ type: 'ADD_ELEMENT', element: newEl });
+    } else if (tool === "shape" && isDrawing && currentShape) {
+      let finalW = currentShape.width;
+      let finalH = currentShape.height;
+      let finalX = currentShape.x;
+      let finalY = currentShape.y;
+
+      // If the user clicked without dragging, stamp a clean default-sized shape centered at click
+      if (finalW < 10 && finalH < 10) {
+        if (currentShape.shapeType === "triangle-equilateral") {
+          finalW = 100;
+          finalH = Math.round(100 * (Math.sqrt(3) / 2));
+        } else if (
+          currentShape.shapeType === "quad-rectangle" ||
+          currentShape.shapeType === "quad-parallelogram" ||
+          currentShape.shapeType === "quad-trapezoid"
+        ) {
+          finalW = 128;
+          finalH = 84;
+        } else {
+          finalW = 96;
+          finalH = 96;
+        }
+        finalX = Math.max(10, currentShape.startX - Math.round(finalW / 2));
+        finalY = Math.max(10, currentShape.startY - Math.round(finalH / 2));
+      }
+
+      const newShapeEl = {
+        id: currentShape.id,
+        type: "shape",
+        shapeType: currentShape.shapeType,
+        x: finalX,
+        y: finalY,
+        width: finalW,
+        height: finalH,
+        color: currentShape.color,
+        lineWidth: currentShape.lineWidth
+      };
+
+      pushHistory(elements);
+      setElements((prev) => [...prev, newShapeEl]);
+      setCurrentShape(null);
+      broadcast({ type: "ADD_ELEMENT", element: newShapeEl });
     }
     if (tool === "select" && draggingElement) {
       setElements((prev) => {
@@ -966,7 +1246,7 @@ export default function Whiteboard() {
           broadcast({
             type: 'UPDATE_ELEMENT',
             id: el.id,
-            updates: el.type === "image"
+            updates: (el.type === "image" || el.type === "shape")
               ? { width: el.width, height: el.height }
               : { width: el.width }
           });
@@ -1373,169 +1653,496 @@ export default function Whiteboard() {
     link.click();
   };
 
+  const isPresetColor = colors.some((c) => c.value.toLowerCase() === color.toLowerCase());
+
+  const triangleSubtypes = [
+    { id: "triangle-equilateral", label: "Equilateral" },
+    { id: "triangle-isosceles", label: "Isosceles" },
+    { id: "triangle-right", label: "Right" }
+  ];
+
+  const quadSubtypes = [
+    { id: "quad-square", label: "Square" },
+    { id: "quad-rectangle", label: "Rectangle" },
+    { id: "quad-parallelogram", label: "Parallelogram" },
+    { id: "quad-trapezoid", label: "Trapezoid" },
+    { id: "quad-rhombus", label: "Rhombus" }
+  ];
+
+  const renderShapeIcon = (typeId) => {
+    switch (typeId) {
+      case "circle":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <circle cx="12" cy="12" r="9" />
+          </svg>
+        );
+      case "triangle-equilateral":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <polygon points="12,3 21,19 3,19" />
+          </svg>
+        );
+      case "triangle-isosceles":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <polygon points="12,2 18,21 6,21" />
+          </svg>
+        );
+      case "triangle-right":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <polygon points="4,3 4,20 21,20" />
+          </svg>
+        );
+      case "quad-square":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <rect x="4" y="4" width="16" height="16" />
+          </svg>
+        );
+      case "quad-rectangle":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <rect x="2" y="6" width="20" height="12" />
+          </svg>
+        );
+      case "quad-parallelogram":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <polygon points="7,6 22,6 17,18 2,18" />
+          </svg>
+        );
+      case "quad-trapezoid":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <polygon points="7,6 17,6 22,18 2,18" />
+          </svg>
+        );
+      case "quad-rhombus":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <polygon points="12,2 21,12 12,22 3,12" />
+          </svg>
+        );
+      case "pentagon":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <polygon points="12,2 22,9 18,21 6,21 2,9" />
+          </svg>
+        );
+      case "hexagon":
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+            <polygon points="12,2 21,7 21,17 12,22 3,17 3,7" />
+          </svg>
+        );
+      default:
+        return <Shapes size={14} />;
+    }
+  };
+
   return (
     <div className="whiteboard-container">
       {/* Whiteboard Toolbar Controls */}
-      <div className="whiteboard-toolbar">
-        <div className="toolbar-group">
-          {/* Pencil Tool */}
-          <button
-            className={`toolbar-btn ${tool === "pen" ? "active" : ""}`}
-            onClick={() => selectTool("pen")}
-            title="Draw (Pen)"
-          >
-            <Paintbrush size={18} />
-          </button>
-          
-          {/* Select / Move / Resize Tool */}
-          <button
-            className={`toolbar-btn ${tool === "select" ? "active" : ""}`}
-            onClick={() => selectTool("select")}
-            title="Select, Move & Resize Objects"
-          >
-            <Move size={18} />
-          </button>
+      <div
+        className="whiteboard-toolbar"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "stretch",
+          gap: "0.45rem",
+          padding: "0.5rem 0.75rem"
+        }}
+      >
+        {/* Top Row: Primary Tools, Background & Upload Controls, and Right Action Buttons (Never wraps) */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "nowrap",
+            gap: "0.45rem",
+            width: "100%",
+            overflowX: "auto"
+          }}
+        >
+          <div className="toolbar-group" style={{ flexShrink: 0 }}>
+            {/* Pencil / Brush Tool */}
+            <button
+              className={`toolbar-btn ${tool === "pen" ? "active" : ""}`}
+              onClick={() => selectTool("pen")}
+              title="Draw (Brush)"
+            >
+              <Paintbrush size={18} />
+            </button>
 
-          {/* Text Tool */}
-          <button
-            className={`toolbar-btn ${tool === "text" ? "active" : ""}`}
-            onClick={() => selectTool("text")}
-            title="Type Text Box"
-          >
-            <Type size={18} />
-          </button>
+            {/* 2D Shapes Tool */}
+            <button
+              className={`toolbar-btn ${tool === "shape" ? "active" : ""}`}
+              onClick={() => {
+                selectTool("shape");
+                if (!openShapeCategory) {
+                  if (selectedShape.startsWith("triangle-")) {
+                    setOpenShapeCategory("triangles");
+                  } else if (selectedShape.startsWith("quad-")) {
+                    setOpenShapeCategory("quadrilaterals");
+                  }
+                }
+              }}
+              title="2D Shapes (Circles, Triangles, Quadrilaterals, Pentagons, Hexagons)"
+              style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+            >
+              <Shapes size={17} />
+              <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Shapes</span>
+            </button>
 
-          {/* Eraser Tool */}
-          <button
-            className={`toolbar-btn ${tool === "eraser" ? "active" : ""}`}
-            onClick={() => selectTool("eraser")}
-            title="Stroke Eraser (Click to erase any element)"
-          >
-            <Eraser size={18} />
-          </button>
+            {/* Select / Move / Resize Tool */}
+            <button
+              className={`toolbar-btn ${tool === "select" ? "active" : ""}`}
+              onClick={() => selectTool("select")}
+              title="Select, Move & Resize Objects"
+            >
+              <Move size={18} />
+            </button>
+
+            {/* Text Tool */}
+            <button
+              className={`toolbar-btn ${tool === "text" ? "active" : ""}`}
+              onClick={() => selectTool("text")}
+              title="Type Text Box"
+            >
+              <Type size={18} />
+            </button>
+
+            {/* Eraser Tool */}
+            <button
+              className={`toolbar-btn ${tool === "eraser" ? "active" : ""}`}
+              onClick={() => selectTool("eraser")}
+              title="Stroke Eraser (Click to erase any element)"
+            >
+              <Eraser size={18} />
+            </button>
+          </div>
+
+          {/* Background Toggles: Grid Paper & Coordinate Plane */}
+          <div className="toolbar-group" style={{ flexShrink: 0 }}>
+            <button
+              className={`toolbar-btn ${background === "grid" ? "active" : ""}`}
+              onClick={() => toggleBackground("grid")}
+              title="Toggle Grid Paper Background"
+              style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+            >
+              <Grid3X3 size={17} />
+              <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Grid Paper</span>
+            </button>
+            <button
+              className={`toolbar-btn ${background === "axes" ? "active" : ""}`}
+              onClick={() => toggleBackground("axes")}
+              title="Toggle Coordinate Plane Background"
+              style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="2" x2="12" y2="22" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <polyline points="9 5 12 2 15 5" />
+                <polyline points="19 9 22 12 19 15" />
+              </svg>
+              <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Coordinate Plane</span>
+            </button>
+          </div>
+
+          {/* Document/Image Upload & Screen Capture Buttons */}
+          <div className="toolbar-group" style={{ flexShrink: 0 }}>
+            <button
+              className="toolbar-btn"
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload PDF Worksheet or Image"
+              style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+              disabled={pdfLoading}
+            >
+              <Upload size={18} />
+              <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>
+                {pdfLoading ? "Rendering PDF..." : "Upload Document"}
+              </span>
+            </button>
+            <button
+              className="toolbar-btn"
+              onClick={captureScreenToBoard}
+              title="Capture a Screen, Window, or Browser Tab directly onto the Whiteboard"
+              style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
+            >
+              <MonitorUp size={18} />
+              <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Screen to Board</span>
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              accept="image/*,application/pdf"
+              style={{ display: "none" }}
+            />
+          </div>
+
+          <div className="toolbar-spacer" style={{ flex: 1, minWidth: "0.25rem" }} />
+
+          {/* Right Action Buttons (Locked on top row so they never slide under) */}
+          <div className="toolbar-group" style={{ flexShrink: 0 }}>
+            <button
+              className="toolbar-btn"
+              onClick={undoAction}
+              disabled={history.length === 0}
+              title="Undo Last Erase, Clear, or Action (Ctrl+Z)"
+              style={{ opacity: history.length === 0 ? 0.45 : 1 }}
+            >
+              <Undo2 size={18} />
+              <span className="btn-label-desktop">Undo</span>
+            </button>
+            <button
+              className="toolbar-btn text-danger"
+              onClick={clearCanvas}
+              title="Clear Board"
+            >
+              <Trash2 size={18} />
+              <span className="btn-label-desktop">Clear</span>
+            </button>
+            <button
+              className="toolbar-btn text-success"
+              onClick={downloadCanvas}
+              title="Save Board"
+            >
+              <Download size={18} />
+              <span className="btn-label-desktop">Save</span>
+            </button>
+          </div>
         </div>
 
-        {/* Color Palette (available when not erasing or moving images) */}
-        {tool !== "eraser" && tool !== "select" && (
-          <div className="toolbar-group">
-            {colors.map((c) => (
-              <button
-                key={c.name}
-                className={`color-btn ${color === c.value ? "selected" : ""}`}
-                style={{ backgroundColor: c.value }}
-                onClick={() => setColor(c.value)}
-                title={c.name}
-              />
-            ))}
-          </div>
-        )}
+        {/* Second Row Directly Under Brush: Colors (+ Custom Color Picker), Sizes, and 2D Shape Options */}
+        {(tool === "pen" || tool === "text" || tool === "shape") && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "0.5rem",
+              paddingTop: "0.1rem"
+            }}
+          >
+            {/* 5 Preset Colors (Red, Yellow, Green, Blue, Black) + Custom Color Chooser */}
+            <div className="toolbar-group" style={{ gap: "0.35rem" }}>
+              <span className="toolbar-label">Color:</span>
+              {colors.map((c) => (
+                <button
+                  key={c.name}
+                  className={`color-btn ${color.toLowerCase() === c.value.toLowerCase() ? "selected" : ""}`}
+                  style={{ backgroundColor: c.value }}
+                  onClick={() => setColor(c.value)}
+                  title={c.name}
+                />
+              ))}
 
-        {/* Line Thickness */}
-        {tool === "pen" && (
-          <div className="toolbar-group">
-            <span className="toolbar-label">Size:</span>
-            {[2, 4, 8, 12].map((size) => (
-              <button
-                key={size}
-                className={`thickness-btn ${lineWidth === size ? "selected" : ""}`}
-                onClick={() => setLineWidth(size)}
-                title={`${size}px`}
+              {/* Custom Color Picker Button */}
+              <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                <button
+                  type="button"
+                  className={`color-btn ${!isPresetColor ? "selected" : ""}`}
+                  onClick={() => customColorInputRef.current?.click()}
+                  title="Choose Custom Color"
+                  style={{
+                    background: !isPresetColor
+                      ? color
+                      : "conic-gradient(#ef4444, #eab308, #22c55e, #3b82f6, #a855f7, #ef4444)",
+                    border: !isPresetColor ? "2px solid #0f172a" : "1.5px solid #cbd5e1",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}
+                />
+                <input
+                  ref={customColorInputRef}
+                  type="color"
+                  value={customColor}
+                  onChange={(e) => {
+                    setCustomColor(e.target.value);
+                    setColor(e.target.value);
+                  }}
+                  style={{
+                    position: "absolute",
+                    opacity: 0,
+                    width: 0,
+                    height: 0,
+                    pointerEvents: "none"
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Brush / Shape Line Size */}
+            {(tool === "pen" || tool === "shape") && (
+              <div className="toolbar-group">
+                <span className="toolbar-label">Size:</span>
+                {[2, 4, 8, 12].map((size) => (
+                  <button
+                    key={size}
+                    className={`thickness-btn ${lineWidth === size ? "selected" : ""}`}
+                    onClick={() => setLineWidth(size)}
+                    title={`${size}px`}
+                  >
+                    <Circle size={6 + size / 2} fill="#334155" stroke="none" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* 2D Shape Selector Categories & Sub-options */}
+            {tool === "shape" && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "0.4rem"
+                }}
               >
-                <Circle size={6 + size / 2} fill="#334155" stroke="none" />
-              </button>
-            ))}
+                <div className="toolbar-group" style={{ gap: "0.25rem" }}>
+                  <span className="toolbar-label">2D Shape:</span>
+
+                  {/* Circle */}
+                  <button
+                    type="button"
+                    className={`toolbar-btn ${selectedShape === "circle" ? "active" : ""}`}
+                    onClick={() => {
+                      setSelectedShape("circle");
+                      setOpenShapeCategory(null);
+                    }}
+                    style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                    title="Circle"
+                  >
+                    {renderShapeIcon("circle")}
+                    <span>Circle</span>
+                  </button>
+
+                  {/* Triangles Category Button */}
+                  <button
+                    type="button"
+                    className={`toolbar-btn ${selectedShape.startsWith("triangle-") ? "active" : ""}`}
+                    onClick={() => {
+                      if (!selectedShape.startsWith("triangle-")) {
+                        setSelectedShape("triangle-equilateral");
+                      }
+                      setOpenShapeCategory((prev) => (prev === "triangles" ? null : "triangles"));
+                    }}
+                    style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                    title="Triangles (Equilateral, Isosceles, Right)"
+                  >
+                    {renderShapeIcon(selectedShape.startsWith("triangle-") ? selectedShape : "triangle-equilateral")}
+                    <span>Triangles</span>
+                    <ChevronDown size={13} />
+                  </button>
+
+                  {/* Quadrilaterals Category Button */}
+                  <button
+                    type="button"
+                    className={`toolbar-btn ${selectedShape.startsWith("quad-") ? "active" : ""}`}
+                    onClick={() => {
+                      if (!selectedShape.startsWith("quad-")) {
+                        setSelectedShape("quad-square");
+                      }
+                      setOpenShapeCategory((prev) => (prev === "quadrilaterals" ? null : "quadrilaterals"));
+                    }}
+                    style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                    title="Quadrilaterals (Square, Rectangle, Parallelogram, Trapezoid, Rhombus)"
+                  >
+                    {renderShapeIcon(selectedShape.startsWith("quad-") ? selectedShape : "quad-square")}
+                    <span>Quadrilaterals</span>
+                    <ChevronDown size={13} />
+                  </button>
+
+                  {/* Pentagon */}
+                  <button
+                    type="button"
+                    className={`toolbar-btn ${selectedShape === "pentagon" ? "active" : ""}`}
+                    onClick={() => {
+                      setSelectedShape("pentagon");
+                      setOpenShapeCategory(null);
+                    }}
+                    style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                    title="Pentagon"
+                  >
+                    {renderShapeIcon("pentagon")}
+                    <span>Pentagon</span>
+                  </button>
+
+                  {/* Hexagon */}
+                  <button
+                    type="button"
+                    className={`toolbar-btn ${selectedShape === "hexagon" ? "active" : ""}`}
+                    onClick={() => {
+                      setSelectedShape("hexagon");
+                      setOpenShapeCategory(null);
+                    }}
+                    style={{ minWidth: "auto", padding: "0 0.5rem", height: "28px", gap: "0.25rem", fontSize: "0.75rem", fontWeight: 700 }}
+                    title="Hexagon"
+                  >
+                    {renderShapeIcon("hexagon")}
+                    <span>Hexagon</span>
+                  </button>
+                </div>
+
+                {/* Expanded Triangle Sub-options */}
+                {openShapeCategory === "triangles" && (
+                  <div
+                    className="toolbar-group"
+                    style={{
+                      gap: "0.25rem",
+                      background: "#eef2ff",
+                      borderColor: "#c7d2fe"
+                    }}
+                  >
+                    <span className="toolbar-label" style={{ color: "#4338ca" }}>Triangle Type:</span>
+                    {triangleSubtypes.map((sub) => (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        className={`toolbar-btn ${selectedShape === sub.id ? "active" : ""}`}
+                        onClick={() => setSelectedShape(sub.id)}
+                        style={{ minWidth: "auto", padding: "0 0.45rem", height: "26px", gap: "0.25rem", fontSize: "0.73rem", fontWeight: 700 }}
+                      >
+                        {renderShapeIcon(sub.id)}
+                        <span>{sub.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Expanded Quadrilateral Sub-options */}
+                {openShapeCategory === "quadrilaterals" && (
+                  <div
+                    className="toolbar-group"
+                    style={{
+                      gap: "0.25rem",
+                      background: "#eef2ff",
+                      borderColor: "#c7d2fe"
+                    }}
+                  >
+                    <span className="toolbar-label" style={{ color: "#4338ca" }}>Quadrilateral Type:</span>
+                    {quadSubtypes.map((sub) => (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        className={`toolbar-btn ${selectedShape === sub.id ? "active" : ""}`}
+                        onClick={() => setSelectedShape(sub.id)}
+                        style={{ minWidth: "auto", padding: "0 0.45rem", height: "26px", gap: "0.25rem", fontSize: "0.73rem", fontWeight: 700 }}
+                      >
+                        {renderShapeIcon(sub.id)}
+                        <span>{sub.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
-
-        {/* Background Toggles: Grid Paper & Coordinate Plane */}
-        <div className="toolbar-group">
-          <button
-            className={`toolbar-btn ${background === "grid" ? "active" : ""}`}
-            onClick={() => toggleBackground("grid")}
-            title="Toggle Grid Paper Background"
-            style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
-          >
-            <Grid3X3 size={17} />
-            <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Grid Paper</span>
-          </button>
-          <button
-            className={`toolbar-btn ${background === "axes" ? "active" : ""}`}
-            onClick={() => toggleBackground("axes")}
-            title="Toggle Coordinate Plane Background"
-            style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="2" x2="12" y2="22" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <polyline points="9 5 12 2 15 5" />
-              <polyline points="19 9 22 12 19 15" />
-            </svg>
-            <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Coordinate Plane</span>
-          </button>
-        </div>
-
-        {/* Document/Image Upload & Screen Capture Buttons */}
-        <div className="toolbar-group">
-          <button
-            className="toolbar-btn"
-            onClick={() => fileInputRef.current?.click()}
-            title="Upload PDF Worksheet or Image"
-            style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
-            disabled={pdfLoading}
-          >
-            <Upload size={18} />
-            <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>
-              {pdfLoading ? "Rendering PDF..." : "Upload Document"}
-            </span>
-          </button>
-          <button
-            className="toolbar-btn"
-            onClick={captureScreenToBoard}
-            title="Capture a Screen, Window, or Browser Tab directly onto the Whiteboard"
-            style={{ minWidth: "auto", padding: "0 0.5rem", gap: "0.25rem" }}
-          >
-            <MonitorUp size={18} />
-            <span style={{ fontSize: "0.75rem", fontWeight: 800 }}>Screen to Board</span>
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            accept="image/*,application/pdf"
-            style={{ display: "none" }}
-          />
-        </div>
-
-        <div className="toolbar-spacer" />
-
-        <div className="toolbar-group">
-          <button
-            className="toolbar-btn"
-            onClick={undoAction}
-            disabled={history.length === 0}
-            title="Undo Last Erase, Clear, or Action (Ctrl+Z)"
-            style={{ opacity: history.length === 0 ? 0.45 : 1 }}
-          >
-            <Undo2 size={18} />
-            <span className="btn-label-desktop">Undo</span>
-          </button>
-          <button
-            className="toolbar-btn text-danger"
-            onClick={clearCanvas}
-            title="Clear Board"
-          >
-            <Trash2 size={18} />
-            <span className="btn-label-desktop">Clear</span>
-          </button>
-          <button
-            className="toolbar-btn text-success"
-            onClick={downloadCanvas}
-            title="Save Board"
-          >
-            <Download size={18} />
-            <span className="btn-label-desktop">Save</span>
-          </button>
-        </div>
       </div>
 
       {/* Canvas Drawing Area */}
