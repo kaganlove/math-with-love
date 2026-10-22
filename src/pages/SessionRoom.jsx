@@ -37,6 +37,11 @@ export default function SessionRoom() {
   const p2pConnectedRef = useRef(false);
   const ssChunksRef = useRef({});
   const sendingFrameRef = useRef(false);
+  const seenSSPacketsRef = useRef(new Set());
+  const ssChatQueueRef = useRef([]);
+  const ssChatTimerRef = useRef(null);
+  const ssBroadcastChannelRef = useRef(null);
+  const pendingCandidatesRef = useRef([]);
 
   const myClientId =
     window.mathWithLoveClientId ||
@@ -56,84 +61,147 @@ export default function SessionRoom() {
   useEffect(() => {
     if (isSharingScreen && localScreenVideoRef.current && localStreamRef.current) {
       localScreenVideoRef.current.srcObject = localStreamRef.current;
+      localScreenVideoRef.current.play?.().catch(() => {});
     }
   }, [isSharingScreen]);
 
   // Attach remote WebRTC stream to remote video element when available
   useEffect(() => {
-    if (hasRemoteWebRTCStream && remoteScreenVideoRef.current && remoteStreamRef.current) {
-      remoteScreenVideoRef.current.srcObject = remoteStreamRef.current;
+    if (remoteScreenVideoRef.current && remoteStreamRef.current) {
+      if (remoteScreenVideoRef.current.srcObject !== remoteStreamRef.current) {
+        remoteScreenVideoRef.current.srcObject = remoteStreamRef.current;
+      }
+      remoteScreenVideoRef.current.play?.().catch(() => {});
     }
   }, [hasRemoteWebRTCStream, remoteSharingActive]);
 
-  const sendRawSS = (str, targetId = null, includeChat = false) => {
+  const sendDataChannelSS = (str, targetId = null) => {
     if (!window.jitsiApi) return;
     try {
       if (targetId) {
-        window.jitsiApi.executeCommand("sendEndpointTextMessage", targetId, str);
+        try {
+          window.jitsiApi.executeCommand("sendEndpointTextMessage", targetId, str);
+        } catch (e) {}
       } else {
         try {
           window.jitsiApi.executeCommand("sendEndpointTextMessage", "", str);
         } catch (e) {}
-        const participants = window.jitsiApi.getParticipantsInfo?.();
-        if (Array.isArray(participants) && participants.length > 0) {
-          participants.forEach((p) => {
-            if (p && p.id) {
-              try {
-                window.jitsiApi.executeCommand("sendEndpointTextMessage", p.id, str);
-              } catch (e) {}
-            }
+
+        const targetIds = new Set();
+        if (window.jitsiParticipants instanceof Set) {
+          window.jitsiParticipants.forEach((id) => {
+            if (id) targetIds.add(id);
           });
         }
+        const participants = window.jitsiApi.getParticipantsInfo?.();
+        if (Array.isArray(participants)) {
+          participants.forEach((p) => {
+            const pid = p?.participantId || p?.id;
+            if (pid) targetIds.add(pid);
+          });
+        }
+        targetIds.forEach((pid) => {
+          try {
+            window.jitsiApi.executeCommand("sendEndpointTextMessage", pid, str);
+          } catch (e) {}
+        });
       }
-      if (includeChat) {
+    } catch (e) {}
+  };
+
+  const enqueueSSChatPacket = (str, onSent = null) => {
+    if (!window.jitsiApi) {
+      if (onSent) onSent();
+      return;
+    }
+
+    const processQueue = () => {
+      if (ssChatQueueRef.current.length === 0) {
+        ssChatTimerRef.current = null;
+        return;
+      }
+      const item = ssChatQueueRef.current.shift();
+      try {
+        if (window.jitsiApi) {
+          window.jitsiApi.executeCommand("sendChatMessage", "[SS]:" + item.str);
+        }
+      } catch (e) {}
+      if (item.onSent) item.onSent();
+      ssChatTimerRef.current = setTimeout(processQueue, 480);
+    };
+
+    if (!ssChatTimerRef.current) {
+      try {
         window.jitsiApi.executeCommand("sendChatMessage", "[SS]:" + str);
-      }
-    } catch (e) {
-      console.error("Failed to send screen share signal:", e);
+      } catch (e) {}
+      if (onSent) onSent();
+      ssChatTimerRef.current = setTimeout(processQueue, 480);
+    } else {
+      ssChatQueueRef.current.push({ str, onSent });
     }
   };
 
   const broadcastSS = (cmd, targetId = null, onComplete = null) => {
-    if (!window.jitsiApi) {
-      if (onComplete) onComplete();
-      return;
-    }
     try {
-      const payload = { ...cmd, senderId: myClientId, mathWithLoveSS: true };
-      const payloadStr = JSON.stringify(payload);
-      const DC_CHUNK_SIZE = 600;
-      const isControlSignal = cmd.type !== "SS_FRAME";
+      const packetId = Date.now().toString(36) + Math.random().toString(36).substr(2, 6);
+      seenSSPacketsRef.current.add(packetId);
 
-      // Send control signals (SS_START, SS_STOP, SS_OFFER, SS_ANSWER, SS_CANDIDATE, SS_REQUEST) as a single chat fallback stanza
-      if (isControlSignal && payloadStr.length <= 5000) {
+      const payload = { ...cmd, packetId, senderId: myClientId, mathWithLoveSS: true };
+      const payloadStr = JSON.stringify(payload);
+
+      // 1. Local BroadcastChannel for same-device tabs
+      if (ssBroadcastChannelRef.current) {
         try {
-          window.jitsiApi.executeCommand("sendChatMessage", "[SS]:" + payloadStr);
+          ssBroadcastChannelRef.current.postMessage(payloadStr);
         } catch (e) {}
       }
 
-      if (payloadStr.length <= DC_CHUNK_SIZE) {
-        sendRawSS(payloadStr, targetId, false);
+      if (!window.jitsiApi) {
         if (onComplete) onComplete();
+        return;
+      }
+
+      // 2. Jitsi WebRTC DataChannel (600-byte chunks)
+      const DC_CHUNK_SIZE = 600;
+      if (payloadStr.length <= DC_CHUNK_SIZE) {
+        sendDataChannelSS(payloadStr, targetId);
       } else {
-        const msgId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-        const total = Math.ceil(payloadStr.length / DC_CHUNK_SIZE);
-        for (let i = 0; i < total; i++) {
+        const dcMsgId = "dc_" + packetId;
+        const dcTotal = Math.ceil(payloadStr.length / DC_CHUNK_SIZE);
+        for (let i = 0; i < dcTotal; i++) {
           const chunkStr = JSON.stringify({
             mathWithLoveSS: true,
             mathWithLoveSSChunk: true,
             senderId: myClientId,
-            msgId,
+            msgId: dcMsgId,
             index: i,
-            total,
+            total: dcTotal,
             data: payloadStr.slice(i * DC_CHUNK_SIZE, (i + 1) * DC_CHUNK_SIZE)
           });
           setTimeout(() => {
-            sendRawSS(chunkStr, targetId, false);
-            if (i === total - 1 && onComplete) {
-              onComplete();
-            }
-          }, i * 20);
+            sendDataChannelSS(chunkStr, targetId);
+          }, i * 18);
+        }
+      }
+
+      // 3. Jitsi XMPP Group Chat fallback (1600-byte chunks so XML-escaped stanzas never exceed Prosody 4KB limit)
+      const CHAT_CHUNK_SIZE = 1600;
+      if (payloadStr.length <= CHAT_CHUNK_SIZE) {
+        enqueueSSChatPacket(payloadStr, onComplete);
+      } else {
+        const chMsgId = "ch_" + packetId;
+        const chTotal = Math.ceil(payloadStr.length / CHAT_CHUNK_SIZE);
+        for (let i = 0; i < chTotal; i++) {
+          const chunkStr = JSON.stringify({
+            mathWithLoveSS: true,
+            mathWithLoveSSChunk: true,
+            senderId: myClientId,
+            msgId: chMsgId,
+            index: i,
+            total: chTotal,
+            data: payloadStr.slice(i * CHAT_CHUNK_SIZE, (i + 1) * CHAT_CHUNK_SIZE)
+          });
+          enqueueSSChatPacket(chunkStr, i === chTotal - 1 ? onComplete : null);
         }
       }
     } catch (err) {
@@ -150,14 +218,47 @@ export default function SessionRoom() {
       pcRef.current = null;
     }
     p2pConnectedRef.current = false;
+    pendingCandidatesRef.current = [];
   };
+
+  // Wait up to timeoutMs for ICE candidates to be gathered directly into pc.localDescription (Vanilla ICE)
+  const waitForIceGathering = (pc, timeoutMs = 700) =>
+    new Promise((resolve) => {
+      if (!pc || pc.iceGatheringState === "complete") {
+        resolve();
+        return;
+      }
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        pc.removeEventListener("icegatheringstatechange", checkState);
+        resolve();
+      };
+      const checkState = () => {
+        if (pc.iceGatheringState === "complete") {
+          finish();
+        }
+      };
+      const timer = setTimeout(finish, timeoutMs);
+      pc.addEventListener("icegatheringstatechange", checkState);
+    });
 
   const stopScreenShare = (notifyRemote = true) => {
     if (frameIntervalRef.current) {
       clearInterval(frameIntervalRef.current);
       frameIntervalRef.current = null;
     }
+    const existingCaptureVid = document.getElementById("mwl-ss-capture-video");
+    if (existingCaptureVid) {
+      try {
+        existingCaptureVid.srcObject = null;
+        existingCaptureVid.remove();
+      } catch (e) {}
+    }
     sendingFrameRef.current = false;
+    ssChatQueueRef.current = [];
 
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((t) => t.stop());
@@ -171,7 +272,7 @@ export default function SessionRoom() {
     }
   };
 
-  const startWebRTCOffer = async (stream) => {
+  const startWebRTCOffer = async (stream, targetId = null) => {
     cleanupPeerConnection();
     try {
       const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
@@ -181,27 +282,26 @@ export default function SessionRoom() {
         pc.addTrack(track, stream);
       });
 
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          broadcastSS({ type: "SS_CANDIDATE", candidate: event.candidate });
-        }
-      };
-
-      pc.onconnectionstatechange = () => {
-        if (pc.connectionState === "connected") {
+      const checkConnected = () => {
+        const state = pc.connectionState || pc.iceConnectionState;
+        if (state === "connected" || state === "completed") {
           p2pConnectedRef.current = true;
-        } else if (
-          pc.connectionState === "disconnected" ||
-          pc.connectionState === "failed" ||
-          pc.connectionState === "closed"
-        ) {
+        } else if (state === "disconnected" || state === "failed" || state === "closed") {
           p2pConnectedRef.current = false;
         }
       };
 
+      pc.onconnectionstatechange = checkConnected;
+      pc.oniceconnectionstatechange = checkConnected;
+
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      broadcastSS({ type: "SS_OFFER", sdp: pc.localDescription });
+      // Bundle ICE candidates directly into the offer SDP so we don't spam 15 separate SS_CANDIDATE messages
+      await waitForIceGathering(pc, 700);
+
+      if (pcRef.current === pc && pc.localDescription) {
+        broadcastSS({ type: "SS_OFFER", sdp: pc.localDescription }, targetId);
+      }
     } catch (err) {
       console.error("WebRTC screen share offer error:", err);
     }
@@ -235,28 +335,37 @@ export default function SessionRoom() {
         };
       }
 
-      broadcastSS({ type: "SS_START" });
-      await startWebRTCOffer(stream);
-
-      // Hidden offscreen video + canvas for fallback live frame streaming when P2P isn't connected yet
+      // Mount a 1x1 hidden video element in the DOM so Chromium never throttles offscreen frame decoding
+      const prevVid = document.getElementById("mwl-ss-capture-video");
+      if (prevVid) prevVid.remove();
       const captureVideo = document.createElement("video");
+      captureVideo.id = "mwl-ss-capture-video";
       captureVideo.srcObject = stream;
       captureVideo.muted = true;
+      captureVideo.playsInline = true;
+      captureVideo.autoplay = true;
+      captureVideo.style.cssText =
+        "position:fixed;bottom:0;right:0;width:2px;height:2px;opacity:0.01;pointer-events:none;z-index:-1;";
+      document.body.appendChild(captureVideo);
       captureVideo.play().catch(() => {});
 
       const captureCanvas = document.createElement("canvas");
       const captureCtx = captureCanvas.getContext("2d");
 
-      frameIntervalRef.current = setInterval(() => {
+      const captureAndSendFrame = () => {
         if (!localStreamRef.current) return;
-        if (p2pConnectedRef.current) return; // WebRTC direct stream is active, no fallback needed
-        if (sendingFrameRef.current) return; // Wait for previous frame chunks to finish sending
+        if (p2pConnectedRef.current) return; // Direct WebRTC stream is active
+        if (sendingFrameRef.current || ssChatQueueRef.current.length > 0) return;
 
-        const vw = captureVideo.videoWidth;
-        const vh = captureVideo.videoHeight;
+        const sourceVid =
+          localScreenVideoRef.current?.videoWidth > 0
+            ? localScreenVideoRef.current
+            : captureVideo;
+        const vw = sourceVid.videoWidth;
+        const vh = sourceVid.videoHeight;
         if (!vw || !vh) return;
 
-        const maxDim = 920;
+        const maxDim = 640;
         let w = vw;
         let h = vh;
         if (w > maxDim || h > maxDim) {
@@ -271,26 +380,46 @@ export default function SessionRoom() {
 
         captureCanvas.width = w;
         captureCanvas.height = h;
-        captureCtx.drawImage(captureVideo, 0, 0, w, h);
-        const frameDataUrl = captureCanvas.toDataURL("image/jpeg", 0.42);
+        captureCtx.drawImage(sourceVid, 0, 0, w, h);
+        const frameDataUrl = captureCanvas.toDataURL("image/jpeg", 0.34);
 
         sendingFrameRef.current = true;
+        const safetyReset = setTimeout(() => {
+          sendingFrameRef.current = false;
+        }, 3500);
         broadcastSS({ type: "SS_FRAME", frame: frameDataUrl }, null, () => {
+          clearTimeout(safetyReset);
           sendingFrameRef.current = false;
         });
-      }, 1400);
+      };
+
+      // Start WebRTC high-fps P2P stream negotiation immediately
+      startWebRTCOffer(stream);
+
+      // Send immediate preview frame once the video decodes its first frame
+      captureVideo.onloadeddata = () => {
+        setTimeout(captureAndSendFrame, 150);
+      };
+      setTimeout(captureAndSendFrame, 450);
+
+      frameIntervalRef.current = setInterval(captureAndSendFrame, 1400);
     } catch (err) {
       console.log("Screen share cancelled or denied:", err);
     }
   };
 
-  // Listen for incoming screen share signaling messages over Jitsi
+  // Listen for incoming screen share signaling messages over Jitsi & BroadcastChannel
   useEffect(() => {
     const processIncomingSS = async (payloadStr, remoteSenderId) => {
       try {
         const msg = JSON.parse(payloadStr);
         if (!msg || !msg.mathWithLoveSS) return;
         if (msg.senderId === myClientId) return;
+
+        if (remoteSenderId) {
+          window.jitsiParticipants = window.jitsiParticipants || new Set();
+          window.jitsiParticipants.add(remoteSenderId);
+        }
 
         if (msg.mathWithLoveSSChunk) {
           const bucket = ssChunksRef.current[msg.msgId] || {
@@ -312,6 +441,15 @@ export default function SessionRoom() {
           return;
         }
 
+        if (msg.packetId) {
+          if (seenSSPacketsRef.current.has(msg.packetId)) return;
+          seenSSPacketsRef.current.add(msg.packetId);
+          if (seenSSPacketsRef.current.size > 1000) {
+            const oldest = seenSSPacketsRef.current.values().next().value;
+            seenSSPacketsRef.current.delete(oldest);
+          }
+        }
+
         if (msg.type === "SS_START") {
           setRemoteSharingActive(true);
         } else if (msg.type === "SS_STOP") {
@@ -329,37 +467,72 @@ export default function SessionRoom() {
           const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
           pcRef.current = pc;
 
+          const markStreamLive = () => {
+            const state = pc.connectionState || pc.iceConnectionState;
+            if (state === "connected" || state === "completed") {
+              p2pConnectedRef.current = true;
+              if (remoteStreamRef.current) {
+                setHasRemoteWebRTCStream(true);
+              }
+            }
+          };
+
+          pc.onconnectionstatechange = markStreamLive;
+          pc.oniceconnectionstatechange = markStreamLive;
+
           pc.ontrack = (event) => {
             const stream = event.streams?.[0] || new MediaStream([event.track]);
             remoteStreamRef.current = stream;
-            setHasRemoteWebRTCStream(true);
             setRemoteSharingActive(true);
-          };
-
-          pc.onicecandidate = (event) => {
-            if (event.candidate) {
-              broadcastSS({ type: "SS_CANDIDATE", candidate: event.candidate }, remoteSenderId);
+            if (remoteScreenVideoRef.current) {
+              remoteScreenVideoRef.current.srcObject = stream;
+              remoteScreenVideoRef.current.play?.().catch(() => {});
+            }
+            if (event.track) {
+              event.track.onunmute = () => {
+                setHasRemoteWebRTCStream(true);
+              };
             }
           };
 
           await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+          while (pendingCandidatesRef.current.length > 0) {
+            const cand = pendingCandidatesRef.current.shift();
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(cand));
+            } catch (e) {}
+          }
+
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
-          broadcastSS({ type: "SS_ANSWER", sdp: pc.localDescription }, remoteSenderId);
+          await waitForIceGathering(pc, 700);
+
+          if (pcRef.current === pc && pc.localDescription) {
+            broadcastSS({ type: "SS_ANSWER", sdp: pc.localDescription }, remoteSenderId);
+          }
         } else if (msg.type === "SS_ANSWER") {
           if (pcRef.current && pcRef.current.signalingState !== "stable") {
             await pcRef.current.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+            while (pendingCandidatesRef.current.length > 0) {
+              const cand = pendingCandidatesRef.current.shift();
+              try {
+                await pcRef.current.addIceCandidate(new RTCIceCandidate(cand));
+              } catch (e) {}
+            }
           }
         } else if (msg.type === "SS_CANDIDATE") {
-          if (pcRef.current && msg.candidate) {
-            try {
-              await pcRef.current.addIceCandidate(new RTCIceCandidate(msg.candidate));
-            } catch (e) {}
+          if (msg.candidate) {
+            if (pcRef.current && pcRef.current.remoteDescription) {
+              try {
+                await pcRef.current.addIceCandidate(new RTCIceCandidate(msg.candidate));
+              } catch (e) {}
+            } else {
+              pendingCandidatesRef.current.push(msg.candidate);
+            }
           }
         } else if (msg.type === "SS_REQUEST") {
           if (localStreamRef.current) {
-            broadcastSS({ type: "SS_START" }, remoteSenderId);
-            startWebRTCOffer(localStreamRef.current);
+            startWebRTCOffer(localStreamRef.current, remoteSenderId);
           }
         }
       } catch (e) {
@@ -367,27 +540,51 @@ export default function SessionRoom() {
       }
     };
 
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      try {
+        const bc = new BroadcastChannel("math_with_love_ss");
+        bc.onmessage = (ev) => {
+          if (ev && typeof ev.data === "string") {
+            processIncomingSS(ev.data, null);
+          }
+        };
+        ssBroadcastChannelRef.current = bc;
+      } catch (e) {}
+    }
+
     const handleEndpointMsg = (event) => {
-      if (event?.eventData?.text) {
-        processIncomingSS(event.eventData.text, event.senderInfo?.id || null);
+      if (!event) return;
+      const text =
+        event.eventData?.text ||
+        event.data?.eventData?.text ||
+        (typeof event.text === "string" ? event.text : null);
+      const senderId =
+        event.senderInfo?.id ||
+        event.data?.senderInfo?.id ||
+        null;
+      if (text) {
+        processIncomingSS(text, senderId);
       }
     };
 
     const handleChatMsg = (event) => {
       if (!event || typeof event.message !== "string") return;
+      if (event.from) {
+        window.jitsiParticipants = window.jitsiParticipants || new Set();
+        window.jitsiParticipants.add(event.from);
+      }
       const trimmed = event.message.trim();
       const idx = trimmed.indexOf("[SS]:");
       if (idx !== -1) {
-        processIncomingSS(trimmed.substring(idx + 5), null);
+        processIncomingSS(trimmed.substring(idx + 5), event.from || null);
       }
     };
 
     const handleParticipantJoined = () => {
       if (localStreamRef.current) {
         setTimeout(() => {
-          broadcastSS({ type: "SS_START" });
           startWebRTCOffer(localStreamRef.current);
-        }, 500);
+        }, 600);
       }
     };
 
@@ -418,6 +615,16 @@ export default function SessionRoom() {
     window.addEventListener("jitsi-video-conference-joined", handleJoined);
 
     return () => {
+      if (ssChatTimerRef.current) {
+        clearTimeout(ssChatTimerRef.current);
+        ssChatTimerRef.current = null;
+      }
+      if (ssBroadcastChannelRef.current) {
+        try {
+          ssBroadcastChannelRef.current.close();
+        } catch (e) {}
+        ssBroadcastChannelRef.current = null;
+      }
       if (boundApi) {
         try {
           boundApi.removeListener("endpointTextMessageReceived", handleEndpointMsg);
@@ -543,8 +750,18 @@ export default function SessionRoom() {
         window.jitsiApi = api;
         window.dispatchEvent(new Event("jitsi-ready"));
 
-        api.on("participantJoined", () => {
+        api.on("participantJoined", (ev) => {
+          if (ev && ev.id) {
+            window.jitsiParticipants = window.jitsiParticipants || new Set();
+            window.jitsiParticipants.add(ev.id);
+          }
           window.dispatchEvent(new Event("jitsi-participant-joined"));
+        });
+
+        api.on("participantLeft", (ev) => {
+          if (ev && ev.id && window.jitsiParticipants instanceof Set) {
+            window.jitsiParticipants.delete(ev.id);
+          }
         });
 
         api.on("videoConferenceJoined", () => {
@@ -736,23 +953,35 @@ export default function SessionRoom() {
                     muted
                     style={{ width: "100%", height: "100%", objectFit: "contain" }}
                   />
-                ) : hasRemoteWebRTCStream ? (
-                  <video
-                    ref={remoteScreenVideoRef}
-                    autoPlay
-                    playsInline
-                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                  />
-                ) : remoteScreenFrame ? (
-                  <img
-                    src={remoteScreenFrame}
-                    alt="Shared Screen"
-                    style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                  />
                 ) : (
-                  <span style={{ color: "#94a3b8", fontSize: "0.85rem" }}>
-                    Connecting to shared screen...
-                  </span>
+                  <>
+                    <video
+                      ref={remoteScreenVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      onLoadedData={() => setHasRemoteWebRTCStream(true)}
+                      onPlaying={() => setHasRemoteWebRTCStream(true)}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        display: hasRemoteWebRTCStream ? "block" : "none"
+                      }}
+                    />
+                    {!hasRemoteWebRTCStream && remoteScreenFrame && (
+                      <img
+                        src={remoteScreenFrame}
+                        alt="Shared Screen"
+                        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                      />
+                    )}
+                    {!hasRemoteWebRTCStream && !remoteScreenFrame && (
+                      <span style={{ color: "#94a3b8", fontSize: "0.85rem" }}>
+                        Connecting to shared screen...
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
             </div>

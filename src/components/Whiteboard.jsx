@@ -392,16 +392,24 @@ export default function Whiteboard() {
           window.jitsiApi.executeCommand("sendEndpointTextMessage", "", str);
         } catch (e) {}
 
-        const participants = window.jitsiApi.getParticipantsInfo?.();
-        if (Array.isArray(participants) && participants.length > 0) {
-          participants.forEach((p) => {
-            if (p && p.id) {
-              try {
-                window.jitsiApi.executeCommand("sendEndpointTextMessage", p.id, str);
-              } catch (e) {}
-            }
+        const targetIds = new Set();
+        if (window.jitsiParticipants instanceof Set) {
+          window.jitsiParticipants.forEach((id) => {
+            if (id) targetIds.add(id);
           });
         }
+        const participants = window.jitsiApi.getParticipantsInfo?.();
+        if (Array.isArray(participants)) {
+          participants.forEach((p) => {
+            const pid = p?.participantId || p?.id;
+            if (pid) targetIds.add(pid);
+          });
+        }
+        targetIds.forEach((pid) => {
+          try {
+            window.jitsiApi.executeCommand("sendEndpointTextMessage", pid, str);
+          } catch (e) {}
+        });
       }
     } catch (e) {
       // Ignore endpoint data channel errors; chat channel will also deliver
@@ -495,8 +503,8 @@ export default function Whiteboard() {
         }
       }
 
-      // 3. Jitsi XMPP Group Chat fallback: send normal strokes/shapes as 1 single stanza, or 5000B rate-limited chunks for images
-      const CHAT_CHUNK_SIZE = 5000;
+      // 3. Jitsi XMPP Group Chat fallback: send normal strokes/shapes as 1 single stanza, or 1800B rate-limited chunks for images
+      const CHAT_CHUNK_SIZE = 1800;
       if (payloadStr.length <= CHAT_CHUNK_SIZE) {
         enqueueChatPacket(payloadStr);
       } else {
@@ -648,10 +656,14 @@ export default function Whiteboard() {
 
     const handleIncomingChatMessage = (event) => {
       if (!event || typeof event.message !== "string") return;
+      if (event.from) {
+        window.jitsiParticipants = window.jitsiParticipants || new Set();
+        window.jitsiParticipants.add(event.from);
+      }
       const trimmed = event.message.trim();
       const idx = trimmed.indexOf("[WB]:");
       if (idx !== -1) {
-        processIncomingPayload(trimmed.substring(idx + 5), null);
+        processIncomingPayload(trimmed.substring(idx + 5), event.from || null);
       }
     };
 
